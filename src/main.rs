@@ -21,14 +21,6 @@ fn color_of_space(ray: &Ray) -> Color64 {
     Color64(white_amt + blue_amt)
 }
 
-fn color_of_ray_with_sphere(ray: &Ray, sphere: &Sphere) -> Color64 {
-    if sphere.is_hit_by(ray) {
-        return RED;
-    }
-
-    color_of_space(ray)
-}
-
 fn main() {
     let width: i32 = 200;
     let height: i32 = 100;
@@ -57,7 +49,11 @@ fn main() {
                 direction: &direction,
             };
 
-            let color = color_of_ray_with_sphere(&ray, &sphere);
+            let color = if sphere.is_hit_by(&ray) {
+                RED
+            } else {
+                color_of_space(&ray)
+            };
 
             let scaled_red: i32 = (255.99 * color.r()) as i32;
             let scaled_green: i32 = (255.99 * color.g()) as i32;
