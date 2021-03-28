@@ -6,7 +6,7 @@ pub struct Ray<'a> {
 }
 
 impl Ray<'_> {
-    pub fn _point_at_parameter(&self, t: f64) -> Point64 {
+    pub fn point_at_parameter(&self, t: f64) -> Point64 {
         Point64(**self.origin + t * **self.direction)
     }
 }

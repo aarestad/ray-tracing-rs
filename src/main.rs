@@ -11,7 +11,6 @@ mod vec3_64;
 
 const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
 const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
-const RED: Color64 = Color64::new(1.0, 0.0, 0.0);
 
 fn color_of_space(ray: &Ray) -> Color64 {
     let unit_direction = Point64((*ray.direction).normalized());
@@ -22,8 +21,8 @@ fn color_of_space(ray: &Ray) -> Color64 {
 }
 
 fn main() {
-    let width: i32 = 200;
-    let height: i32 = 100;
+    let width: i32 = 800;
+    let height: i32 = 400;
 
     let lower_left_corner = Point64::new(-2.0, -1.0, -1.0);
     let horizontal = Point64::new(4.0, 0.0, 0.0);
@@ -37,6 +36,8 @@ fn main() {
 
     print!("P3\n{} {}\n255\n", width, height);
 
+    let color_ref_point = Point64::new(0.0, 0.0, -1.0);
+
     for j in (0..height).rev() {
         for i in 0..width {
             let u = i as f64 / width as f64;
@@ -49,8 +50,13 @@ fn main() {
                 direction: &direction,
             };
 
-            let color = if sphere.is_hit_by(&ray) {
-                RED
+            let hit_magnitude = sphere.hit_magnitude(&ray);
+
+            let color = if hit_magnitude > 0.0 {
+                let point_to_ref = Point64(*ray.point_at_parameter(hit_magnitude) - *color_ref_point);
+                Color64::new(0.5 *(point_to_ref.x() + 1.0),
+                             0.5 * (point_to_ref.y() + 1.0),
+                             0.5 * (point_to_ref.z() + 1.0),)
             } else {
                 color_of_space(&ray)
             };
