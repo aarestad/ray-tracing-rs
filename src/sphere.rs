@@ -18,6 +18,6 @@ impl Sphere {
             (-b - discriminant.sqrt()) / (2.0 * a)
         } else {
             -1.0
-        }
+        };
     }
 }

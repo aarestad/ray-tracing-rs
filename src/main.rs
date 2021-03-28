@@ -53,10 +53,14 @@ fn main() {
             let hit_magnitude = sphere.hit_magnitude(&ray);
 
             let color = if hit_magnitude > 0.0 {
-                let point_to_ref = Point64(*ray.point_at_parameter(hit_magnitude) - *color_ref_point);
-                Color64::new(0.5 *(point_to_ref.x() + 1.0),
-                             0.5 * (point_to_ref.y() + 1.0),
-                             0.5 * (point_to_ref.z() + 1.0),)
+                let point_to_ref =
+                    Point64(*ray.point_at_parameter(hit_magnitude) - *color_ref_point);
+
+                Color64::new(
+                    0.5 * (point_to_ref.x() + 1.0),
+                    0.5 * (point_to_ref.y() + 1.0),
+                    0.5 * (point_to_ref.z() + 1.0),
+                )
             } else {
                 color_of_space(&ray)
             };
