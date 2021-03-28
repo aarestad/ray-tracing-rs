@@ -59,7 +59,7 @@ fn main() {
             let scaled_green = (255.99 * color.g()) as i32;
             let scaled_blue = (255.99 * color.b()) as i32;
 
-            print!("{} {} {}\n", scaled_red, scaled_green, scaled_blue);
+            println!("{} {} {}", scaled_red, scaled_green, scaled_blue);
         }
     }
 }
