@@ -1,24 +1,47 @@
 use crate::color64::Color64;
+use crate::ray::Ray;
+use crate::point64::Point64;
 
 mod vec3_64;
 mod ray;
 mod point64;
 mod color64;
 
+const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
+const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
+
+fn color_of_ray(ray: Ray) -> Color64 {
+    let unit_direction = Point64((*ray.direction).normalized());
+    let color_factor = 0.5 * (unit_direction.y() + 1.0);
+    let white_amt = (1.0 - color_factor) * *WHITE;
+    let blue_amt = color_factor * *LIGHT_BLUE;
+    Color64(white_amt + blue_amt)
+}
 
 fn main() {
-    let nx: i32 = 200;
-    let ny: i32 = 100;
+    let width: i32 = 200;
+    let height: i32 = 100;
 
-    print!("P3\n{} {}\n255\n", nx, ny);
+    let lower_left_corner = Point64::new(-2.0, -1.0, -1.0);
+    let horizontal = Point64::new(4.0, 0.0, 0.0);
+    let vertical = Point64::new(0.0, 2.0, 0.0);
+    let origin = Point64::new(0.0, 0.0, 0.0);
 
-    for j in (0..ny).rev() {
-        for i in 0..nx {
-            let color: Color64 = Color64::new(
-                i as f64 / nx as f64,
-                j as f64 / ny as f64,
-                0.2,
-            );
+    print!("P3\n{} {}\n255\n", width, height);
+
+    for j in (0..height).rev() {
+        for i in 0..width {
+            let u = i as f64 / width as f64;
+            let v = j as f64 / height as f64;
+
+            let direction = Point64(*lower_left_corner + u * *horizontal + v * *vertical);
+
+            let ray = Ray {
+                origin: &origin,
+                direction: &direction,
+            };
+
+            let color = color_of_ray(ray);
 
             let scaled_red: i32 = (255.99 * color.r()) as i32;
             let scaled_green: i32 = (255.99 * color.g()) as i32;

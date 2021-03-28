@@ -8,7 +8,7 @@ impl Point64 {
         Point64(Vec3_64(x, y, z))
     }
 
-    pub fn x(&self) -> &f64 {
+    pub fn _x(&self) -> &f64 {
         &self.0.0
     }
 
@@ -16,7 +16,7 @@ impl Point64 {
         &self.0.1
     }
 
-    pub fn z(&self) -> &f64 {
+    pub fn _z(&self) -> &f64 {
         &self.0.2
     }
 }

@@ -1,10 +1,10 @@
-use crate::vec3_64::Vec3_64;
 use std::ops::Deref;
+use crate::vec3_64::Vec3_64;
 
 pub struct Color64(pub Vec3_64);
 
 impl Color64 {
-    pub fn new(r: f64, g: f64, b: f64) -> Self {
+    pub const fn new(r: f64, g: f64, b: f64) -> Self {
         Color64(Vec3_64(r, g, b))
     }
 
