@@ -14,10 +14,10 @@ impl Sphere {
         let c = ray_origin_to_center.dot(&ray_origin_to_center) - self.radius.powi(2);
         let discriminant = b.powi(2) - 4.0 * a * c;
 
-        return if discriminant >= 0.0 {
+        if discriminant >= 0.0 {
             (-b - discriminant.sqrt()) / (2.0 * a)
         } else {
             -1.0
-        };
+        }
     }
 }
