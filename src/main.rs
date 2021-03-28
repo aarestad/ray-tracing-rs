@@ -55,9 +55,9 @@ fn main() {
                 color_of_space(&ray)
             };
 
-            let scaled_red: i32 = (255.99 * color.r()) as i32;
-            let scaled_green: i32 = (255.99 * color.g()) as i32;
-            let scaled_blue: i32 = (255.99 * color.b()) as i32;
+            let scaled_red = (255.99 * color.r()) as i32;
+            let scaled_green = (255.99 * color.g()) as i32;
+            let scaled_blue = (255.99 * color.b()) as i32;
 
             print!("{} {} {}\n", scaled_red, scaled_green, scaled_blue);
         }
