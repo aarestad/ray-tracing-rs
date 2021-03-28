@@ -1,4 +1,4 @@
-use std::ops::{Add, Mul, Neg, Div};
+use std::ops::{Add, Mul, Neg, Div, Sub};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vec3_64(pub(crate) f64, pub(crate) f64, pub(crate) f64);
@@ -8,8 +8,12 @@ impl Vec3_64 {
         (self.0.powi(2) + self.1.powi(2) + self.2.powi(2)).sqrt()
     }
 
-    pub fn normalized(self) -> Self {
-        self / self.magnitude()
+    pub fn normalized(&self) -> Self {
+        *self / self.magnitude()
+    }
+
+    pub fn dot(&self, rhs: &Self) -> f64 {
+        self.0 * rhs.0 + self.1 * rhs.1 + self.2 * rhs.2
     }
 }
 
@@ -26,6 +30,14 @@ impl Add for Vec3_64 {
 
     fn add(self, rhs: Self) -> Self::Output {
         Self(self.0 + rhs.0, self.1 + rhs.1, self.2 + rhs.2)
+    }
+}
+
+impl Sub for Vec3_64 {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self(self.0 - rhs.0, self.1 - rhs.1, self.2 - rhs.2)
     }
 }
 
