@@ -2,12 +2,14 @@ use crate::color64::Color64;
 use crate::point64::Point64;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
+use crate::hittable::Hittable;
 
 mod color64;
 mod point64;
 mod ray;
 mod sphere;
 mod vec3_64;
+mod hittable;
 
 const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
 const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
@@ -36,8 +38,6 @@ fn main() {
 
     print!("P3\n{} {}\n255\n", width, height);
 
-    let color_ref_point = Point64::new(0.0, 0.0, -1.0);
-
     for j in (0..height).rev() {
         for i in 0..width {
             let u = i as f64 / width as f64;
@@ -50,19 +50,18 @@ fn main() {
                 direction: &direction,
             };
 
-            let hit_magnitude = sphere.hit_magnitude(&ray);
+            let hit_record = sphere.is_hit_by(&ray, 0.0, f64::MAX);
 
-            let color = if hit_magnitude > 0.0 {
-                let point_to_ref =
-                    Point64(*ray.point_at_parameter(hit_magnitude) - *color_ref_point);
+            let color = match hit_record {
+                Some(hit_record) => {
+                    Color64::new(
+                        0.5 * (hit_record.normal.x() + 1.0),
+                        0.5 * (hit_record.normal.y() + 1.0),
+                        0.5 * (hit_record.normal.z() + 1.0),
+                    )
+                },
 
-                Color64::new(
-                    0.5 * (point_to_ref.x() + 1.0),
-                    0.5 * (point_to_ref.y() + 1.0),
-                    0.5 * (point_to_ref.z() + 1.0),
-                )
-            } else {
-                color_of_space(&ray)
+                None => color_of_space(&ray)
             };
 
             let scaled_red = (255.99 * color.r()) as i32;

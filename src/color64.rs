@@ -1,6 +1,7 @@
 use crate::vec3_64::Vec3_64;
 use std::ops::Deref;
 
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Color64(pub Vec3_64);
 
 impl Color64 {
