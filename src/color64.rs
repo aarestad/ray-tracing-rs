@@ -1,4 +1,4 @@
-use crate::vec3::Vec3_64;
+use crate::vec3_64::Vec3_64;
 use std::ops::Deref;
 
 pub struct Color64(pub Vec3_64);

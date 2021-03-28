@@ -1,6 +1,6 @@
 use crate::color64::Color64;
 
-mod vec3;
+mod vec3_64;
 mod ray;
 mod point64;
 mod color64;
