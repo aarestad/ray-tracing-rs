@@ -1,13 +1,13 @@
 use crate::color64::Color64;
-use crate::ray::Ray;
 use crate::point64::Point64;
+use crate::ray::Ray;
 use crate::sphere::Sphere;
 
-mod vec3_64;
-mod ray;
-mod point64;
 mod color64;
+mod point64;
+mod ray;
 mod sphere;
+mod vec3_64;
 
 const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
 const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);

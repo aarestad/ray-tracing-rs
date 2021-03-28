@@ -9,15 +9,15 @@ impl Point64 {
     }
 
     pub fn _x(&self) -> &f64 {
-        &self.0.0
+        &self.0 .0
     }
 
     pub fn y(&self) -> &f64 {
-        &self.0.1
+        &self.0 .1
     }
 
     pub fn _z(&self) -> &f64 {
-        &self.0.2
+        &self.0 .2
     }
 }
 

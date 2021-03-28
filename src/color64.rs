@@ -1,5 +1,5 @@
-use std::ops::Deref;
 use crate::vec3_64::Vec3_64;
+use std::ops::Deref;
 
 pub struct Color64(pub Vec3_64);
 
@@ -9,15 +9,15 @@ impl Color64 {
     }
 
     pub fn r(&self) -> f64 {
-        self.0.0
+        self.0 .0
     }
 
     pub fn g(&self) -> f64 {
-        self.0.1
+        self.0 .1
     }
 
     pub fn b(&self) -> f64 {
-        self.0.2
+        self.0 .2
     }
 }
 
