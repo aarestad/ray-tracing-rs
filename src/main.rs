@@ -1,15 +1,16 @@
 use crate::color64::Color64;
+use crate::hittable::Hittable;
 use crate::point64::Point64;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
-use crate::hittable::Hittable;
 
 mod color64;
+mod hittable;
+mod hittable_vec;
 mod point64;
 mod ray;
 mod sphere;
 mod vec3_64;
-mod hittable;
 
 const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
 const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
@@ -53,15 +54,13 @@ fn main() {
             let hit_record = sphere.is_hit_by(&ray, 0.0, f64::MAX);
 
             let color = match hit_record {
-                Some(hit_record) => {
-                    Color64::new(
-                        0.5 * (hit_record.normal.x() + 1.0),
-                        0.5 * (hit_record.normal.y() + 1.0),
-                        0.5 * (hit_record.normal.z() + 1.0),
-                    )
-                },
+                Some(hit_record) => Color64::new(
+                    0.5 * (hit_record.normal.x() + 1.0),
+                    0.5 * (hit_record.normal.y() + 1.0),
+                    0.5 * (hit_record.normal.z() + 1.0),
+                ),
 
-                None => color_of_space(&ray)
+                None => color_of_space(&ray),
             };
 
             let scaled_red = (255.99 * color.r()) as i32;
