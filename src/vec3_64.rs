@@ -1,3 +1,5 @@
+use rand::rngs::ThreadRng;
+use rand::Rng;
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -14,6 +16,32 @@ impl Vec3_64 {
 
     pub fn dot(&self, rhs: &Self) -> f64 {
         self.0 * rhs.0 + self.1 * rhs.1 + self.2 * rhs.2
+    }
+
+    pub fn random(rng: &mut ThreadRng) -> Vec3_64 {
+        Self(rng.gen(), rng.gen(), rng.gen())
+    }
+
+    pub fn rand_range(rng: &mut ThreadRng, min: f64, max: f64) -> Vec3_64 {
+        Self(
+            rng.gen_range(min..max),
+            rng.gen_range(min..max),
+            rng.gen_range(min..max),
+        )
+    }
+
+    pub fn random_in_unit_sphere(rng: &mut ThreadRng) -> Vec3_64 {
+        let mut rand_vec: Vec3_64;
+
+        loop {
+            rand_vec = Vec3_64::rand_range(rng, -1.0, 1.0);
+
+            if rand_vec.magnitude().powi(2) < 1.0 {
+                break;
+            }
+        }
+
+        rand_vec
     }
 }
 

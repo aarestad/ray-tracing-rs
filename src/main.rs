@@ -1,9 +1,11 @@
+use crate::vec3_64::Vec3_64;
 use camera::Camera;
 use color64::Color64;
 use hittable::Hittable;
 use hittable_vec::HittableVec;
 use image::{DynamicImage, ImageResult, Rgb, RgbImage};
 use point64::Point64;
+use rand::rngs::ThreadRng;
 use rand::Rng;
 use ray::Ray;
 use sphere::Sphere;
@@ -20,15 +22,27 @@ mod vec3_64;
 const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
 const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
 
-fn ray_color(ray: &Ray, world: &dyn Hittable) -> Color64 {
+fn ray_color(ray: &Ray, world: &dyn Hittable, rng: &mut ThreadRng, depth: i32) -> Color64 {
+    if depth < 1 {
+        return Color64::new(0.0, 0.0, 0.0);
+    }
+
     let hit_record = world.is_hit_by(&ray, 0.0, f64::INFINITY);
 
     match hit_record {
-        Some(hit_record) => Color64::new(
-            0.5 * (hit_record.normal.x() + 1.0),
-            0.5 * (hit_record.normal.y() + 1.0),
-            0.5 * (hit_record.normal.z() + 1.0),
-        ),
+        Some(hit_record) => {
+            let target = Point64(
+                *hit_record.location + *hit_record.normal + Vec3_64::random_in_unit_sphere(rng),
+            );
+            let direction = Point64(*target - *hit_record.location);
+
+            let new_ray = Ray {
+                origin: &hit_record.location,
+                direction: &direction,
+            };
+
+            Color64(0.5 * *ray_color(&new_ray, world, rng, depth - 1))
+        }
 
         None => {
             let unit_direction = Point64((*ray.direction).normalized());
@@ -64,6 +78,7 @@ fn main() -> ImageResult<()> {
     let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
     let samples_per_pixel = 100;
     let mut image = RgbImage::new(image_width, image_height);
+    let max_depth = 50;
 
     // World
     let s1 = Sphere {
@@ -102,7 +117,7 @@ fn main() -> ImageResult<()> {
                     direction: &direction,
                 };
 
-                *pixel_color += *ray_color(&ray, &world);
+                *pixel_color += *ray_color(&ray, &world, &mut rng, max_depth);
             }
 
             image.put_pixel(
