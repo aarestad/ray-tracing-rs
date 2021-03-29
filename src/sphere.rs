@@ -9,9 +9,9 @@ pub struct Sphere {
 
 impl Hittable for Sphere {
     fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
-        let ray_origin_to_center = **ray.origin - *self.center;
-        let a = ray.direction.dot(ray.direction);
-        let half_b = ray_origin_to_center.dot(ray.direction);
+        let ray_origin_to_center = *ray.origin - *self.center;
+        let a = ray.direction.dot(&ray.direction);
+        let half_b = ray_origin_to_center.dot(&ray.direction);
         let c = ray_origin_to_center.dot(&ray_origin_to_center) - self.radius.powi(2);
         let discriminant = half_b.powi(2) - a * c;
         let sqrt_discriminant = discriminant.sqrt();

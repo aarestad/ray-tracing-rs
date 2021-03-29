@@ -18,6 +18,7 @@ mod point64;
 mod ray;
 mod sphere;
 mod vec3_64;
+mod material;
 
 const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
 const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
@@ -37,8 +38,8 @@ fn ray_color(ray: &Ray, world: &dyn Hittable, rng: &mut ThreadRng, depth: i32) -
             let direction = Point64(*target - *hit_record.location);
 
             let new_ray = Ray {
-                origin: &hit_record.location,
-                direction: &direction,
+                origin: hit_record.location,
+                direction,
             };
 
             Color64(0.5 * *ray_color(&new_ray, world, rng, depth - 1))
@@ -114,8 +115,8 @@ fn main() -> ImageResult<()> {
                 let direction = camera.direction(u, v);
 
                 let ray = Ray {
-                    origin: &camera.origin,
-                    direction: &direction,
+                    origin: camera.origin,
+                    direction,
                 };
 
                 *pixel_color += *ray_color(&ray, &world, &mut rng, max_depth);
