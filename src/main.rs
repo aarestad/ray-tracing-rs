@@ -1,10 +1,10 @@
-use crate::color64::Color64;
-use crate::hittable::Hittable;
-use crate::hittable_vec::HittableVec;
-use crate::point64::Point64;
-use crate::ray::Ray;
-use crate::sphere::Sphere;
-use crate::camera::Camera;
+use color64::Color64;
+use hittable::Hittable;
+use hittable_vec::HittableVec;
+use point64::Point64;
+use ray::Ray;
+use sphere::Sphere;
+use camera::Camera;
 use rand::Rng;
 use image::{RgbImage, Rgb, DynamicImage, ImageResult};
 
