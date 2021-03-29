@@ -1,6 +1,6 @@
+use crate::hittable::{HitRecord, Hittable};
 use crate::point64::Point64;
 use crate::ray::Ray;
-use crate::hittable::{Hittable, HitRecord};
 
 pub struct Sphere {
     pub center: Point64,
@@ -24,13 +24,17 @@ impl Hittable for Sphere {
             let root_two_in_range = min_value < root_two && root_two < max_value;
 
             if root_one_in_range || root_two_in_range {
-                let value = if root_one_in_range { root_one } else { root_two };
+                let value = if root_one_in_range {
+                    root_one
+                } else {
+                    root_two
+                };
                 let location = ray.point_at_parameter(value);
 
                 Some(HitRecord {
                     value,
                     location,
-                    normal: Point64((*location - *self.center) / self.radius)
+                    normal: Point64((*location - *self.center) / self.radius),
                 })
             } else {
                 None
