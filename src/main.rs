@@ -1,5 +1,6 @@
 use crate::color64::Color64;
 use crate::hittable::Hittable;
+use crate::hittable_vec::HittableVec;
 use crate::point64::Point64;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
@@ -32,9 +33,18 @@ fn main() {
     let vertical = Point64::new(0.0, 2.0, 0.0);
     let origin = Point64::new(0.0, 0.0, 0.0);
 
-    let sphere = Sphere {
+    let s1 = Sphere {
         center: Point64::new(0.0, 0.0, -1.0),
         radius: 0.5,
+    };
+
+    let s2 = Sphere {
+        center: Point64::new(0.0, -100.5, -1.0),
+        radius: 100.0,
+    };
+
+    let hittables = HittableVec {
+        hittables: vec![&s1, &s2],
     };
 
     print!("P3\n{} {}\n255\n", width, height);
@@ -51,7 +61,7 @@ fn main() {
                 direction: &direction,
             };
 
-            let hit_record = sphere.is_hit_by(&ray, 0.0, f64::MAX);
+            let hit_record = hittables.is_hit_by(&ray, 0.0, f64::MAX);
 
             let color = match hit_record {
                 Some(hit_record) => Color64::new(
