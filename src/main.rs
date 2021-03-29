@@ -70,7 +70,7 @@ fn main() {
                 direction: &direction,
             };
 
-            let hit_record = hittables.is_hit_by(&ray, 0.0, f64::MAX);
+            let hit_record = hittables.is_hit_by(&ray, 0.0, f64::INFINITY);
 
             let color = match hit_record {
                 Some(hit_record) => Color64::new(
