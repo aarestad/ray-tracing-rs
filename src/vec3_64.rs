@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::ops::{Add, Div, Mul, Neg, Sub, AddAssign};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vec3_64(pub(crate) f64, pub(crate) f64, pub(crate) f64);
@@ -38,6 +38,14 @@ impl Add<f64> for Vec3_64 {
 
     fn add(self, rhs: f64) -> Self::Output {
         Self(self.0 + rhs, self.1 + rhs, self.2 + rhs)
+    }
+}
+
+impl AddAssign for Vec3_64 {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
+        self.1 += rhs.1;
+        self.2 += rhs.2;
     }
 }
 

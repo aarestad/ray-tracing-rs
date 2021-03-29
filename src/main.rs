@@ -5,6 +5,7 @@ use crate::point64::Point64;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::camera::Camera;
+use rand::Rng;
 
 mod camera;
 mod color64;
@@ -18,19 +19,49 @@ mod vec3_64;
 const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
 const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
 
-fn color_of_space(ray: &Ray) -> Color64 {
-    let unit_direction = Point64((*ray.direction).normalized());
-    let color_factor = 0.5 * (unit_direction.y() + 1.0);
-    let white_amt = (1.0 - color_factor) * *WHITE;
-    let blue_amt = color_factor * *LIGHT_BLUE;
-    Color64(white_amt + blue_amt)
+fn ray_color(ray: &Ray, world: &dyn Hittable) -> Color64 {
+    let hit_record = world.is_hit_by(&ray, 0.0, f64::INFINITY);
+
+    match hit_record {
+        Some(hit_record) => Color64::new(
+            0.5 * (hit_record.normal.x() + 1.0),
+            0.5 * (hit_record.normal.y() + 1.0),
+            0.5 * (hit_record.normal.z() + 1.0),
+        ),
+
+        None => {
+            let unit_direction = Point64((*ray.direction).normalized());
+            let color_factor = 0.5 * (unit_direction.y() + 1.0);
+            let white_amt = (1.0 - color_factor) * *WHITE;
+            let blue_amt = color_factor * *LIGHT_BLUE;
+            Color64(white_amt + blue_amt)
+        }
+    }
+}
+
+fn write_color(pixel_color: &Color64, samples_per_pixel: i32) {
+    let mut r = pixel_color.r();
+    let mut g = pixel_color.g();
+    let mut b = pixel_color.b();
+
+    let scale = 1.0 / (samples_per_pixel as f64);
+    r *= scale;
+    g *= scale;
+    b *= scale;
+
+    let scaled_red = (256.0 * r.clamp(0.0, 0.999)) as i32;
+    let scaled_green = (256.0 * g.clamp(0.0, 0.999)) as i32;
+    let scaled_blue = (256.0 * b.clamp(0.0, 0.999)) as i32;
+
+    println!("{} {} {}", scaled_red, scaled_green, scaled_blue);
 }
 
 fn main() {
     // Image
     let aspect_ratio = 16.0 / 9.0;
-    let image_width: i32 = 800;
-    let image_height: i32 = (image_width as f64 / aspect_ratio) as i32;
+    let image_width = 800;
+    let image_height = (image_width as f64 / aspect_ratio) as i32;
+    let samples_per_pixel = 100;
 
     // World
     let s1 = Sphere {
@@ -43,7 +74,7 @@ fn main() {
         radius: 100.0,
     };
 
-    let hittables = HittableVec {
+    let world = HittableVec {
         hittables: vec![&s1, &s2],
     };
 
@@ -52,37 +83,30 @@ fn main() {
 
     print!("P3\n{} {}\n255\n", image_width, image_height);
 
+    let mut rng = rand::thread_rng();
+
     for j in (0..image_height).rev() {
         eprintln!("\rScanlines remaining: {}", j);
 
         for i in 0..image_width {
-            let u = i as f64 / image_width as f64;
-            let v = j as f64 / image_height as f64;
+            let mut pixel_color = Color64::new(0.0, 0.0, 0.0);
 
-            let direction = camera.direction(u, v);
+            for _ in 0..samples_per_pixel {
+                let rands: [f64; 2] = rng.gen();
 
-            let ray = Ray {
-                origin: &camera.origin,
-                direction: &direction,
-            };
+                let u = (i as f64 + rands[0]) / (image_width-1) as f64;
+                let v = (j as f64 + rands[1]) / (image_height-1) as f64;
+                let direction = camera.direction(u, v);
 
-            let hit_record = hittables.is_hit_by(&ray, 0.0, f64::INFINITY);
+                let ray = Ray {
+                    origin: &camera.origin,
+                    direction: &direction,
+                };
 
-            let color = match hit_record {
-                Some(hit_record) => Color64::new(
-                    0.5 * (hit_record.normal.x() + 1.0),
-                    0.5 * (hit_record.normal.y() + 1.0),
-                    0.5 * (hit_record.normal.z() + 1.0),
-                ),
+                *pixel_color += *ray_color(&ray, &world);
+            }
 
-                None => color_of_space(&ray),
-            };
-
-            let scaled_red = (256.0 * color.r().clamp(0.0, 0.999)) as i32;
-            let scaled_green = (256.0 * color.g().clamp(0.0, 0.999)) as i32;
-            let scaled_blue = (256.0 * color.b().clamp(0.0, 0.999)) as i32;
-
-            println!("{} {} {}", scaled_red, scaled_green, scaled_blue);
+            write_color(&pixel_color, samples_per_pixel);
         }
     }
 

@@ -1,5 +1,5 @@
 use crate::vec3_64::Vec3_64;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Color64(pub Vec3_64);
@@ -27,5 +27,11 @@ impl Deref for Color64 {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl DerefMut for Color64 {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }
