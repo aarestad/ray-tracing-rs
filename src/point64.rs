@@ -10,16 +10,16 @@ impl Point64 {
         Point64(Vec3_64(x, y, z))
     }
 
-    pub fn x(&self) -> &f64 {
-        &self.0 .0
+    pub fn x(&self) -> f64 {
+        self.0 .0
     }
 
-    pub fn y(&self) -> &f64 {
-        &self.0 .1
+    pub fn y(&self) -> f64 {
+        self.0 .1
     }
 
-    pub fn z(&self) -> &f64 {
-        &self.0 .2
+    pub fn z(&self) -> f64 {
+        self.0 .2
     }
 }
 
