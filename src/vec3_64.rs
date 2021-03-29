@@ -43,6 +43,10 @@ impl Vec3_64 {
 
         rand_vec
     }
+
+    pub fn random_unit_vector(rng: &mut ThreadRng) -> Vec3_64 {
+        Vec3_64::random_in_unit_sphere(rng).normalized()
+    }
 }
 
 impl Neg for Vec3_64 {

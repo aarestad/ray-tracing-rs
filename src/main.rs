@@ -32,7 +32,7 @@ fn ray_color(ray: &Ray, world: &dyn Hittable, rng: &mut ThreadRng, depth: i32) -
     match hit_record {
         Some(hit_record) => {
             let target = Point64(
-                *hit_record.location + *hit_record.normal + Vec3_64::random_in_unit_sphere(rng),
+                *hit_record.location + *hit_record.normal + Vec3_64::random_unit_vector(rng),
             );
             let direction = Point64(*target - *hit_record.location);
 
