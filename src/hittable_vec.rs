@@ -9,7 +9,7 @@ impl Hittable for HittableVec<'_> {
     fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
         let mut winner = None;
 
-        for hittable in &self.hittables {
+        for hittable in self.hittables.iter() {
             let result = hittable.is_hit_by(
                 ray,
                 min_value,
