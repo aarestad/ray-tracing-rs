@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Mul, Neg, Sub, AddAssign};
+use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vec3_64(pub(crate) f64, pub(crate) f64, pub(crate) f64);

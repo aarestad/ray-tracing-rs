@@ -1,12 +1,12 @@
+use camera::Camera;
 use color64::Color64;
 use hittable::Hittable;
 use hittable_vec::HittableVec;
+use image::{DynamicImage, ImageResult, Rgb, RgbImage};
 use point64::Point64;
+use rand::Rng;
 use ray::Ray;
 use sphere::Sphere;
-use camera::Camera;
-use rand::Rng;
-use image::{RgbImage, Rgb, DynamicImage, ImageResult};
 
 mod camera;
 mod color64;
@@ -93,8 +93,8 @@ fn main() -> ImageResult<()> {
             for _ in 0..samples_per_pixel {
                 let rands: [f64; 2] = rng.gen();
 
-                let u = (x as f64 + rands[0]) / (image_width-1) as f64;
-                let v = (y as f64 + rands[1]) / (image_height-1) as f64;
+                let u = (x as f64 + rands[0]) / (image_width - 1) as f64;
+                let v = (y as f64 + rands[1]) / (image_height - 1) as f64;
                 let direction = camera.direction(u, v);
 
                 let ray = Ray {
@@ -105,7 +105,11 @@ fn main() -> ImageResult<()> {
                 *pixel_color += *ray_color(&ray, &world);
             }
 
-            image.put_pixel(x, image_height - y - 1, get_rgb(&pixel_color, samples_per_pixel));
+            image.put_pixel(
+                x,
+                image_height - y - 1,
+                get_rgb(&pixel_color, samples_per_pixel),
+            );
         }
     }
 
