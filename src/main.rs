@@ -4,6 +4,7 @@ use crate::hittable_vec::HittableVec;
 use crate::point64::Point64;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
+use crate::camera::Camera;
 
 mod camera;
 mod color64;
@@ -47,16 +48,7 @@ fn main() {
     };
 
     // Camera
-    let viewport_height = 2.0;
-    let viewport_width = aspect_ratio * viewport_height;
-    let focal_length = 1.0;
-    let origin = Point64::new(0.0, 0.0, 0.0);
-    let horizontal = Point64::new(viewport_width, 0.0, 0.0);
-    let vertical = Point64::new(0.0, viewport_height, 0.0);
-
-    let lower_left_corner = Point64(
-        *origin - *horizontal / 2.0 - *vertical / 2.0 - *Point64::new(0.0, 0.0, focal_length),
-    );
+    let camera: Camera = Camera::new();
 
     print!("P3\n{} {}\n255\n", image_width, image_height);
 
@@ -67,10 +59,10 @@ fn main() {
             let u = i as f64 / image_width as f64;
             let v = j as f64 / image_height as f64;
 
-            let direction = Point64(*lower_left_corner + u * *horizontal + v * *vertical);
+            let direction = camera.direction(u, v);
 
             let ray = Ray {
-                origin: &origin,
+                origin: &camera.origin,
                 direction: &direction,
             };
 
@@ -86,9 +78,9 @@ fn main() {
                 None => color_of_space(&ray),
             };
 
-            let scaled_red = (255.99 * color.r()) as i32;
-            let scaled_green = (255.99 * color.g()) as i32;
-            let scaled_blue = (255.99 * color.b()) as i32;
+            let scaled_red = (256.0 * color.r().clamp(0.0, 0.999)) as i32;
+            let scaled_green = (256.0 * color.g().clamp(0.0, 0.999)) as i32;
+            let scaled_blue = (256.0 * color.b().clamp(0.0, 0.999)) as i32;
 
             println!("{} {} {}", scaled_red, scaled_green, scaled_blue);
         }
