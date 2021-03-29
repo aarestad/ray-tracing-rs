@@ -6,6 +6,7 @@ use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::camera::Camera;
 use rand::Rng;
+use image::{RgbImage, Rgb, DynamicImage, ImageResult};
 
 mod camera;
 mod color64;
@@ -39,7 +40,7 @@ fn ray_color(ray: &Ray, world: &dyn Hittable) -> Color64 {
     }
 }
 
-fn write_color(pixel_color: &Color64, samples_per_pixel: i32) {
+fn get_rgb(pixel_color: &Color64, samples_per_pixel: i32) -> Rgb<u8> {
     let mut r = pixel_color.r();
     let mut g = pixel_color.g();
     let mut b = pixel_color.b();
@@ -49,19 +50,20 @@ fn write_color(pixel_color: &Color64, samples_per_pixel: i32) {
     g *= scale;
     b *= scale;
 
-    let scaled_red = (256.0 * r.clamp(0.0, 0.999)) as i32;
-    let scaled_green = (256.0 * g.clamp(0.0, 0.999)) as i32;
-    let scaled_blue = (256.0 * b.clamp(0.0, 0.999)) as i32;
+    let scaled_red = (256.0 * r.clamp(0.0, 0.999)) as u8;
+    let scaled_green = (256.0 * g.clamp(0.0, 0.999)) as u8;
+    let scaled_blue = (256.0 * b.clamp(0.0, 0.999)) as u8;
 
-    println!("{} {} {}", scaled_red, scaled_green, scaled_blue);
+    Rgb([scaled_red, scaled_green, scaled_blue])
 }
 
-fn main() {
+fn main() -> ImageResult<()> {
     // Image
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 800;
-    let image_height = (image_width as f64 / aspect_ratio) as i32;
+    let image_width: u32 = 800;
+    let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
     let samples_per_pixel = 100;
+    let mut image = RgbImage::new(image_width, image_height);
 
     // World
     let s1 = Sphere {
@@ -78,24 +80,21 @@ fn main() {
         hittables: vec![&s1, &s2],
     };
 
-    // Camera
     let camera: Camera = Camera::new();
-
-    print!("P3\n{} {}\n255\n", image_width, image_height);
 
     let mut rng = rand::thread_rng();
 
-    for j in (0..image_height).rev() {
-        eprintln!("\rScanlines remaining: {}", j);
+    for y in (0..image_height).rev() {
+        eprintln!("\rScanlines remaining: {}", y);
 
-        for i in 0..image_width {
+        for x in (0..image_width).rev() {
             let mut pixel_color = Color64::new(0.0, 0.0, 0.0);
 
             for _ in 0..samples_per_pixel {
                 let rands: [f64; 2] = rng.gen();
 
-                let u = (i as f64 + rands[0]) / (image_width-1) as f64;
-                let v = (j as f64 + rands[1]) / (image_height-1) as f64;
+                let u = (x as f64 + rands[0]) / (image_width-1) as f64;
+                let v = (y as f64 + rands[1]) / (image_height-1) as f64;
                 let direction = camera.direction(u, v);
 
                 let ray = Ray {
@@ -106,9 +105,9 @@ fn main() {
                 *pixel_color += *ray_color(&ray, &world);
             }
 
-            write_color(&pixel_color, samples_per_pixel);
+            image.put_pixel(x, image_height - y - 1, get_rgb(&pixel_color, samples_per_pixel));
         }
     }
 
-    eprintln!("Done!");
+    DynamicImage::ImageRgb8(image).save("output.png")
 }
