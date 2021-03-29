@@ -29,6 +29,7 @@ impl Hittable for Sphere {
                 } else {
                     root_two
                 };
+
                 let location = ray.point_at_parameter(value);
 
                 Some(HitRecord {
