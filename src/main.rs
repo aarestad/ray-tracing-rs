@@ -27,7 +27,7 @@ fn ray_color(ray: &Ray, world: &dyn Hittable, rng: &mut ThreadRng, depth: i32) -
         return Color64::new(0.0, 0.0, 0.0);
     }
 
-    let hit_record = world.is_hit_by(&ray, 0.0, f64::INFINITY);
+    let hit_record = world.is_hit_by(&ray, 0.001, f64::INFINITY);
 
     match hit_record {
         Some(hit_record) => {
@@ -60,9 +60,10 @@ fn get_rgb(pixel_color: &Color64, samples_per_pixel: i32) -> Rgb<u8> {
     let mut b = pixel_color.b();
 
     let scale = 1.0 / (samples_per_pixel as f64);
-    r *= scale;
-    g *= scale;
-    b *= scale;
+    // Gamma correct for gamma = 2.0
+    r = (scale * r).sqrt();
+    g = (scale * g).sqrt();
+    b = (scale * b).sqrt();
 
     let scaled_red = (256.0 * r.clamp(0.0, 0.999)) as u8;
     let scaled_green = (256.0 * g.clamp(0.0, 0.999)) as u8;
