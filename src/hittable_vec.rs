@@ -13,7 +13,7 @@ impl Hittable for HittableVec<'_> {
             let result = hittable.is_hit_by(
                 ray,
                 min_value,
-                winner.as_ref().map_or(max_value, |v: &HitRecord| v.value),
+                winner.as_ref().map_or(max_value, |hr: &HitRecord| hr.value),
             );
 
             if result.is_some() {
