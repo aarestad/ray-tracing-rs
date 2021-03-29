@@ -52,7 +52,10 @@ fn main() {
     let origin = Point64::new(0.0, 0.0, 0.0);
     let horizontal = Point64::new(viewport_width, 0.0, 0.0);
     let vertical = Point64::new(0.0, viewport_height, 0.0);
-    let lower_left_corner = Point64(*origin - *horizontal/2.0 - *vertical/2.0 - *Point64::new(0.0, 0.0, focal_length));
+
+    let lower_left_corner = Point64(
+        *origin - *horizontal / 2.0 - *vertical / 2.0 - *Point64::new(0.0, 0.0, focal_length),
+    );
 
     print!("P3\n{} {}\n255\n", image_width, image_height);
 
