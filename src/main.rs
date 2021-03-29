@@ -128,5 +128,9 @@ fn main() -> ImageResult<()> {
         }
     }
 
-    DynamicImage::ImageRgb8(image).save("output.png")
+    DynamicImage::ImageRgb8(image).save("output.png")?;
+
+    eprintln!("Done!");
+
+    Ok(())
 }
