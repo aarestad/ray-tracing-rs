@@ -25,14 +25,12 @@ fn color_of_space(ray: &Ray) -> Color64 {
 }
 
 fn main() {
-    let width: i32 = 800;
-    let height: i32 = 400;
+    // Image
+    let aspect_ratio = 16.0 / 9.0;
+    let image_width: i32 = 800;
+    let image_height: i32 = (image_width as f64 / aspect_ratio) as i32;
 
-    let lower_left_corner = Point64::new(-2.0, -1.0, -1.0);
-    let horizontal = Point64::new(4.0, 0.0, 0.0);
-    let vertical = Point64::new(0.0, 2.0, 0.0);
-    let origin = Point64::new(0.0, 0.0, 0.0);
-
+    // World
     let s1 = Sphere {
         center: Point64::new(0.0, 0.0, -1.0),
         radius: 0.5,
@@ -47,12 +45,23 @@ fn main() {
         hittables: vec![&s1, &s2],
     };
 
-    print!("P3\n{} {}\n255\n", width, height);
+    // Camera
+    let viewport_height = 2.0;
+    let viewport_width = aspect_ratio * viewport_height;
+    let focal_length = 1.0;
+    let origin = Point64::new(0.0, 0.0, 0.0);
+    let horizontal = Point64::new(viewport_width, 0.0, 0.0);
+    let vertical = Point64::new(0.0, viewport_height, 0.0);
+    let lower_left_corner = Point64(*origin - *horizontal/2.0 - *vertical/2.0 - *Point64::new(0.0, 0.0, focal_length));
 
-    for j in (0..height).rev() {
-        for i in 0..width {
-            let u = i as f64 / width as f64;
-            let v = j as f64 / height as f64;
+    print!("P3\n{} {}\n255\n", image_width, image_height);
+
+    for j in (0..image_height).rev() {
+        eprintln!("\rScanlines remaining: {}", j);
+
+        for i in 0..image_width {
+            let u = i as f64 / image_width as f64;
+            let v = j as f64 / image_height as f64;
 
             let direction = Point64(*lower_left_corner + u * *horizontal + v * *vertical);
 
@@ -80,4 +89,6 @@ fn main() {
             println!("{} {} {}", scaled_red, scaled_green, scaled_blue);
         }
     }
+
+    eprintln!("Done!");
 }
