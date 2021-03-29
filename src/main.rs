@@ -5,6 +5,7 @@ use crate::point64::Point64;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 
+mod camera;
 mod color64;
 mod hittable;
 mod hittable_vec;
