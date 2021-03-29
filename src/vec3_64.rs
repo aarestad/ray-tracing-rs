@@ -19,7 +19,7 @@ impl Vec3_64 {
     }
 
     pub fn random(rng: &mut ThreadRng) -> Vec3_64 {
-        Self(rng.gen(), rng.gen(), rng.gen())
+        Self::rand_range(rng, 0.0, 1.0)
     }
 
     pub fn rand_range(rng: &mut ThreadRng, min: f64, max: f64) -> Vec3_64 {
