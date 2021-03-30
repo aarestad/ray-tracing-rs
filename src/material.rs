@@ -1,13 +1,13 @@
-use crate::ray::Ray;
-use crate::hittable::HitRecord;
 use crate::color64::Color64;
+use crate::hittable::HitRecord;
+use crate::ray::Ray;
 
-struct ScatterRecord {
-    hit_record: HitRecord,
-    color: Color64,
-    scattered: Ray,
+pub struct ScatterRecord {
+    pub hit_record: HitRecord,
+    pub attenuation: Color64,
+    pub scattered: Ray,
 }
 
-trait Material {
-    fn scatter(ray_in: &Ray) -> Option<ScatterRecord>;
+pub trait Material {
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord>;
 }

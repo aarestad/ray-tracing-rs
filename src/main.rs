@@ -1,48 +1,50 @@
-use crate::vec3_64::Vec3_64;
+use crate::lambertian::Lambertian;
 use camera::Camera;
 use color64::Color64;
 use hittable::Hittable;
 use hittable_vec::HittableVec;
 use image::{DynamicImage, ImageResult, Rgb, RgbImage};
+use metal::Metal;
 use point64::Point64;
-use rand::rngs::ThreadRng;
 use rand::Rng;
 use ray::Ray;
 use sphere::Sphere;
+use std::rc::Rc;
 
 mod camera;
 mod color64;
 mod hittable;
 mod hittable_vec;
+mod lambertian;
+mod material;
+mod metal;
 mod point64;
 mod ray;
 mod sphere;
 mod vec3_64;
-mod material;
 
 const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
 const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
+const BLACK: Color64 = Color64::new(0.0, 0.0, 0.0);
 
-fn ray_color(ray: &Ray, world: &dyn Hittable, rng: &mut ThreadRng, depth: i32) -> Color64 {
+fn ray_color(ray: &Ray, world: &dyn Hittable, depth: i32) -> Color64 {
     if depth < 1 {
-        return Color64::new(0.0, 0.0, 0.0);
+        return BLACK;
     }
 
     let hit_record = world.is_hit_by(&ray, 0.001, f64::INFINITY);
 
     match hit_record {
         Some(hit_record) => {
-            let target = Point64(
-                *hit_record.location + *hit_record.normal + Vec3_64::random_unit_vector(rng),
-            );
-            let direction = Point64(*target - *hit_record.location);
-
-            let new_ray = Ray {
-                origin: hit_record.location,
-                direction,
+            match hit_record.material.scatter(ray, &hit_record) {
+                Some(scatter_record) => Color64(
+                    *(scatter_record.attenuation)
+                        * *ray_color(&scatter_record.scattered, world, depth - 1),
+                ),
+                None => BLACK,
             };
 
-            Color64(0.5 * *ray_color(&new_ray, world, rng, depth - 1))
+            BLACK
         }
 
         None => {
@@ -83,28 +85,51 @@ fn main() -> ImageResult<()> {
     let max_depth = 50;
 
     // World
-    let s1 = Sphere {
-        center: Point64::new(0.0, 0.0, -1.0),
-        radius: 0.5,
-    };
 
-    let s2 = Sphere {
+    let ground = Sphere {
         center: Point64::new(0.0, -100.5, -1.0),
         radius: 100.0,
+        material: Rc::new(Lambertian {
+            color: Color64::new(0.8, 0.8, 0.0),
+        }),
+    };
+
+    let center = Sphere {
+        center: Point64::new(0.0, 0.0, -1.0),
+        radius: 0.5,
+        material: Rc::new(Lambertian {
+            color: Color64::new(0.7, 0.3, 0.3),
+        }),
+    };
+
+    let left = Sphere {
+        center: Point64::new(-1.0, 0.0, -1.0),
+        radius: 0.5,
+        material: Rc::new(Metal {
+            albedo: Color64::new(0.8, 0.8, 0.8),
+        }),
+    };
+
+    let right = Sphere {
+        center: Point64::new(1.0, 0.0, -1.0),
+        radius: 0.5,
+        material: Rc::new(Metal {
+            albedo: Color64::new(0.8, 0.6, 0.2),
+        }),
     };
 
     let world = HittableVec {
-        hittables: vec![&s1, &s2],
+        hittables: vec![&ground, &center, &left, &right],
     };
 
     let camera: Camera = Camera::new();
 
     let mut rng = rand::thread_rng();
 
-    for y in (0..image_height).rev() {
-        eprintln!("\rScanlines remaining: {}", y);
+    for y in 0..image_height {
+        eprintln!("\rScanlines remaining: {}", image_height - y);
 
-        for x in (0..image_width).rev() {
+        for x in 0..image_width {
             let mut pixel_color = Color64::new(0.0, 0.0, 0.0);
 
             for _ in 0..samples_per_pixel {
@@ -119,7 +144,7 @@ fn main() -> ImageResult<()> {
                     direction,
                 };
 
-                *pixel_color += *ray_color(&ray, &world, &mut rng, max_depth);
+                *pixel_color += *ray_color(&ray, &world, max_depth);
             }
 
             image.put_pixel(
