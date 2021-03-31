@@ -3,7 +3,6 @@ use crate::hittable::HitRecord;
 use crate::material::{Material, ScatterRecord};
 use crate::point64::Point64;
 use crate::ray::Ray;
-use crate::vec3_64::Vec3_64;
 
 pub struct Dielectric {
     pub index_of_refraction: f64,
@@ -18,7 +17,7 @@ impl Material for Dielectric {
         };
 
         let unit_direction = ray_in.direction.normalized();
-        let refracted = Vec3_64::refract(&unit_direction, &*hit_record.normal, refraction_ratio);
+        let refracted = unit_direction.refract(&*hit_record.normal, refraction_ratio);
 
         Some(ScatterRecord {
             hit_record: hit_record.clone(),
