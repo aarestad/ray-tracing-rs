@@ -101,17 +101,13 @@ fn main() -> ImageResult<()> {
     let left = Sphere {
         center: Point64::new(-1.0, 0.0, -1.0),
         radius: 0.5,
-        material: Rc::new(Metal {
-            albedo: Color64::new(0.8, 0.8, 0.8),
-        }),
+        material: Rc::new(Metal::new(Color64::new(0.8, 0.8, 0.8), 0.3)),
     };
 
     let right = Sphere {
         center: Point64::new(1.0, 0.0, -1.0),
         radius: 0.5,
-        material: Rc::new(Metal {
-            albedo: Color64::new(0.8, 0.6, 0.2),
-        }),
+        material: Rc::new(Metal::new(Color64::new(0.8, 0.6, 0.2), 1.0)),
     };
 
     let world = HittableVec {
