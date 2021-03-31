@@ -35,15 +35,13 @@ fn ray_color(ray: &Ray, world: &dyn Hittable, depth: i32) -> Color64 {
     let hit_record = world.is_hit_by(&ray, 0.001, f64::INFINITY);
 
     match hit_record {
-        Some(hit_record) => {
-            match hit_record.material.scatter(ray, &hit_record) {
-                Some(scatter_record) => Color64(
-                    *(scatter_record.attenuation)
-                        * *ray_color(&scatter_record.scattered, world, depth - 1),
-                ),
-                None => BLACK,
-            }
-        }
+        Some(hit_record) => match hit_record.material.scatter(ray, &hit_record) {
+            Some(scatter_record) => Color64(
+                *(scatter_record.attenuation)
+                    * *ray_color(&scatter_record.scattered, world, depth - 1),
+            ),
+            None => BLACK,
+        },
 
         None => {
             let unit_direction = Point64((*ray.direction).normalized());
