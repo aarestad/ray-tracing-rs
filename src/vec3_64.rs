@@ -6,7 +6,11 @@ pub struct Vec3_64(pub(crate) f64, pub(crate) f64, pub(crate) f64);
 
 impl Vec3_64 {
     pub fn magnitude(&self) -> f64 {
-        (self.0.powi(2) + self.1.powi(2) + self.2.powi(2)).sqrt()
+        self.mag_squared().sqrt()
+    }
+
+    pub fn mag_squared(&self) -> f64 {
+        self.0.powi(2) + self.1.powi(2) + self.2.powi(2)
     }
 
     pub fn normalized(&self) -> Self {
@@ -56,6 +60,13 @@ impl Vec3_64 {
     pub fn near_zero(&self) -> bool {
         let epsilon = 1e-8;
         self.0 < epsilon && self.1 < epsilon && self.2 < epsilon
+    }
+
+    pub fn refract(uv: &Vec3_64, n: &Vec3_64, etai_over_etat: f64) -> Vec3_64 {
+        let cos_theta = -uv.dot(n).min(1.0);
+        let r_out_perp = etai_over_etat * (*uv + cos_theta * *n);
+        let r_out_parallel = -(1.0 - r_out_perp.mag_squared()).abs().sqrt() * *n;
+        r_out_perp + r_out_parallel
     }
 }
 

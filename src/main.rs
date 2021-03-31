@@ -1,3 +1,4 @@
+use crate::dielectric::Dielectric;
 use crate::lambertian::Lambertian;
 use camera::Camera;
 use color64::Color64;
@@ -13,6 +14,7 @@ use std::rc::Rc;
 
 mod camera;
 mod color64;
+mod dielectric;
 mod hittable;
 mod hittable_vec;
 mod lambertian;
@@ -93,15 +95,17 @@ fn main() -> ImageResult<()> {
     let center = Sphere {
         center: Point64::new(0.0, 0.0, -1.0),
         radius: 0.5,
-        material: Rc::new(Lambertian {
-            color: Color64::new(0.7, 0.3, 0.3),
+        material: Rc::new(Dielectric {
+            index_of_refraction: 1.5,
         }),
     };
 
     let left = Sphere {
         center: Point64::new(-1.0, 0.0, -1.0),
         radius: 0.5,
-        material: Rc::new(Metal::new(Color64::new(0.8, 0.8, 0.8), 0.3)),
+        material: Rc::new(Dielectric {
+            index_of_refraction: 1.5,
+        }),
     };
 
     let right = Sphere {
