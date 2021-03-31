@@ -108,6 +108,14 @@ fn main() -> ImageResult<()> {
         }),
     };
 
+    let left_bubble = Sphere {
+        center: Point64::new(-1.0, 0.0, -1.0),
+        radius: -0.4,
+        material: Rc::new(Dielectric {
+            index_of_refraction: 1.5,
+        }),
+    };
+
     let right = Sphere {
         center: Point64::new(1.0, 0.0, -1.0),
         radius: 0.5,
@@ -115,7 +123,7 @@ fn main() -> ImageResult<()> {
     };
 
     let world = HittableVec {
-        hittables: vec![&ground, &center, &left, &right],
+        hittables: vec![&ground, &center, &left, &left_bubble, &right],
     };
 
     let camera: Camera = Camera::new();
