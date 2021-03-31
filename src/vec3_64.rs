@@ -1,4 +1,3 @@
-use rand::rngs::ThreadRng;
 use rand::Rng;
 use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
 
@@ -18,11 +17,13 @@ impl Vec3_64 {
         self.0 * rhs.0 + self.1 * rhs.1 + self.2 * rhs.2
     }
 
-    pub fn random(rng: &mut ThreadRng) -> Vec3_64 {
-        Self::rand_range(rng, 0.0, 1.0)
+    pub fn random() -> Vec3_64 {
+        Self::rand_range(0.0, 1.0)
     }
 
-    pub fn rand_range(rng: &mut ThreadRng, min: f64, max: f64) -> Vec3_64 {
+    pub fn rand_range(min: f64, max: f64) -> Vec3_64 {
+        let mut rng = rand::thread_rng();
+
         Self(
             rng.gen_range(min..max),
             rng.gen_range(min..max),
@@ -30,11 +31,11 @@ impl Vec3_64 {
         )
     }
 
-    pub fn random_in_unit_sphere(rng: &mut ThreadRng) -> Vec3_64 {
+    pub fn random_in_unit_sphere() -> Vec3_64 {
         let mut rand_vec: Vec3_64;
 
         loop {
-            rand_vec = Vec3_64::rand_range(rng, -1.0, 1.0);
+            rand_vec = Vec3_64::rand_range(-1.0, 1.0);
 
             if rand_vec.magnitude().powi(2) < 1.0 {
                 break;
@@ -44,8 +45,17 @@ impl Vec3_64 {
         rand_vec
     }
 
-    pub fn random_unit_vector(rng: &mut ThreadRng) -> Vec3_64 {
-        Vec3_64::random_in_unit_sphere(rng).normalized()
+    pub fn random_unit_vector() -> Vec3_64 {
+        Vec3_64::random_in_unit_sphere().normalized()
+    }
+
+    pub fn reflect(&self, normal: &Vec3_64) -> Vec3_64 {
+        *self - 2.0 * (*self).dot(normal) * *normal
+    }
+
+    pub fn near_zero(&self) -> bool {
+        let epsilon = 1e-8;
+        self.0 < epsilon && self.1 < epsilon && self.2 < epsilon
     }
 }
 
@@ -102,6 +112,14 @@ impl Mul<Vec3_64> for f64 {
 
     fn mul(self, rhs: Vec3_64) -> Self::Output {
         Vec3_64(self * rhs.0, self * rhs.1, self * rhs.2)
+    }
+}
+
+impl Mul<Vec3_64> for Vec3_64 {
+    type Output = Self;
+
+    fn mul(self, rhs: Vec3_64) -> Self::Output {
+        Self(self.0 * rhs.0, self.1 * rhs.1, self.2 * rhs.2)
     }
 }
 

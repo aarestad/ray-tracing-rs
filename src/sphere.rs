@@ -1,10 +1,13 @@
 use crate::hittable::{HitRecord, Hittable};
+use crate::material::Material;
 use crate::point64::Point64;
 use crate::ray::Ray;
+use std::rc::Rc;
 
 pub struct Sphere {
     pub center: Point64,
     pub radius: f64,
+    pub material: Rc<dyn Material>,
 }
 
 impl Hittable for Sphere {
@@ -32,7 +35,12 @@ impl Hittable for Sphere {
                 let location = ray.point_at_parameter(root);
                 let outward_normal = Point64((*location - *self.center) / self.radius);
 
-                Some(HitRecord::new(root, ray, outward_normal))
+                Some(HitRecord::new(
+                    root,
+                    ray,
+                    outward_normal,
+                    self.material.clone(),
+                ))
             } else {
                 None
             }
