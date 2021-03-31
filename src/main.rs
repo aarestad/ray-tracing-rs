@@ -42,9 +42,7 @@ fn ray_color(ray: &Ray, world: &dyn Hittable, depth: i32) -> Color64 {
                         * *ray_color(&scatter_record.scattered, world, depth - 1),
                 ),
                 None => BLACK,
-            };
-
-            BLACK
+            }
         }
 
         None => {
