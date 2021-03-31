@@ -17,14 +17,23 @@ impl Material for Dielectric {
         };
 
         let unit_direction = ray_in.direction.normalized();
-        let refracted = unit_direction.refract(&*hit_record.normal, refraction_ratio);
+
+        let cos_theta = -unit_direction.dot(&*hit_record.normal).min(1.0);
+        let sin_theta = (1.0 - cos_theta.powi(2)).sqrt();
+        let cannot_refract = refraction_ratio * sin_theta > 1.0;
+
+        let direction = if cannot_refract {
+            unit_direction.reflect(&*hit_record.normal)
+        } else {
+            unit_direction.refract(&*hit_record.normal, refraction_ratio)
+        };
 
         Some(ScatterRecord {
             hit_record: hit_record.clone(),
             attenuation: Color64::new(1.0, 1.0, 1.0),
             scattered: Ray {
                 origin: hit_record.location,
-                direction: Point64(refracted),
+                direction: Point64(direction),
             },
         })
     }

@@ -14,7 +14,7 @@ impl Metal {
     pub fn new(albedo: Color64, fuzz: f64) -> Metal {
         Metal {
             albedo,
-            fuzz: fuzz.clamp(f64::NEG_INFINITY, 1.0),
+            fuzz: fuzz.min(1.0),
         }
     }
 }

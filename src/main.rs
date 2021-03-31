@@ -95,8 +95,8 @@ fn main() -> ImageResult<()> {
     let center = Sphere {
         center: Point64::new(0.0, 0.0, -1.0),
         radius: 0.5,
-        material: Rc::new(Dielectric {
-            index_of_refraction: 1.5,
+        material: Rc::new(Lambertian {
+            color: Color64::new(0.1, 0.2, 0.5),
         }),
     };
 
@@ -111,7 +111,7 @@ fn main() -> ImageResult<()> {
     let right = Sphere {
         center: Point64::new(1.0, 0.0, -1.0),
         radius: 0.5,
-        material: Rc::new(Metal::new(Color64::new(0.8, 0.6, 0.2), 1.0)),
+        material: Rc::new(Metal::new(Color64::new(0.8, 0.6, 0.2), 0.0)),
     };
 
     let world = HittableVec {
