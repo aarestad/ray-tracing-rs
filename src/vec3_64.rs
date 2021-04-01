@@ -21,6 +21,12 @@ impl Vec3_64 {
         self.0 * rhs.0 + self.1 * rhs.1 + self.2 * rhs.2
     }
 
+    pub fn cross(&self, rhs: &Self) -> Vec3_64 {
+        Self(self.1 * rhs.2 - self.2 * rhs.1,
+             self.2 * rhs.0 - self.0 * rhs.2,
+             self.0 * rhs.1 - self.1 * rhs.0)
+    }
+
     pub fn random() -> Vec3_64 {
         Self::rand_range(0.0, 1.0)
     }

@@ -9,7 +9,9 @@ use rand::Rng;
 use ray::Ray;
 use sphere::Sphere;
 use std::rc::Rc;
-use std::f64::consts::FRAC_PI_4;
+use crate::dielectric::Dielectric;
+use crate::metal::Metal;
+use crate::vec3_64::Vec3_64;
 
 mod camera;
 mod color64;
@@ -83,29 +85,54 @@ fn main() -> ImageResult<()> {
 
     // World
 
-    let radius = FRAC_PI_4.cos();
+    let ground = Sphere {
+        center: Point64::new(0.0, -100.5, -1.0),
+        radius: 100.0,
+        material: Rc::new(Lambertian {
+            color: Color64::new(0.8, 0.8, 0.0),
+        }),
+    };
+
+    let center = Sphere {
+        center: Point64::new(0.0, 0.0, -1.0),
+        radius: 0.5,
+        material: Rc::new(Lambertian {
+            color: Color64::new(0.1, 0.2, 0.5),
+        }),
+    };
 
     let left = Sphere {
-        center: Point64::new(-radius, 0.0, -1.0),
-        radius,
-        material: Rc::new(Lambertian {
-           color: Color64::new(0.0,0.0,1.0),
+        center: Point64::new(-1.0, 0.0, -1.0),
+        radius: 0.5,
+        material: Rc::new(Dielectric {
+            index_of_refraction: 1.5,
+        }),
+    };
+
+    let left_bubble = Sphere {
+        center: Point64::new(-1.0, 0.0, -1.0),
+        radius: -0.4,
+        material: Rc::new(Dielectric {
+            index_of_refraction: 1.5,
         }),
     };
 
     let right = Sphere {
-        center: Point64::new(radius, 0.0, -1.0),
-        radius,
-        material: Rc::new(Lambertian {
-            color: Color64::new(1.0,0.0,0.0),
-        }),
+        center: Point64::new(1.0, 0.0, -1.0),
+        radius: 0.5,
+        material: Rc::new(Metal::new(Color64::new(0.8, 0.6, 0.2), 0.0)),
     };
 
     let world = HittableVec {
-        hittables: vec![&left, &right],
+        hittables: vec![&ground, &center, &left, &left_bubble, &right],
     };
 
-    let camera: Camera = Camera::new(90.0, aspect_ratio);
+    let camera: Camera = Camera::new(
+        Point64::new(-2.0, 2.0, 1.0),
+        Point64::new(0.0, 0.0, -1.0),
+        Vec3_64(0.0, 1.0, 0.0),
+        20.0,
+        aspect_ratio);
 
     let mut rng = rand::thread_rng();
 
@@ -120,12 +147,7 @@ fn main() -> ImageResult<()> {
 
                 let u = (x as f64 + rands[0]) / (image_width - 1) as f64;
                 let v = (y as f64 + rands[1]) / (image_height - 1) as f64;
-                let direction = camera.direction(u, v);
-
-                let ray = Ray {
-                    origin: camera.origin,
-                    direction,
-                };
+                let ray = camera.get_ray(u, v);
 
                 *pixel_color += *ray_color(&ray, &world, max_depth);
             }
