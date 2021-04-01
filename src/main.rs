@@ -1,16 +1,15 @@
-use crate::dielectric::Dielectric;
 use crate::lambertian::Lambertian;
 use camera::Camera;
 use color64::Color64;
 use hittable::Hittable;
 use hittable_vec::HittableVec;
 use image::{DynamicImage, ImageResult, Rgb, RgbImage};
-use metal::Metal;
 use point64::Point64;
 use rand::Rng;
 use ray::Ray;
 use sphere::Sphere;
 use std::rc::Rc;
+use std::f64::consts::FRAC_PI_4;
 
 mod camera;
 mod color64;
@@ -84,49 +83,29 @@ fn main() -> ImageResult<()> {
 
     // World
 
-    let ground = Sphere {
-        center: Point64::new(0.0, -100.5, -1.0),
-        radius: 100.0,
-        material: Rc::new(Lambertian {
-            color: Color64::new(0.8, 0.8, 0.0),
-        }),
-    };
-
-    let center = Sphere {
-        center: Point64::new(0.0, 0.0, -1.0),
-        radius: 0.5,
-        material: Rc::new(Lambertian {
-            color: Color64::new(0.1, 0.2, 0.5),
-        }),
-    };
+    let radius = FRAC_PI_4.cos();
 
     let left = Sphere {
-        center: Point64::new(-1.0, 0.0, -1.0),
-        radius: 0.5,
-        material: Rc::new(Dielectric {
-            index_of_refraction: 1.5,
-        }),
-    };
-
-    let left_bubble = Sphere {
-        center: Point64::new(-1.0, 0.0, -1.0),
-        radius: -0.4,
-        material: Rc::new(Dielectric {
-            index_of_refraction: 1.5,
+        center: Point64::new(-radius, 0.0, -1.0),
+        radius,
+        material: Rc::new(Lambertian {
+           color: Color64::new(0.0,0.0,1.0),
         }),
     };
 
     let right = Sphere {
-        center: Point64::new(1.0, 0.0, -1.0),
-        radius: 0.5,
-        material: Rc::new(Metal::new(Color64::new(0.8, 0.6, 0.2), 0.0)),
+        center: Point64::new(radius, 0.0, -1.0),
+        radius,
+        material: Rc::new(Lambertian {
+            color: Color64::new(1.0,0.0,0.0),
+        }),
     };
 
     let world = HittableVec {
-        hittables: vec![&ground, &center, &left, &left_bubble, &right],
+        hittables: vec![&left, &right],
     };
 
-    let camera: Camera = Camera::new();
+    let camera: Camera = Camera::new(90.0, aspect_ratio);
 
     let mut rng = rand::thread_rng();
 
