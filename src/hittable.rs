@@ -17,7 +17,7 @@ impl HitRecord {
         value: f64,
         ray: &Ray,
         outward_normal: Point64,
-        material: Rc<dyn Material>,
+        material: &Rc<dyn Material>,
     ) -> HitRecord {
         let front_face = ray.direction.dot(&outward_normal) < 0.0;
 
@@ -32,7 +32,7 @@ impl HitRecord {
             location: ray.point_at_parameter(value),
             normal,
             front_face,
-            material,
+            material: material.clone(),
         }
     }
 }

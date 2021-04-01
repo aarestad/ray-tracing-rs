@@ -39,7 +39,7 @@ impl Hittable for Sphere {
                     root,
                     ray,
                     outward_normal,
-                    self.material.clone(),
+                    &self.material,
                 ))
             } else {
                 None
