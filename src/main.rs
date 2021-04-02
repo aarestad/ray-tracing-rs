@@ -13,8 +13,6 @@ use point64::Point64;
 use rand::Rng;
 use ray::Ray;
 use sphere::Sphere;
-use std::mem;
-use std::mem::MaybeUninit;
 use std::rc::Rc;
 use vec3_64::Vec3_64;
 
@@ -89,19 +87,15 @@ fn main() -> ImageResult<()> {
     let max_depth = 50;
 
     // World
-    let mut hittables: Vec<&dyn Hittable> = vec![];
+    let mut hittables: Vec<Box<dyn Hittable>> = vec![];
 
-    let ground_material = Lambertian {
-        color: Color64::new(0.5, 0.5, 0.5),
-    };
-
-    let ground = Sphere {
+    hittables.push(Box::new(Sphere {
         center: Point64::new(0.0, -1000.0, 0.0),
         radius: 1000.0,
-        material: Rc::new(ground_material),
-    };
-
-    hittables.push(&ground);
+        material: Rc::new(Lambertian {
+            color: Color64::new(0.5, 0.5, 0.5),
+        }),
+    }));
 
     let glass = Rc::new(Dielectric {
         index_of_refraction: 1.5,
@@ -110,19 +104,6 @@ fn main() -> ImageResult<()> {
     let mut rng = rand::thread_rng();
 
     let reference_point = Point64::new(4.0, 0.2, 0.0);
-
-    const SIZE: usize = 484;
-
-    let mut spheres = {
-        let mut data: [MaybeUninit<Option<Sphere>>; SIZE] =
-            unsafe { MaybeUninit::uninit().assume_init() };
-
-        for elem in &mut data[..] {
-            *elem = MaybeUninit::new(None);
-        }
-
-        unsafe { mem::transmute::<_, [Option<Sphere>; SIZE]>(data) }
-    };
 
     for a in 0..22 {
         for b in 0..22 {
@@ -152,47 +133,37 @@ fn main() -> ImageResult<()> {
                     sphere_material = glass.clone();
                 }
 
-                spheres[a * 22 + b] = Some(Sphere {
+                hittables.push(Box::new(Sphere {
                     center,
                     radius: 0.2,
                     material: sphere_material,
-                });
+                }));
             }
         }
     }
 
-    for opt_sphere in spheres.iter() {
-        match opt_sphere {
-            Some(s) => hittables.push(s),
-            None => (),
-        }
-    }
-
-    let sphere1 = Sphere {
+    hittables.push(Box::new(Sphere {
         center: Point64::new(0.0, 1.0, 0.0),
         radius: 1.0,
         material: glass.clone(),
-    };
-    hittables.push(&sphere1);
+    }));
 
-    let sphere2 = Sphere {
+    hittables.push(Box::new(Sphere {
         center: Point64::new(-4.0, 1.0, 0.0),
         radius: 1.0,
         material: Rc::new(Lambertian {
             color: Color64::new(0.4, 0.2, 0.1),
         }),
-    };
-    hittables.push(&sphere2);
+    }));
 
-    let sphere3 = Sphere {
+    hittables.push(Box::new(Sphere {
         center: Point64::new(4.0, 1.0, 0.0),
         radius: 1.0,
         material: Rc::new(Metal {
             albedo: Color64::new(0.7, 0.6, 0.5),
             fuzz: 0.0,
         }),
-    };
-    hittables.push(&sphere3);
+    }));
 
     let world = HittableVec { hittables };
 

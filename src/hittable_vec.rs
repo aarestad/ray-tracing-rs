@@ -1,11 +1,11 @@
 use crate::hittable::{HitRecord, Hittable};
 use crate::ray::Ray;
 
-pub struct HittableVec<'a> {
-    pub hittables: Vec<&'a dyn Hittable>,
+pub struct HittableVec {
+    pub hittables: Vec<Box<dyn Hittable>>,
 }
 
-impl Hittable for HittableVec<'_> {
+impl Hittable for HittableVec {
     fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
         let mut winner = None;
 
