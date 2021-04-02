@@ -1,19 +1,20 @@
-use dielectric::Dielectric;
-use lambertian::Lambertian;
-use metal::Metal;
-use vec3_64::Vec3_64;
+use crate::hittable_vec::HittableVec;
 use camera::Camera;
 use color64::Color64;
+use dielectric::Dielectric;
 use hittable::Hittable;
 use image::{DynamicImage, ImageResult, Rgb, RgbImage};
+use lambertian::Lambertian;
+use material::Material;
+use metal::Metal;
 use point64::Point64;
 use rand::Rng;
 use ray::Ray;
 use sphere::Sphere;
+use std::mem;
+use std::mem::MaybeUninit;
 use std::rc::Rc;
-use material::Material;
-use crate::hittable_vec::HittableVec;
-use std::{ptr, mem};
+use vec3_64::Vec3_64;
 
 mod camera;
 mod color64;
@@ -110,13 +111,15 @@ fn main() -> ImageResult<()> {
 
     const SIZE: usize = 484;
 
-    let mut spheres = unsafe {
-        let mut array: [Option<Sphere>; SIZE] = mem::uninitialized();
+    let mut spheres = {
+        let mut data: [MaybeUninit<Option<Sphere>>; SIZE] =
+            unsafe { MaybeUninit::uninit().assume_init() };
 
-        for element in array.iter_mut() {
-            ptr::write(element, None);
+        for elem in &mut data[..] {
+            *elem = MaybeUninit::new(None);
         }
-        array
+
+        unsafe { mem::transmute::<_, [Option<Sphere>; SIZE]>(data) }
     };
 
     for a in 0..22 {
@@ -125,21 +128,25 @@ fn main() -> ImageResult<()> {
             let center = Point64::new(
                 (a - 11) as f64 + 0.9 * rng.gen::<f64>(),
                 0.2,
-                (b - 11) as f64 + 0.9 * rng.gen::<f64>());
+                (b - 11) as f64 + 0.9 * rng.gen::<f64>(),
+            );
 
             if (*center - *reference_point).magnitude() > 0.9 {
                 let sphere_material: Rc<dyn Material>;
 
-                if choose_mat < 0.8 { // 80% Lambertian spheres
+                if choose_mat < 0.8 {
+                    // 80% Lambertian spheres
                     sphere_material = Rc::new(Lambertian {
                         color: Color64(Vec3_64::random() * Vec3_64::random()),
                     });
-                } else if choose_mat < 0.95 { // 15% metal spheres
+                } else if choose_mat < 0.95 {
+                    // 15% metal spheres
                     sphere_material = Rc::new(Metal {
                         albedo: Color64(Vec3_64::rand_range(0.5, 1.0)),
                         fuzz: rng.gen_range(0.0..0.5),
                     });
-                } else { // 5% glass
+                } else {
+                    // 5% glass
                     sphere_material = glass.clone();
                 }
 
@@ -185,9 +192,7 @@ fn main() -> ImageResult<()> {
     };
     hittables.push(&sphere3);
 
-    let world = HittableVec {
-        hittables,
-    };
+    let world = HittableVec { hittables };
 
     // Camera
     let lookfrom = Point64::new(13.0, 2.0, 3.0);

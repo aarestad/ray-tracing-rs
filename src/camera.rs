@@ -55,7 +55,9 @@ impl Camera {
         Ray {
             origin: Point64(*self.origin + offset),
             direction: Point64(
-                *self.lower_left_corner + s* *self.horizontal + t* *self.vertical - *self.origin - offset,
+                *self.lower_left_corner + s * *self.horizontal + t * *self.vertical
+                    - *self.origin
+                    - offset,
             ),
         }
     }
