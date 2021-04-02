@@ -84,7 +84,7 @@ fn main() -> ImageResult<()> {
     let aspect_ratio = 3.0 / 2.0;
     let image_width: u32 = 1200;
     let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
-    let samples_per_pixel = 500;
+    let samples_per_pixel = 5;
     let mut image = RgbImage::new(image_width, image_height);
     let max_depth = 50;
 
@@ -216,29 +216,36 @@ fn main() -> ImageResult<()> {
 
     let mut rng = rand::thread_rng();
 
+    let mut pixels: Vec<(u32, u32, Rgb<u8>)> = vec![];
+
     for y in 0..image_height {
         eprintln!("\rScanlines remaining: {}", image_height - y);
 
         for x in 0..image_width {
-            let mut pixel_color = Color64::new(0.0, 0.0, 0.0);
+            let p = {
+                let mut pixel_color = Color64::new(0.0, 0.0, 0.0);
 
-            for _ in 0..samples_per_pixel {
-                let rands: [f64; 2] = rng.gen();
+                for _ in 0..samples_per_pixel {
+                    let rands: [f64; 2] = rng.gen();
 
-                let u = (x as f64 + rands[0]) / (image_width - 1) as f64;
-                let v = (y as f64 + rands[1]) / (image_height - 1) as f64;
-                let ray = camera.get_ray(u, v);
+                    let u = (x as f64 + rands[0]) / (image_width - 1) as f64;
+                    let v = (y as f64 + rands[1]) / (image_height - 1) as f64;
+                    let ray = camera.get_ray(u, v);
 
-                *pixel_color += *ray_color(&ray, &world, max_depth);
-            }
+                    *pixel_color += *ray_color(&ray, &world, max_depth);
+                }
 
-            image.put_pixel(
-                x,
-                image_height - y - 1,
-                get_rgb(&pixel_color, samples_per_pixel),
-            );
+                (x, image_height - y - 1, get_rgb(&pixel_color, samples_per_pixel))
+            };
+
+            pixels.push(p);
         }
     }
+
+    for p in pixels {
+        image.put_pixel(p.0, p.1, p.2);
+    }
+
 
     DynamicImage::ImageRgb8(image).save("output.png")?;
 
