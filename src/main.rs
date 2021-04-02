@@ -15,6 +15,9 @@ use ray::Ray;
 use sphere::Sphere;
 use std::rc::Rc;
 use vec3_64::Vec3_64;
+use futures::{executor, StreamExt};
+use futures::channel::mpsc;
+use futures::executor::ThreadPool;
 
 mod camera;
 mod color64;
@@ -191,36 +194,50 @@ fn main() -> ImageResult<()> {
 
     let mut rng = rand::thread_rng();
 
-    let mut pixels: Vec<(u32, u32, Rgb<u8>)> = vec![];
+    let pool = ThreadPool::new().expect("Failed to build pool");
+    let (tx, rx) = mpsc::unbounded::<(u32, u32)>();
 
-    for y in 0..image_height {
-        eprintln!("\rScanlines remaining: {}", image_height - y);
+    let fut_values = async {
+        let fut_tx_result = async move {
+            (0..image_height).for_each(|y| {
+                (0..image_width).for_each(|x| {
+                    tx.unbounded_send((x, y)).expect("Failed to send");
+                })
+            })
+        };
 
-        for x in 0..image_width {
-            let p = {
+        // Use the provided thread pool to spawn the generated future
+        // responsible for transmission
+        pool.spawn_ok(fut_tx_result);
+
+        let fut_values = rx
+            .map(|xy| {
                 let mut pixel_color = Color64::new(0.0, 0.0, 0.0);
 
                 for _ in 0..samples_per_pixel {
                     let rands: [f64; 2] = rng.gen();
 
-                    let u = (x as f64 + rands[0]) / (image_width - 1) as f64;
-                    let v = (y as f64 + rands[1]) / (image_height - 1) as f64;
+                    let u = (xy.0 as f64 + rands[0]) / (image_width - 1) as f64;
+                    let v = (xy.1 as f64 + rands[1]) / (image_height - 1) as f64;
                     let ray = camera.get_ray(u, v);
 
                     *pixel_color += *ray_color(&ray, &world, max_depth);
                 }
 
-                (x, image_height - y - 1, get_rgb(&pixel_color, samples_per_pixel))
-            };
+                (xy.0, image_height - xy.1 - 1, get_rgb(&pixel_color, samples_per_pixel))
+            })
+            .collect();
 
-            pixels.push(p);
-        }
-    }
+        // Use the executor provided to this async block to wait for the
+        // future to complete.
+        fut_values.await
+    };
+
+    let pixels: Vec<(u32, u32, Rgb<u8>)> = executor::block_on(fut_values);
 
     for p in pixels {
         image.put_pixel(p.0, p.1, p.2);
     }
-
 
     DynamicImage::ImageRgb8(image).save("output.png")?;
 
