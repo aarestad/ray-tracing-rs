@@ -1,5 +1,3 @@
-#![allow(clippy::redundant_clone)] // clippy is flagging the glass.clone() on line 152
-
 use crate::hittable_vec::HittableVec;
 use camera::Camera;
 use color64::Color64;
@@ -13,7 +11,9 @@ use point64::Point64;
 use rand::Rng;
 use ray::Ray;
 use sphere::Sphere;
-use std::rc::Rc;
+use std::sync::mpsc::channel;
+use std::sync::Arc;
+use threadpool::ThreadPool;
 use vec3_64::Vec3_64;
 
 mod camera;
@@ -33,18 +33,16 @@ const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
 const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
 const BLACK: Color64 = Color64::new(0.0, 0.0, 0.0);
 
-fn create_world() -> impl Hittable {
-    let mut hittables: Vec<Box<dyn Hittable>> = vec![];
-
-    hittables.push(Box::new(Sphere {
+fn create_world() -> Arc<dyn Hittable + Send + Sync> {
+    let mut hittables: Vec<Box<dyn Hittable + Send + Sync>> = vec![Box::new(Sphere {
         center: Point64::new(0.0, -1000.0, 0.0),
         radius: 1000.0,
-        material: Rc::new(Lambertian {
+        material: Arc::new(Lambertian {
             color: Color64::new(0.5, 0.5, 0.5),
         }),
-    }));
+    })];
 
-    let glass = Rc::new(Dielectric {
+    let glass = Arc::new(Dielectric {
         index_of_refraction: 1.5,
     });
 
@@ -62,16 +60,16 @@ fn create_world() -> impl Hittable {
             );
 
             if (*center - *reference_point).magnitude() > 0.9 {
-                let sphere_material: Rc<dyn Material>;
+                let sphere_material: Arc<dyn Material + Send + Sync>;
 
                 if choose_mat < 0.8 {
                     // 80% Lambertian spheres
-                    sphere_material = Rc::new(Lambertian {
+                    sphere_material = Arc::new(Lambertian {
                         color: Color64(Vec3_64::random() * Vec3_64::random()),
                     });
                 } else if choose_mat < 0.95 {
                     // 15% metal spheres
-                    sphere_material = Rc::new(Metal {
+                    sphere_material = Arc::new(Metal {
                         albedo: Color64(Vec3_64::rand_range(0.5, 1.0)),
                         fuzz: rng.gen_range(0.0..0.5),
                     });
@@ -92,13 +90,13 @@ fn create_world() -> impl Hittable {
     hittables.push(Box::new(Sphere {
         center: Point64::new(0.0, 1.0, 0.0),
         radius: 1.0,
-        material: glass.clone(),
+        material: glass,
     }));
 
     hittables.push(Box::new(Sphere {
         center: Point64::new(-4.0, 1.0, 0.0),
         radius: 1.0,
-        material: Rc::new(Lambertian {
+        material: Arc::new(Lambertian {
             color: Color64::new(0.4, 0.2, 0.1),
         }),
     }));
@@ -106,13 +104,13 @@ fn create_world() -> impl Hittable {
     hittables.push(Box::new(Sphere {
         center: Point64::new(4.0, 1.0, 0.0),
         radius: 1.0,
-        material: Rc::new(Metal {
+        material: Arc::new(Metal {
             albedo: Color64::new(0.7, 0.6, 0.5),
             fuzz: 0.0,
         }),
     }));
 
-    HittableVec { hittables }
+    Arc::new(HittableVec { hittables })
 }
 
 fn ray_color(ray: &Ray, world: &dyn Hittable, depth: i32) -> Color64 {
@@ -164,7 +162,7 @@ fn main() -> ImageResult<()> {
     let aspect_ratio = 3.0 / 2.0;
     let image_width: u32 = 1200;
     let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
-    let samples_per_pixel = 5;
+    let samples_per_pixel = 500;
     let mut image = RgbImage::new(image_width, image_height);
     let max_depth = 50;
 
@@ -189,16 +187,17 @@ fn main() -> ImageResult<()> {
         focus_dist,
     );
 
-    let mut rng = rand::thread_rng();
+    let pool = ThreadPool::new(num_cpus::get());
+    let (tx, rx) = channel::<(u32, u32, Rgb<u8>)>();
 
-    let mut pixels: Vec<(u32, u32, Rgb<u8>)> = vec![];
+    (0..image_height).for_each(|y| {
+        (0..image_width).for_each(|x| {
+            let tx = tx.clone();
+            let world = world.clone();
 
-    for y in 0..image_height {
-        eprintln!("\rScanlines remaining: {}", image_height - y);
-
-        for x in 0..image_width {
-            let p = {
+            pool.execute(move || {
                 let mut pixel_color = Color64::new(0.0, 0.0, 0.0);
+                let mut rng = rand::thread_rng();
 
                 for _ in 0..samples_per_pixel {
                     let rands: [f64; 2] = rng.gen();
@@ -207,24 +206,34 @@ fn main() -> ImageResult<()> {
                     let v = (y as f64 + rands[1]) / (image_height - 1) as f64;
                     let ray = camera.get_ray(u, v);
 
-                    *pixel_color += *ray_color(&ray, &world, max_depth);
+                    *pixel_color += *ray_color(&ray, world.as_ref(), max_depth);
                 }
 
-                (x, image_height - y - 1, get_rgb(&pixel_color, samples_per_pixel))
-            };
+                tx.send((
+                    x,
+                    image_height - y - 1,
+                    get_rgb(&pixel_color, samples_per_pixel),
+                ))
+                .expect("no receiver");
+                println!("done with ({}, {})", x, y);
+            });
+        });
+    });
 
-            pixels.push(p);
+    let mut pixel_count = 0;
+
+    for pixel in rx.iter() {
+        image.put_pixel(pixel.0, pixel.1, pixel.2);
+        pixel_count += 1;
+
+        if pixel_count == image_height * image_width {
+            break;
         }
     }
 
-    for p in pixels {
-        image.put_pixel(p.0, p.1, p.2);
-    }
-
-
     DynamicImage::ImageRgb8(image).save("output.png")?;
 
-    eprintln!("Done!");
+    println!("Done!");
 
     Ok(())
 }

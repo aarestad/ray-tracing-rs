@@ -1,7 +1,7 @@
 use crate::material::Material;
 use crate::point64::Point64;
 use crate::ray::Ray;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct HitRecord {
@@ -9,7 +9,7 @@ pub struct HitRecord {
     pub location: Point64,
     pub normal: Point64,
     pub front_face: bool,
-    pub material: Rc<dyn Material>,
+    pub material: Arc<dyn Material + Send + Sync>,
 }
 
 impl HitRecord {
@@ -17,7 +17,7 @@ impl HitRecord {
         value: f64,
         ray: &Ray,
         outward_normal: Point64,
-        material: &Rc<dyn Material>,
+        material: &Arc<dyn Material + Send + Sync>,
     ) -> HitRecord {
         let front_face = ray.direction.dot(&outward_normal) < 0.0;
 
@@ -37,6 +37,6 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable {
+pub trait Hittable: Sync {
     fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord>;
 }

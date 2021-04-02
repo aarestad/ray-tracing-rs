@@ -2,7 +2,7 @@ use crate::hittable::{HitRecord, Hittable};
 use crate::ray::Ray;
 
 pub struct HittableVec {
-    pub hittables: Vec<Box<dyn Hittable>>,
+    pub hittables: Vec<Box<dyn Hittable + Send + Sync>>,
 }
 
 impl Hittable for HittableVec {
