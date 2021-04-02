@@ -33,60 +33,7 @@ const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
 const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
 const BLACK: Color64 = Color64::new(0.0, 0.0, 0.0);
 
-fn ray_color(ray: &Ray, world: &dyn Hittable, depth: i32) -> Color64 {
-    if depth < 1 {
-        return BLACK;
-    }
-
-    let hit_record = world.is_hit_by(&ray, 0.001, f64::INFINITY);
-
-    match hit_record {
-        Some(hit_record) => match hit_record.material.scatter(ray, &hit_record) {
-            Some(scatter_record) => Color64(
-                *(scatter_record.attenuation)
-                    * *ray_color(&scatter_record.scattered, world, depth - 1),
-            ),
-            None => BLACK,
-        },
-
-        None => {
-            let unit_direction = Point64((*ray.direction).normalized());
-            let color_factor = 0.5 * (unit_direction.y() + 1.0);
-            let white_amt = (1.0 - color_factor) * *WHITE;
-            let blue_amt = color_factor * *LIGHT_BLUE;
-            Color64(white_amt + blue_amt)
-        }
-    }
-}
-
-fn get_rgb(pixel_color: &Color64, samples_per_pixel: i32) -> Rgb<u8> {
-    let mut r = pixel_color.r();
-    let mut g = pixel_color.g();
-    let mut b = pixel_color.b();
-
-    let scale = 1.0 / (samples_per_pixel as f64);
-    // Gamma correct for gamma = 2.0
-    r = (scale * r).sqrt();
-    g = (scale * g).sqrt();
-    b = (scale * b).sqrt();
-
-    let scaled_red = (256.0 * r.clamp(0.0, 0.999)) as u8;
-    let scaled_green = (256.0 * g.clamp(0.0, 0.999)) as u8;
-    let scaled_blue = (256.0 * b.clamp(0.0, 0.999)) as u8;
-
-    Rgb([scaled_red, scaled_green, scaled_blue])
-}
-
-fn main() -> ImageResult<()> {
-    // Image
-    let aspect_ratio = 3.0 / 2.0;
-    let image_width: u32 = 1200;
-    let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
-    let samples_per_pixel = 5;
-    let mut image = RgbImage::new(image_width, image_height);
-    let max_depth = 50;
-
-    // World
+fn create_world() -> HittableVec {
     let mut hittables: Vec<Box<dyn Hittable>> = vec![];
 
     hittables.push(Box::new(Sphere {
@@ -165,7 +112,64 @@ fn main() -> ImageResult<()> {
         }),
     }));
 
-    let world = HittableVec { hittables };
+    HittableVec { hittables }
+}
+
+fn ray_color(ray: &Ray, world: &dyn Hittable, depth: i32) -> Color64 {
+    if depth < 1 {
+        return BLACK;
+    }
+
+    let hit_record = world.is_hit_by(&ray, 0.001, f64::INFINITY);
+
+    match hit_record {
+        Some(hit_record) => match hit_record.material.scatter(ray, &hit_record) {
+            Some(scatter_record) => Color64(
+                *(scatter_record.attenuation)
+                    * *ray_color(&scatter_record.scattered, world, depth - 1),
+            ),
+            None => BLACK,
+        },
+
+        None => {
+            let unit_direction = Point64((*ray.direction).normalized());
+            let color_factor = 0.5 * (unit_direction.y() + 1.0);
+            let white_amt = (1.0 - color_factor) * *WHITE;
+            let blue_amt = color_factor * *LIGHT_BLUE;
+            Color64(white_amt + blue_amt)
+        }
+    }
+}
+
+fn get_rgb(pixel_color: &Color64, samples_per_pixel: i32) -> Rgb<u8> {
+    let mut r = pixel_color.r();
+    let mut g = pixel_color.g();
+    let mut b = pixel_color.b();
+
+    let scale = 1.0 / (samples_per_pixel as f64);
+    // Gamma correct for gamma = 2.0
+    r = (scale * r).sqrt();
+    g = (scale * g).sqrt();
+    b = (scale * b).sqrt();
+
+    let scaled_red = (256.0 * r.clamp(0.0, 0.999)) as u8;
+    let scaled_green = (256.0 * g.clamp(0.0, 0.999)) as u8;
+    let scaled_blue = (256.0 * b.clamp(0.0, 0.999)) as u8;
+
+    Rgb([scaled_red, scaled_green, scaled_blue])
+}
+
+fn main() -> ImageResult<()> {
+    // Image
+    let aspect_ratio = 3.0 / 2.0;
+    let image_width: u32 = 1200;
+    let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
+    let samples_per_pixel = 5;
+    let mut image = RgbImage::new(image_width, image_height);
+    let max_depth = 50;
+
+    // World
+    let world = create_world();
 
     // Camera
     let lookfrom = Point64::new(13.0, 2.0, 3.0);
