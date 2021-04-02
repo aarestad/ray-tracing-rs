@@ -187,7 +187,7 @@ fn main() -> ImageResult<()> {
         focus_dist,
     );
 
-    let pool = ThreadPool::new(12);
+    let pool = ThreadPool::new(num_cpus::get());
     let (tx, rx) = channel::<(u32, u32, Rgb<u8>)>();
 
     (0..image_height).for_each(|y| {
@@ -215,7 +215,7 @@ fn main() -> ImageResult<()> {
                     get_rgb(&pixel_color, samples_per_pixel),
                 ))
                 .expect("no receiver");
-                eprintln!("done with ({}, {})", x, y);
+                println!("done with ({}, {})", x, y);
             });
         });
     });
@@ -233,7 +233,7 @@ fn main() -> ImageResult<()> {
 
     DynamicImage::ImageRgb8(image).save("output.png")?;
 
-    eprintln!("Done!");
+    println!("Done!");
 
     Ok(())
 }
