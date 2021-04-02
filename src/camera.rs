@@ -2,6 +2,7 @@ use crate::point64::Point64;
 use crate::ray::Ray;
 use crate::vec3_64::Vec3_64;
 
+#[derive(Copy, Clone)]
 pub struct Camera {
     pub origin: Point64,
     pub lower_left_corner: Point64,

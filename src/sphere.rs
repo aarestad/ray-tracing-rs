@@ -2,13 +2,13 @@ use crate::hittable::{HitRecord, Hittable};
 use crate::material::Material;
 use crate::point64::Point64;
 use crate::ray::Ray;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Sphere {
     pub center: Point64,
     pub radius: f64,
-    pub material: Rc<dyn Material>,
+    pub material: Arc<dyn Material + Send + Sync>,
 }
 
 impl Hittable for Sphere {

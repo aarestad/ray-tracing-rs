@@ -9,4 +9,4 @@ edition = "2018"
 [dependencies]
 rand = "0.8.3"
 image = "0.23.14"
-futures = { version = "0.3.13", features = ["thread-pool"] }
+threadpool = "1.8.1"
