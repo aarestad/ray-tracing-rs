@@ -1,3 +1,5 @@
+#![allow(clippy::redundant_clone)] // clippy is flagging the glass.clone() on line 152
+
 use crate::hittable_vec::HittableVec;
 use camera::Camera;
 use color64::Color64;
