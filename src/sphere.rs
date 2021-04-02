@@ -4,6 +4,7 @@ use crate::point64::Point64;
 use crate::ray::Ray;
 use std::rc::Rc;
 
+#[derive(Clone)]
 pub struct Sphere {
     pub center: Point64,
     pub radius: f64,

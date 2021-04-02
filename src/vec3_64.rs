@@ -22,9 +22,11 @@ impl Vec3_64 {
     }
 
     pub fn cross(&self, rhs: &Self) -> Vec3_64 {
-        Self(self.1 * rhs.2 - self.2 * rhs.1,
-             self.2 * rhs.0 - self.0 * rhs.2,
-             self.0 * rhs.1 - self.1 * rhs.0)
+        Self(
+            self.1 * rhs.2 - self.2 * rhs.1,
+            self.2 * rhs.0 - self.0 * rhs.2,
+            self.0 * rhs.1 - self.1 * rhs.0,
+        )
     }
 
     pub fn random() -> Vec3_64 {
@@ -53,6 +55,18 @@ impl Vec3_64 {
         }
 
         rand_vec
+    }
+
+    pub fn random_in_unit_disk() -> Vec3_64 {
+        let mut rng = rand::thread_rng();
+
+        loop {
+            let p = Vec3_64(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+
+            if p.mag_squared() < 1.0 {
+                return p;
+            }
+        }
     }
 
     pub fn random_unit_vector() -> Vec3_64 {

@@ -10,15 +10,6 @@ pub struct Metal {
     pub fuzz: f64,
 }
 
-impl Metal {
-    pub fn new(albedo: Color64, fuzz: f64) -> Metal {
-        Metal {
-            albedo,
-            fuzz: fuzz.min(1.0),
-        }
-    }
-}
-
 impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
         let reflected = ray_in.direction.normalized().reflect(&hit_record.normal);
