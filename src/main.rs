@@ -33,7 +33,7 @@ const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
 const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
 const BLACK: Color64 = Color64::new(0.0, 0.0, 0.0);
 
-fn create_world() -> HittableVec {
+fn create_world() -> impl Hittable {
     let mut hittables: Vec<Box<dyn Hittable>> = vec![];
 
     hittables.push(Box::new(Sphere {
