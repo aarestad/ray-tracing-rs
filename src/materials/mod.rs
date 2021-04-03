@@ -1,6 +1,10 @@
-use crate::color64::Color64;
-use crate::hittable::HitRecord;
-use crate::ray::Ray;
+use crate::data::color64::Color64;
+use crate::data::ray::Ray;
+use crate::hittables::HitRecord;
+
+pub mod dielectric;
+pub mod lambertian;
+pub mod metal;
 
 pub struct ScatterRecord {
     pub hit_record: HitRecord,

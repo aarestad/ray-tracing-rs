@@ -1,7 +1,7 @@
-use crate::hittable::{HitRecord, Hittable};
-use crate::material::Material;
-use crate::point64::Point64;
-use crate::ray::Ray;
+use crate::data::point64::Point64;
+use crate::data::ray::Ray;
+use crate::hittables::{HitRecord, Hittable};
+use crate::materials::Material;
 use std::sync::Arc;
 
 #[derive(Clone)]

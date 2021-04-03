@@ -1,4 +1,4 @@
-use crate::vec3_64::Vec3_64;
+use crate::data::vec3_64::Vec3_64;
 use std::ops::{Deref, DerefMut};
 
 #[derive(Debug, Copy, Clone, PartialEq)]

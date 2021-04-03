@@ -1,4 +1,4 @@
-use crate::point64::Point64;
+use crate::data::point64::Point64;
 
 pub struct Ray {
     pub origin: Point64,

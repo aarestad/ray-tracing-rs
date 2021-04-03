@@ -1,6 +1,8 @@
-use crate::point64::Point64;
-use crate::ray::Ray;
-use crate::vec3_64::Vec3_64;
+#![allow(clippy::too_many_arguments)]
+
+use crate::data::point64::Point64;
+use crate::data::ray::Ray;
+use crate::data::vec3_64::Vec3_64;
 use rand::Rng;
 
 #[derive(Copy, Clone)]

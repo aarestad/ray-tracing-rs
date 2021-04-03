@@ -1,7 +1,12 @@
-use crate::material::Material;
-use crate::point64::Point64;
-use crate::ray::Ray;
 use std::sync::Arc;
+
+use crate::data::point64::Point64;
+use crate::data::ray::Ray;
+use crate::materials::Material;
+
+pub mod hittable_vec;
+pub mod moving_sphere;
+pub mod sphere;
 
 #[derive(Clone)]
 pub struct HitRecord {

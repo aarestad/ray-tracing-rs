@@ -1,8 +1,8 @@
-use crate::color64::Color64;
-use crate::hittable::HitRecord;
-use crate::material::{Material, ScatterRecord};
-use crate::point64::Point64;
-use crate::ray::Ray;
+use crate::data::color64::Color64;
+use crate::data::point64::Point64;
+use crate::data::ray::Ray;
+use crate::hittables::HitRecord;
+use crate::materials::{Material, ScatterRecord};
 
 fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
     // Use Schlick's approximation for reflectance

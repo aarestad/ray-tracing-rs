@@ -1,34 +1,27 @@
-use crate::hittable_vec::HittableVec;
-use crate::moving_sphere::MovingSphere;
-use camera::Camera;
-use color64::Color64;
-use dielectric::Dielectric;
-use hittable::Hittable;
-use image::{DynamicImage, ImageResult, Rgb, RgbImage};
-use lambertian::Lambertian;
-use metal::Metal;
-use point64::Point64;
-use rand::Rng;
-use ray::Ray;
-use sphere::Sphere;
 use std::sync::mpsc::channel;
 use std::sync::Arc;
+
+use image::{DynamicImage, ImageResult, Rgb, RgbImage};
+use rand::Rng;
 use threadpool::ThreadPool;
-use vec3_64::Vec3_64;
+
+use camera::Camera;
+use data::color64::Color64;
+use data::point64::Point64;
+use data::ray::Ray;
+use data::vec3_64::Vec3_64;
+use hittables::hittable_vec::HittableVec;
+use hittables::moving_sphere::MovingSphere;
+use hittables::sphere::Sphere;
+use hittables::Hittable;
+use materials::dielectric::Dielectric;
+use materials::lambertian::Lambertian;
+use materials::metal::Metal;
 
 mod camera;
-mod color64;
-mod dielectric;
-mod hittable;
-mod hittable_vec;
-mod lambertian;
-mod material;
-mod metal;
-mod moving_sphere;
-mod point64;
-mod ray;
-mod sphere;
-mod vec3_64;
+mod data;
+mod hittables;
+mod materials;
 
 const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
 const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
