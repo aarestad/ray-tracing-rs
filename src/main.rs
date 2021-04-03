@@ -5,7 +5,6 @@ use dielectric::Dielectric;
 use hittable::Hittable;
 use image::{DynamicImage, ImageResult, Rgb, RgbImage};
 use lambertian::Lambertian;
-use material::Material;
 use metal::Metal;
 use point64::Point64;
 use rand::Rng;
@@ -15,6 +14,7 @@ use std::sync::mpsc::channel;
 use std::sync::Arc;
 use threadpool::ThreadPool;
 use vec3_64::Vec3_64;
+use crate::moving_sphere::MovingSphere;
 
 mod camera;
 mod color64;
@@ -28,6 +28,7 @@ mod point64;
 mod ray;
 mod sphere;
 mod vec3_64;
+mod moving_sphere;
 
 const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
 const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
@@ -60,29 +61,36 @@ fn create_world() -> Arc<dyn Hittable + Send + Sync> {
             );
 
             if (*center - *reference_point).magnitude() > 0.9 {
-                let sphere_material: Arc<dyn Material + Send + Sync>;
-
                 if choose_mat < 0.8 {
                     // 80% Lambertian spheres
-                    sphere_material = Arc::new(Lambertian {
-                        color: Color64(Vec3_64::random() * Vec3_64::random()),
-                    });
+                    hittables.push(Box::new(MovingSphere {
+                        center0: center,
+                        center1: Point64(*center + Vec3_64(0.0, rng.gen(), 0.0)),
+                        time0: 0.0,
+                        time1: 1.0,
+                        radius: 0.2,
+                        material: Arc::new(Lambertian {
+                            color: Color64(Vec3_64::random() * Vec3_64::random()),
+                        }),
+                    }));
                 } else if choose_mat < 0.95 {
                     // 15% metal spheres
-                    sphere_material = Arc::new(Metal {
-                        albedo: Color64(Vec3_64::rand_range(0.5, 1.0)),
-                        fuzz: rng.gen_range(0.0..0.5),
-                    });
+                    hittables.push(Box::new(Sphere {
+                        center,
+                        radius: 0.2,
+                        material: Arc::new(Metal {
+                            albedo: Color64(Vec3_64::rand_range(0.5, 1.0)),
+                            fuzz: rng.gen_range(0.0..0.5),
+                        }),
+                    }));
                 } else {
                     // 5% glass
-                    sphere_material = glass.clone();
+                    hittables.push(Box::new(Sphere {
+                        center,
+                        radius: 0.2,
+                        material: glass.clone(),
+                    }));
                 }
-
-                hittables.push(Box::new(Sphere {
-                    center,
-                    radius: 0.2,
-                    material: sphere_material,
-                }));
             }
         }
     }
@@ -159,10 +167,10 @@ fn get_rgb(pixel_color: &Color64, samples_per_pixel: i32) -> Rgb<u8> {
 
 fn main() -> ImageResult<()> {
     // Image
-    let aspect_ratio = 3.0 / 2.0;
-    let image_width: u32 = 1200;
+    let aspect_ratio = 16.0/9.0;
+    let image_width: u32 = 400;
     let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
-    let samples_per_pixel = 500;
+    let samples_per_pixel = 100;
     let mut image = RgbImage::new(image_width, image_height);
     let max_depth = 50;
 
@@ -170,21 +178,25 @@ fn main() -> ImageResult<()> {
     let world = create_world();
 
     // Camera
-    let lookfrom = Point64::new(13.0, 2.0, 3.0);
-    let lookat = Point64::new(0.0, 0.0, 0.0);
+    let look_from = Point64::new(13.0, 2.0, 3.0);
+    let look_at = Point64::new(0.0, 0.0, 0.0);
     let vup = Vec3_64(0.0, 1.0, 0.0);
     let vfov_deg = 20.0;
-    let focus_dist = (*lookfrom - *lookat).magnitude();
+    let focus_dist = (*look_from - *look_at).magnitude();
     let aperture = 0.1;
+    let exposure_time0 = 0.0;
+    let exposure_time1 = 1.0;
 
     let camera: Camera = Camera::new(
-        lookfrom,
-        lookat,
+        look_from,
+        look_at,
         vup,
         vfov_deg,
         aspect_ratio,
         aperture,
         focus_dist,
+        exposure_time0,
+        exposure_time1,
     );
 
     let pool = ThreadPool::new(num_cpus::get());

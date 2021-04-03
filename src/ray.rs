@@ -3,6 +3,7 @@ use crate::point64::Point64;
 pub struct Ray {
     pub origin: Point64,
     pub direction: Point64,
+    pub exposure_time: f64,
 }
 
 impl Ray {

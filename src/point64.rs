@@ -1,7 +1,7 @@
 use crate::vec3_64::Vec3_64;
 use std::ops::Deref;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Default)]
 pub struct Point64(pub Vec3_64);
 
 #[allow(dead_code)] // x() and z()

@@ -1,6 +1,7 @@
 use crate::point64::Point64;
 use crate::ray::Ray;
 use crate::vec3_64::Vec3_64;
+use rand::Rng;
 
 #[derive(Copy, Clone)]
 pub struct Camera {
@@ -12,23 +13,27 @@ pub struct Camera {
     pub v: Point64,
     pub w: Point64,
     pub lens_radius: f64,
+    pub exposure_time0: f64,
+    pub exposure_time1: f64,
 }
 
 impl Camera {
     pub fn new(
-        lookfrom: Point64,
-        lookat: Point64,
+        look_from: Point64,
+        look_at: Point64,
         vup: Vec3_64,
         vfov_deg: f64, // vertical field ovf view
         aspect_ratio: f64,
         aperture: f64,
         focus_dist: f64,
+        exposure_time0: f64,
+        exposure_time1: f64,
     ) -> Camera {
         let h = (vfov_deg.to_radians() / 2.0).tan();
         let viewport_height = 2.0 * h;
         let viewport_width = aspect_ratio * viewport_height;
 
-        let w = Point64((*lookfrom - *lookat).normalized());
+        let w = Point64((*look_from - *look_at).normalized());
         let u = Point64(vup.cross(&w).normalized());
         let v = Point64(w.cross(&u));
 
@@ -36,16 +41,18 @@ impl Camera {
         let vertical = Point64(viewport_height * *v * focus_dist);
 
         Camera {
-            origin: lookfrom,
+            origin: look_from,
             horizontal,
             vertical,
             u,
             v,
             w,
             lower_left_corner: Point64(
-                *lookfrom - *horizontal / 2.0 - *vertical / 2.0 - *w * focus_dist,
+                *look_from - *horizontal / 2.0 - *vertical / 2.0 - *w * focus_dist,
             ),
             lens_radius: aperture / 2.0,
+            exposure_time0,
+            exposure_time1,
         }
     }
 
@@ -60,6 +67,7 @@ impl Camera {
                     - *self.origin
                     - offset,
             ),
+            exposure_time: rand::thread_rng().gen_range(self.exposure_time0..self.exposure_time1),
         }
     }
 }

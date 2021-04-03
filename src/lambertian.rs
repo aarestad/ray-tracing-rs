@@ -10,7 +10,7 @@ pub struct Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, _ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
         let scatter_direction = *hit_record.normal + Vec3_64::random_unit_vector();
 
         Some(ScatterRecord {
@@ -24,6 +24,7 @@ impl Material for Lambertian {
                 } else {
                     Point64(scatter_direction)
                 },
+                exposure_time: ray_in.exposure_time,
             },
         })
     }

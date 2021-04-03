@@ -21,6 +21,7 @@ impl Material for Metal {
                 scattered: Ray {
                     origin: hit_record.location,
                     direction: Point64(reflected + self.fuzz * Vec3_64::random_in_unit_sphere()),
+                    exposure_time: ray_in.exposure_time,
                 },
             })
         } else {

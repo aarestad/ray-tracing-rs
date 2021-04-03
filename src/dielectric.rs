@@ -42,6 +42,7 @@ impl Material for Dielectric {
             scattered: Ray {
                 origin: hit_record.location,
                 direction: Point64(direction),
+                exposure_time: ray_in.exposure_time,
             },
         })
     }
