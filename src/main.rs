@@ -1,4 +1,5 @@
 use crate::hittable_vec::HittableVec;
+use crate::moving_sphere::MovingSphere;
 use camera::Camera;
 use color64::Color64;
 use dielectric::Dielectric;
@@ -14,7 +15,6 @@ use std::sync::mpsc::channel;
 use std::sync::Arc;
 use threadpool::ThreadPool;
 use vec3_64::Vec3_64;
-use crate::moving_sphere::MovingSphere;
 
 mod camera;
 mod color64;
@@ -24,11 +24,11 @@ mod hittable_vec;
 mod lambertian;
 mod material;
 mod metal;
+mod moving_sphere;
 mod point64;
 mod ray;
 mod sphere;
 mod vec3_64;
-mod moving_sphere;
 
 const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
 const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
@@ -167,7 +167,7 @@ fn get_rgb(pixel_color: &Color64, samples_per_pixel: i32) -> Rgb<u8> {
 
 fn main() -> ImageResult<()> {
     // Image
-    let aspect_ratio = 16.0/9.0;
+    let aspect_ratio = 16.0 / 9.0;
     let image_width: u32 = 400;
     let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
     let samples_per_pixel = 100;

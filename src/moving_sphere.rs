@@ -16,7 +16,11 @@ pub struct MovingSphere {
 
 impl MovingSphere {
     pub fn center_at(&self, time: f64) -> Point64 {
-        Point64(*self.center0 + ((time - self.time0) / (self.time1 - self.time0)) * (*self.center1 - *self.center0))
+        Point64(
+            *self.center0
+                + ((time - self.time0) / (self.time1 - self.time0))
+                    * (*self.center1 - *self.center0),
+        )
     }
 }
 
@@ -43,7 +47,8 @@ impl Hittable for MovingSphere {
                 };
 
                 let location = ray.point_at_parameter(root);
-                let outward_normal = Point64((*location - *self.center_at(ray.exposure_time)) / self.radius);
+                let outward_normal =
+                    Point64((*location - *self.center_at(ray.exposure_time)) / self.radius);
 
                 Some(HitRecord::new(root, ray, outward_normal, &self.material))
             } else {
