@@ -5,7 +5,6 @@ use crate::data::ray::Ray;
 use crate::data::vec3_64::Vec3_64;
 use rand::Rng;
 
-#[derive(Copy, Clone)]
 pub struct Camera {
     pub origin: Point64,
     pub lower_left_corner: Point64,

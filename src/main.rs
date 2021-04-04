@@ -180,7 +180,7 @@ fn main() -> ImageResult<()> {
     let exposure_time0 = 0.0;
     let exposure_time1 = 1.0;
 
-    let camera: Camera = Camera::new(
+    let camera = Arc::new(Camera::new(
         look_from,
         look_at,
         vup,
@@ -190,7 +190,7 @@ fn main() -> ImageResult<()> {
         focus_dist,
         exposure_time0,
         exposure_time1,
-    );
+    ));
 
     let pool = ThreadPool::new(num_cpus::get());
     let (tx, rx) = channel::<(u32, u32, Rgb<u8>)>();
@@ -199,6 +199,7 @@ fn main() -> ImageResult<()> {
         (0..image_width).for_each(|x| {
             let tx = tx.clone();
             let world = world.clone();
+            let camera = camera.clone();
 
             pool.execute(move || {
                 let mut pixel_color = Color64::new(0.0, 0.0, 0.0);
@@ -220,6 +221,7 @@ fn main() -> ImageResult<()> {
                     get_rgb(&pixel_color, samples_per_pixel),
                 ))
                 .expect("no receiver");
+
                 println!("done with ({}, {})", x, y);
             });
         });
