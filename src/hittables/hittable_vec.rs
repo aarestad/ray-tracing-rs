@@ -12,24 +12,12 @@ impl Hittable for HittableVec {
             return None;
         };
 
-        // TODO this looks janky....
-        let mut out = self.hittables[0].bounding_box(time0, time1);
-
-        if out.is_none() {
-            return None;
-        }
-
-        for hittable in self.hittables[1..].iter() {
-            let next_box = hittable.bounding_box(time0, time1);
-
-            if next_box.is_none() {
-                return None;
-            }
-
-            out = Some(out.unwrap().surrounding_box_with(&next_box.unwrap()));
-        }
-
-        out
+        self.hittables.iter().fold(
+            self.hittables[0].bounding_box(time0, time1),
+            |acc, hittable| {
+                Some(acc?.surrounding_box_with(&hittable.as_ref().bounding_box(time0, time1)?))
+            },
+        )
     }
 
     fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
