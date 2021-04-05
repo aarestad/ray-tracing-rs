@@ -230,19 +230,22 @@ fn main() -> ImageResult<()> {
                     get_rgb(&pixel_color, samples_per_pixel),
                 ))
                 .expect("no receiver");
-
-                println!("done with ({}, {})", x, y);
             });
         });
     });
 
     let mut pixel_count = 0;
+    let total_pixels = image_height * image_width;
 
     for pixel in rx.iter() {
         image.put_pixel(pixel.0, pixel.1, pixel.2);
         pixel_count += 1;
 
-        if pixel_count == image_height * image_width {
+        if pixel_count % image_width == 0 {
+            println!("{} / {} scanlines done", pixel_count / image_width, image_height);
+        }
+
+        if pixel_count == total_pixels {
             break;
         }
     }
