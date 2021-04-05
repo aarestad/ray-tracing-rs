@@ -54,13 +54,22 @@ fn create_world() -> Arc<dyn Hittable + Send + Sync> {
             );
 
             if (*center - *reference_point).magnitude() > 0.9 {
-                if choose_mat < 0.8 {
-                    // 80% Lambertian spheres
+                if choose_mat < 0.1 {
+                    // 10% moving Lambertian spheres
                     hittables.push(Box::new(MovingSphere {
                         center0: center,
                         center1: Point64(*center + Vec3_64(0.0, rng.gen(), 0.0)),
                         time0: 0.0,
                         time1: 1.0,
+                        radius: 0.2,
+                        material: Arc::new(Lambertian {
+                            color: Color64(Vec3_64::random() * Vec3_64::random()),
+                        }),
+                    }));
+                } else if choose_mat < 0.8 {
+                    // 70% stationary Lambertian spheres
+                    hittables.push(Box::new(Sphere {
+                        center,
                         radius: 0.2,
                         material: Arc::new(Lambertian {
                             color: Color64(Vec3_64::random() * Vec3_64::random()),
@@ -161,7 +170,7 @@ fn get_rgb(pixel_color: &Color64, samples_per_pixel: i32) -> Rgb<u8> {
 fn main() -> ImageResult<()> {
     // Image
     let aspect_ratio = 16.0 / 9.0;
-    let image_width: u32 = 400;
+    let image_width: u32 = 960;
     let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
     let samples_per_pixel = 100;
     let mut image = RgbImage::new(image_width, image_height);
