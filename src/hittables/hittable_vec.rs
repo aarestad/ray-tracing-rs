@@ -1,6 +1,6 @@
 use crate::data::ray::Ray;
-use crate::hittables::{HitRecord, Hittable};
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
+use crate::hittables::{HitRecord, Hittable};
 
 pub struct HittableVec {
     pub hittables: Vec<Box<dyn Hittable + Send + Sync>>,

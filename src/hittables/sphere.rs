@@ -1,10 +1,10 @@
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
+use crate::data::vec3_64::Vec3_64;
+use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::{HitRecord, Hittable};
 use crate::materials::Material;
 use std::sync::Arc;
-use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
-use crate::data::vec3_64::Vec3_64;
 
 #[derive(Clone)]
 pub struct Sphere {
@@ -17,7 +17,7 @@ impl Hittable for Sphere {
     fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<AxisAlignedBoundingBox> {
         Some(AxisAlignedBoundingBox {
             minimum: Point64(*self.center - Vec3_64(self.radius, self.radius, self.radius)),
-            maximum: Point64(*self.center + Vec3_64(self.radius, self.radius, self.radius))
+            maximum: Point64(*self.center + Vec3_64(self.radius, self.radius, self.radius)),
         })
     }
 

@@ -28,17 +28,18 @@ impl AxisAlignedBoundingBox {
             return self;
         };
 
-        let minimum = Point64::new(self.minimum.x().min(other.minimum.x()),
-                                self.minimum.y().min(other.minimum.y()),
-                                self.minimum.z().min(other.minimum.z()));
+        let minimum = Point64::new(
+            self.minimum.x().min(other.minimum.x()),
+            self.minimum.y().min(other.minimum.y()),
+            self.minimum.z().min(other.minimum.z()),
+        );
 
-        let maximum = Point64::new(self.maximum.x().max(other.maximum.x()),
-                                self.maximum.y().max(other.maximum.y()),
-                                self.maximum.z().max(other.maximum.z()));
+        let maximum = Point64::new(
+            self.maximum.x().max(other.maximum.x()),
+            self.maximum.y().max(other.maximum.y()),
+            self.maximum.z().max(other.maximum.z()),
+        );
 
-        AxisAlignedBoundingBox {
-            minimum,
-            maximum,
-        }
+        AxisAlignedBoundingBox { minimum, maximum }
     }
 }

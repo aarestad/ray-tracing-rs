@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
-use crate::materials::Material;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
+use crate::materials::Material;
 
 pub mod axis_aligned_bounding_box;
 pub mod hittable_vec;

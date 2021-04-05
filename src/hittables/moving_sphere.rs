@@ -1,10 +1,10 @@
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
+use crate::data::vec3_64::Vec3_64;
+use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::{HitRecord, Hittable};
 use crate::materials::Material;
 use std::sync::Arc;
-use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
-use crate::data::vec3_64::Vec3_64;
 
 #[derive(Clone)]
 pub struct MovingSphere {
@@ -32,7 +32,7 @@ impl Hittable for MovingSphere {
         let center0 = *self.center_at(time0);
         let center1 = *self.center_at(time1);
 
-        let box0 = AxisAlignedBoundingBox{
+        let box0 = AxisAlignedBoundingBox {
             minimum: Point64(center0 - half_box_side),
             maximum: Point64(center0 + half_box_side),
         };
