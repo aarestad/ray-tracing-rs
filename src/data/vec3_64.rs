@@ -1,5 +1,5 @@
 use rand::Rng;
-use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
+use std::ops::{Add, AddAssign, Div, Index, Mul, Neg, Sub};
 
 #[derive(Debug, Copy, Clone, PartialEq, Default)]
 pub struct Vec3_64(pub(crate) f64, pub(crate) f64, pub(crate) f64);
@@ -84,9 +84,22 @@ impl Vec3_64 {
 
     pub fn refract(&self, normal: &Vec3_64, etai_over_etat: f64) -> Vec3_64 {
         let cos_theta = -self.dot(normal).min(1.0);
-        let r_out_perp = etai_over_etat * (*self + cos_theta * *normal);
-        let r_out_parallel = -(1.0 - r_out_perp.mag_squared()).abs().sqrt() * *normal;
-        r_out_perp + r_out_parallel
+        let r_out_normal = etai_over_etat * (*self + cos_theta * *normal);
+        let r_out_parallel = -(1.0 - r_out_normal.mag_squared()).abs().sqrt() * *normal;
+        r_out_normal + r_out_parallel
+    }
+}
+
+impl Index<usize> for Vec3_64 {
+    type Output = f64;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        match index {
+            0 => &self.0,
+            1 => &self.1,
+            2 => &self.2,
+            _ => panic!("index out of bounds: {}", index),
+        }
     }
 }
 

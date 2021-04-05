@@ -3,6 +3,8 @@ use crate::data::ray::Ray;
 use crate::hittables::{HitRecord, Hittable};
 use crate::materials::Material;
 use std::sync::Arc;
+use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
+use crate::data::vec3_64::Vec3_64;
 
 #[derive(Clone)]
 pub struct MovingSphere {
@@ -25,6 +27,24 @@ impl MovingSphere {
 }
 
 impl Hittable for MovingSphere {
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<AxisAlignedBoundingBox> {
+        let half_box_side = Vec3_64(self.radius, self.radius, self.radius);
+        let center0 = *self.center_at(time0);
+        let center1 = *self.center_at(time1);
+
+        let box0 = AxisAlignedBoundingBox{
+            minimum: Point64(center0 - half_box_side),
+            maximum: Point64(center0 + half_box_side),
+        };
+
+        let box1 = AxisAlignedBoundingBox {
+            minimum: Point64(center1 - half_box_side),
+            maximum: Point64(center1 + half_box_side),
+        };
+
+        Some(box0.surrounding_box_with(&box1))
+    }
+
     fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
         let ray_origin_to_center = *ray.origin - *self.center_at(ray.exposure_time);
         let a = ray.direction.dot(&ray.direction);

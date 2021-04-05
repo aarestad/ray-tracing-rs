@@ -3,7 +3,9 @@ use std::sync::Arc;
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::materials::Material;
+use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 
+pub mod axis_aligned_bounding_box;
 pub mod hittable_vec;
 pub mod moving_sphere;
 pub mod sphere;
@@ -43,5 +45,7 @@ impl HitRecord {
 }
 
 pub trait Hittable: Sync {
+    fn bounding_box(&self, time0: f64, time1: f64) -> Option<AxisAlignedBoundingBox>;
+
     fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord>;
 }
