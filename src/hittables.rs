@@ -6,7 +6,7 @@ use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::materials::Material;
 
 pub mod axis_aligned_bounding_box;
-mod bounded_volume_hierarchy;
+pub mod bounded_volume_hierarchy;
 pub mod hittable_vec;
 pub mod moving_sphere;
 pub mod sphere;
