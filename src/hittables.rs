@@ -9,6 +9,7 @@ pub mod axis_aligned_bounding_box;
 pub mod hittable_vec;
 pub mod moving_sphere;
 pub mod sphere;
+mod bounded_volume_hierarchy;
 
 #[derive(Clone)]
 pub struct HitRecord {

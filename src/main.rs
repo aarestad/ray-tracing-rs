@@ -17,17 +17,21 @@ use hittables::Hittable;
 use materials::dielectric::Dielectric;
 use materials::lambertian::Lambertian;
 use materials::metal::Metal;
+use std::env;
+use util::args::parse_args;
+use crate::util::args::ProgramOptions;
 
 mod camera;
 mod data;
 mod hittables;
 mod materials;
+mod util;
 
 const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
 const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
 const BLACK: Color64 = Color64::new(0.0, 0.0, 0.0);
 
-fn create_world() -> Arc<dyn Hittable + Send + Sync> {
+fn create_world(create_little_spheres: bool) -> Arc<dyn Hittable + Send + Sync> {
     let mut hittables: Vec<Box<dyn Hittable + Send + Sync>> = vec![Box::new(Sphere {
         center: Point64::new(0.0, -1000.0, 0.0),
         radius: 1000.0,
@@ -40,58 +44,60 @@ fn create_world() -> Arc<dyn Hittable + Send + Sync> {
         index_of_refraction: 1.5,
     });
 
-    let mut rng = rand::thread_rng();
+    if (create_little_spheres) {
+        let mut rng = rand::thread_rng();
 
-    let reference_point = Point64::new(4.0, 0.2, 0.0);
+        let reference_point = Point64::new(4.0, 0.2, 0.0);
 
-    for a in 0..22 {
-        for b in 0..22 {
-            let choose_mat = rng.gen::<f64>();
-            let center = Point64::new(
-                (a - 11) as f64 + 0.9 * rng.gen::<f64>(),
-                0.2,
-                (b - 11) as f64 + 0.9 * rng.gen::<f64>(),
-            );
+        for a in 0..22 {
+            for b in 0..22 {
+                let choose_mat = rng.gen::<f64>();
+                let center = Point64::new(
+                    (a - 11) as f64 + 0.9 * rng.gen::<f64>(),
+                    0.2,
+                    (b - 11) as f64 + 0.9 * rng.gen::<f64>(),
+                );
 
-            if (*center - *reference_point).magnitude() > 0.9 {
-                if choose_mat < 0.1 {
-                    // 10% moving Lambertian spheres
-                    hittables.push(Box::new(MovingSphere {
-                        center0: center,
-                        center1: Point64(*center + Vec3_64(0.0, rng.gen(), 0.0)),
-                        time0: 0.0,
-                        time1: 1.0,
-                        radius: 0.2,
-                        material: Arc::new(Lambertian {
-                            color: Color64(Vec3_64::random() * Vec3_64::random()),
-                        }),
-                    }));
-                } else if choose_mat < 0.8 {
-                    // 70% stationary Lambertian spheres
-                    hittables.push(Box::new(Sphere {
-                        center,
-                        radius: 0.2,
-                        material: Arc::new(Lambertian {
-                            color: Color64(Vec3_64::random() * Vec3_64::random()),
-                        }),
-                    }));
-                } else if choose_mat < 0.95 {
-                    // 15% metal spheres
-                    hittables.push(Box::new(Sphere {
-                        center,
-                        radius: 0.2,
-                        material: Arc::new(Metal {
-                            albedo: Color64(Vec3_64::rand_range(0.5, 1.0)),
-                            fuzz: rng.gen_range(0.0..0.5),
-                        }),
-                    }));
-                } else {
-                    // 5% glass
-                    hittables.push(Box::new(Sphere {
-                        center,
-                        radius: 0.2,
-                        material: glass.clone(),
-                    }));
+                if (*center - *reference_point).magnitude() > 0.9 {
+                    if choose_mat < 0.1 {
+                        // 10% moving Lambertian spheres
+                        hittables.push(Box::new(MovingSphere {
+                            center0: center,
+                            center1: Point64(*center + Vec3_64(0.0, rng.gen(), 0.0)),
+                            time0: 0.0,
+                            time1: 1.0,
+                            radius: 0.2,
+                            material: Arc::new(Lambertian {
+                                color: Color64(Vec3_64::random() * Vec3_64::random()),
+                            }),
+                        }));
+                    } else if choose_mat < 0.8 {
+                        // 70% stationary Lambertian spheres
+                        hittables.push(Box::new(Sphere {
+                            center,
+                            radius: 0.2,
+                            material: Arc::new(Lambertian {
+                                color: Color64(Vec3_64::random() * Vec3_64::random()),
+                            }),
+                        }));
+                    } else if choose_mat < 0.95 {
+                        // 15% metal spheres
+                        hittables.push(Box::new(Sphere {
+                            center,
+                            radius: 0.2,
+                            material: Arc::new(Metal {
+                                albedo: Color64(Vec3_64::rand_range(0.5, 1.0)),
+                                fuzz: rng.gen_range(0.0..0.5),
+                            }),
+                        }));
+                    } else {
+                        // 5% glass
+                        hittables.push(Box::new(Sphere {
+                            center,
+                            radius: 0.2,
+                            material: glass.clone(),
+                        }));
+                    }
                 }
             }
         }
@@ -168,6 +174,9 @@ fn get_rgb(pixel_color: &Color64, samples_per_pixel: i32) -> Rgb<u8> {
 }
 
 fn main() -> ImageResult<()> {
+    let args: Vec<String> = env::args().collect();
+    let options = parse_args(&args);
+
     // Image
     let aspect_ratio = 16.0 / 9.0;
     let image_width: u32 = 960;
@@ -177,7 +186,7 @@ fn main() -> ImageResult<()> {
     let max_depth = 50;
 
     // World
-    let world = create_world();
+    let world = create_world(options.unwrap_or(ProgramOptions { create_little_spheres: false }).create_little_spheres);
 
     // Camera
     let look_from = Point64::new(13.0, 2.0, 3.0);
