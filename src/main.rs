@@ -5,173 +5,21 @@ use image::{DynamicImage, ImageResult, Rgb, RgbImage};
 use rand::Rng;
 use threadpool::ThreadPool;
 
+use crate::util::args::ProgramOptions;
+use crate::util::colors::{get_rgb, ray_color};
+use crate::util::world::create_world;
 use camera::Camera;
 use data::color64::Color64;
 use data::point64::Point64;
-use data::ray::Ray;
 use data::vec3_64::Vec3_64;
-use hittables::hittable_vec::HittableVec;
-use hittables::moving_sphere::MovingSphere;
-use hittables::sphere::Sphere;
-use hittables::Hittable;
-use materials::dielectric::Dielectric;
-use materials::lambertian::Lambertian;
-use materials::metal::Metal;
 use std::env;
 use util::args::parse_args;
-use crate::util::args::ProgramOptions;
 
 mod camera;
 mod data;
 mod hittables;
 mod materials;
 mod util;
-
-const WHITE: Color64 = Color64::new(1.0, 1.0, 1.0);
-const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.0);
-const BLACK: Color64 = Color64::new(0.0, 0.0, 0.0);
-
-fn create_world(create_little_spheres: bool) -> Arc<dyn Hittable + Send + Sync> {
-    let mut hittables: Vec<Box<dyn Hittable + Send + Sync>> = vec![Box::new(Sphere {
-        center: Point64::new(0.0, -1000.0, 0.0),
-        radius: 1000.0,
-        material: Arc::new(Lambertian {
-            color: Color64::new(0.5, 0.5, 0.5),
-        }),
-    })];
-
-    let glass = Arc::new(Dielectric {
-        index_of_refraction: 1.5,
-    });
-
-    if (create_little_spheres) {
-        let mut rng = rand::thread_rng();
-
-        let reference_point = Point64::new(4.0, 0.2, 0.0);
-
-        for a in 0..22 {
-            for b in 0..22 {
-                let choose_mat = rng.gen::<f64>();
-                let center = Point64::new(
-                    (a - 11) as f64 + 0.9 * rng.gen::<f64>(),
-                    0.2,
-                    (b - 11) as f64 + 0.9 * rng.gen::<f64>(),
-                );
-
-                if (*center - *reference_point).magnitude() > 0.9 {
-                    if choose_mat < 0.1 {
-                        // 10% moving Lambertian spheres
-                        hittables.push(Box::new(MovingSphere {
-                            center0: center,
-                            center1: Point64(*center + Vec3_64(0.0, rng.gen(), 0.0)),
-                            time0: 0.0,
-                            time1: 1.0,
-                            radius: 0.2,
-                            material: Arc::new(Lambertian {
-                                color: Color64(Vec3_64::random() * Vec3_64::random()),
-                            }),
-                        }));
-                    } else if choose_mat < 0.8 {
-                        // 70% stationary Lambertian spheres
-                        hittables.push(Box::new(Sphere {
-                            center,
-                            radius: 0.2,
-                            material: Arc::new(Lambertian {
-                                color: Color64(Vec3_64::random() * Vec3_64::random()),
-                            }),
-                        }));
-                    } else if choose_mat < 0.95 {
-                        // 15% metal spheres
-                        hittables.push(Box::new(Sphere {
-                            center,
-                            radius: 0.2,
-                            material: Arc::new(Metal {
-                                albedo: Color64(Vec3_64::rand_range(0.5, 1.0)),
-                                fuzz: rng.gen_range(0.0..0.5),
-                            }),
-                        }));
-                    } else {
-                        // 5% glass
-                        hittables.push(Box::new(Sphere {
-                            center,
-                            radius: 0.2,
-                            material: glass.clone(),
-                        }));
-                    }
-                }
-            }
-        }
-    }
-
-    hittables.push(Box::new(Sphere {
-        center: Point64::new(0.0, 1.0, 0.0),
-        radius: 1.0,
-        material: glass,
-    }));
-
-    hittables.push(Box::new(Sphere {
-        center: Point64::new(-4.0, 1.0, 0.0),
-        radius: 1.0,
-        material: Arc::new(Lambertian {
-            color: Color64::new(0.4, 0.2, 0.1),
-        }),
-    }));
-
-    hittables.push(Box::new(Sphere {
-        center: Point64::new(4.0, 1.0, 0.0),
-        radius: 1.0,
-        material: Arc::new(Metal {
-            albedo: Color64::new(0.7, 0.6, 0.5),
-            fuzz: 0.0,
-        }),
-    }));
-
-    Arc::new(HittableVec { hittables })
-}
-
-fn ray_color(ray: &Ray, world: &dyn Hittable, depth: i32) -> Color64 {
-    if depth < 1 {
-        return BLACK;
-    }
-
-    let hit_record = world.is_hit_by(&ray, 0.001, f64::INFINITY);
-
-    match hit_record {
-        Some(hit_record) => match hit_record.material.scatter(ray, &hit_record) {
-            Some(scatter_record) => Color64(
-                *(scatter_record.attenuation)
-                    * *ray_color(&scatter_record.scattered, world, depth - 1),
-            ),
-            None => BLACK,
-        },
-
-        None => {
-            let unit_direction = Point64((*ray.direction).normalized());
-            let color_factor = 0.5 * (unit_direction.y() + 1.0);
-            let white_amt = (1.0 - color_factor) * *WHITE;
-            let blue_amt = color_factor * *LIGHT_BLUE;
-            Color64(white_amt + blue_amt)
-        }
-    }
-}
-
-fn get_rgb(pixel_color: &Color64, samples_per_pixel: i32) -> Rgb<u8> {
-    let mut r = pixel_color.r();
-    let mut g = pixel_color.g();
-    let mut b = pixel_color.b();
-
-    let scale = 1.0 / (samples_per_pixel as f64);
-    // Gamma correct for gamma = 2.0
-    r = (scale * r).sqrt();
-    g = (scale * g).sqrt();
-    b = (scale * b).sqrt();
-
-    let scaled_red = (256.0 * r.clamp(0.0, 0.999)) as u8;
-    let scaled_green = (256.0 * g.clamp(0.0, 0.999)) as u8;
-    let scaled_blue = (256.0 * b.clamp(0.0, 0.999)) as u8;
-
-    Rgb([scaled_red, scaled_green, scaled_blue])
-}
 
 fn main() -> ImageResult<()> {
     let args: Vec<String> = env::args().collect();
@@ -186,7 +34,13 @@ fn main() -> ImageResult<()> {
     let max_depth = 50;
 
     // World
-    let world = create_world(options.unwrap_or(ProgramOptions { create_little_spheres: false }).create_little_spheres);
+    let world = create_world(
+        options
+            .unwrap_or(ProgramOptions {
+                create_little_spheres: false,
+            })
+            .create_little_spheres,
+    );
 
     // Camera
     let look_from = Point64::new(13.0, 2.0, 3.0);
@@ -251,7 +105,11 @@ fn main() -> ImageResult<()> {
         pixel_count += 1;
 
         if pixel_count % image_width == 0 {
-            println!("{} / {} scanlines done", pixel_count / image_width, image_height);
+            println!(
+                "{} / {} scanlines done",
+                pixel_count / image_width,
+                image_height
+            );
         }
 
         if pixel_count == total_pixels {

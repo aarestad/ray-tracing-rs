@@ -6,16 +6,16 @@ use crate::data::vec3_64::Vec3_64;
 use rand::Rng;
 
 pub struct Camera {
-    pub origin: Point64,
-    pub lower_left_corner: Point64,
-    pub horizontal: Point64,
-    pub vertical: Point64,
-    pub u: Point64,
-    pub v: Point64,
-    pub w: Point64,
-    pub lens_radius: f64,
-    pub exposure_time0: f64,
-    pub exposure_time1: f64,
+    origin: Point64,
+    lower_left_corner: Point64,
+    horizontal: Point64,
+    vertical: Point64,
+    u: Point64,
+    v: Point64,
+    _w: Point64,
+    lens_radius: f64,
+    exposure_time0: f64,
+    exposure_time1: f64,
 }
 
 impl Camera {
@@ -47,7 +47,7 @@ impl Camera {
             vertical,
             u,
             v,
-            w,
+            _w: w,
             lower_left_corner: Point64(
                 *look_from - *horizontal / 2.0 - *vertical / 2.0 - *w * focus_dist,
             ),
