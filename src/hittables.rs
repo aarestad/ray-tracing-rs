@@ -17,7 +17,7 @@ pub struct HitRecord {
     pub location: Point64,
     pub normal: Point64,
     pub front_face: bool,
-    pub material: Arc<dyn Material + Send + Sync>,
+    pub material: Arc<dyn Material>,
 }
 
 impl HitRecord {
@@ -25,7 +25,7 @@ impl HitRecord {
         value: f64,
         ray: &Ray,
         outward_normal: Point64,
-        material: &Arc<dyn Material + Send + Sync>,
+        material: &Arc<dyn Material>,
     ) -> HitRecord {
         let front_face = ray.direction.dot(&outward_normal) < 0.0;
 
@@ -45,7 +45,7 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable: Sync {
+pub trait Hittable: Send + Sync {
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<AxisAlignedBoundingBox>;
 
     fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord>;

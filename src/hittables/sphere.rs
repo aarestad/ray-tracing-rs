@@ -10,7 +10,7 @@ use std::sync::Arc;
 pub struct Sphere {
     pub center: Point64,
     pub radius: f64,
-    pub material: Arc<dyn Material + Send + Sync>,
+    pub material: Arc<dyn Material>,
 }
 
 impl Hittable for Sphere {

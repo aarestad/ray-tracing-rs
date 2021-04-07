@@ -12,7 +12,7 @@ use rand::Rng;
 use std::sync::Arc;
 
 pub fn create_world(create_little_spheres: bool) -> Arc<dyn Hittable + Send + Sync> {
-    let mut hittables: Vec<Box<dyn Hittable + Send + Sync>> = vec![Box::new(Sphere {
+    let mut hittables: Vec<Box<dyn Hittable>> = vec![Box::new(Sphere {
         center: Point64::new(0.0, -1000.0, 0.0),
         radius: 1000.0,
         material: Arc::new(Lambertian {

@@ -3,7 +3,7 @@ use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::{HitRecord, Hittable};
 
 pub struct HittableVec {
-    pub hittables: Vec<Box<dyn Hittable + Send + Sync>>,
+    pub hittables: Vec<Box<dyn Hittable>>,
 }
 
 impl Hittable for HittableVec {
