@@ -1,6 +1,6 @@
 [package]
-name = "ray-tracing-tutorial"
-version = "0.1.0"
+name = "ray-tracer"
+version = "1.2.7"
 authors = ["Peter Aarestad <aarestad@gmail.com>"]
 edition = "2018"
 
@@ -11,5 +11,4 @@ rand = "0.8.3"
 image = "0.23.14"
 threadpool = "1.8.1"
 num_cpus = "1.13.0"
-pprof = { version = "0.4.3", features = ["flamegraph"] }
 args = "2.2.0"

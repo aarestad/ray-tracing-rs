@@ -45,23 +45,17 @@ fn main() -> ImageResult<()> {
     // Camera
     let look_from = Point64::new(13.0, 2.0, 3.0);
     let look_at = Point64::new(0.0, 0.0, 0.0);
-    let vup = Vec3_64(0.0, 1.0, 0.0);
-    let vfov_deg = 20.0;
-    let focus_dist = (*look_from - *look_at).magnitude();
-    let aperture = 0.1;
-    let exposure_time0 = 0.0;
-    let exposure_time1 = 1.0;
 
     let camera = Arc::new(Camera::new(
         look_from,
         look_at,
-        vup,
-        vfov_deg,
+        Vec3_64(0.0, 1.0, 0.0),
+        20.0,
         aspect_ratio,
-        aperture,
-        focus_dist,
-        exposure_time0,
-        exposure_time1,
+        0.1,
+        (*look_from - *look_at).magnitude(),
+        0.0,
+        1.0,
     ));
 
     let pool = ThreadPool::new(num_cpus::get());
