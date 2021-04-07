@@ -23,7 +23,7 @@ mod util;
 
 fn main() -> ImageResult<()> {
     let args: Vec<String> = env::args().collect();
-    let options = parse_args(&args);
+    let options = parse_args(&args).expect("bad args!");
 
     // Image
     let aspect_ratio = 16.0 / 9.0;
@@ -34,13 +34,7 @@ fn main() -> ImageResult<()> {
     let max_depth = 50;
 
     // World
-    let world = create_world(
-        options
-            .unwrap_or(ProgramOptions {
-                create_little_spheres: false,
-            })
-            .create_little_spheres,
-    );
+    let world = create_world(options.create_little_spheres);
 
     // Camera
     let look_from = Point64::new(13.0, 2.0, 3.0);
