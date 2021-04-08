@@ -4,6 +4,7 @@ use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::materials::Material;
+use std::fmt::Display;
 
 pub mod axis_aligned_bounding_box;
 pub mod bounded_volume_hierarchy;
