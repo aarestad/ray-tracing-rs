@@ -5,7 +5,6 @@ use image::{DynamicImage, ImageResult, Rgb, RgbImage};
 use rand::Rng;
 use threadpool::ThreadPool;
 
-use crate::util::args::ProgramOptions;
 use crate::util::colors::{get_rgb, ray_color};
 use crate::util::world::create_world;
 use camera::Camera;

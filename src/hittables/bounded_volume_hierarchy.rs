@@ -68,17 +68,16 @@ impl Hittable for BoundedVolumeHierarchy {
 }
 
 impl BoundedVolumeHierarchy {
-    pub fn new(objects: Vec<Box<dyn Hittable>>, time0: f64, time1: f64) -> Box<dyn Hittable> {
+    pub fn new(objects: &mut Vec<Box<dyn Hittable>>, time0: f64, time1: f64) -> Box<dyn Hittable> {
         let comparator = BOX_COMPARATORS[rand::thread_rng().gen_range(0..3)];
 
         let left_child: Box<dyn Hittable>;
         let right_child: Box<dyn Hittable>;
 
-        // std::sort(objects.begin() + start, objects.begin() + end, comparator);
         objects.sort_by(comparator);
         let mid = objects.len() / 2;
-        left_child = BoundedVolumeHierarchy::new(objects[0..mid].to_vec(), time0, time1);
-        right_child = BoundedVolumeHierarchy::new(objects[mid..].to_vec(), time0, time1);
+        left_child = BoundedVolumeHierarchy::new(&mut objects[0..mid].to_vec(), time0, time1);
+        right_child = BoundedVolumeHierarchy::new(&mut objects[mid..].to_vec(), time0, time1);
 
         let box_left = left_child.bounding_box(time0, time1);
         let box_right = right_child.bounding_box(time0, time1);
@@ -88,8 +87,8 @@ impl BoundedVolumeHierarchy {
         }
 
         Box::from(BoundedVolumeHierarchy {
-            left_child: Arc::new(left_child),
-            right_child: Arc::new(right_child),
+            left_child: Arc::new(left_child.into()),
+            right_child: Arc::new(right_child.into()),
             bounding_box: box_left
                 .unwrap()
                 .surrounding_box_with(box_right.as_ref().unwrap()),
