@@ -5,7 +5,7 @@ use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::materials::Material;
 
-pub mod axis_aligned_bounding_box;
+mod axis_aligned_bounding_box;
 pub mod bounded_volume_hierarchy;
 mod bvh_comparators;
 pub mod hittable_vec;
