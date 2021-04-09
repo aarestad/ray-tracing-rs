@@ -1,3 +1,5 @@
+#![allow(dead_code)] // TODO remove once something calls create_bvh
+
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::bvh_comparators::BOX_COMPARATORS;
@@ -29,43 +31,46 @@ impl Hittable for BoundedVolumeHierarchy {
             hit_left.as_ref().map_or(max_value, |hr| hr.value),
         );
 
-        return hit_left.or(hit_right);
+        hit_left.or(hit_right)
     }
 }
 
 impl BoundedVolumeHierarchy {
-    pub fn new(objects: &mut Vec<Box<dyn Hittable>>, time0: f64, time1: f64) -> Box<dyn Hittable> {
+    pub fn create_bvh(objects: &mut Vec<Arc<dyn Hittable>>, time0: f64, time1: f64) -> Arc<dyn Hittable> {
         let comparator = BOX_COMPARATORS[rand::thread_rng().gen_range(0..3)];
 
-        let left_child: &Box<dyn Hittable>;
-        let right_child: &Box<dyn Hittable>;
+        let left_child: Arc<dyn Hittable>;
+        let right_child: Arc<dyn Hittable>;
 
         match objects.len() {
             0 => panic!("empty list of hittables passed to BoundedVolumeHierarchy::new"),
             1 => {
-                left_child = &objects[0];
-                right_child = &objects[0];
-            },
+                left_child = objects[0].clone();
+                right_child = objects[0].clone();
+            }
             2 => {
-                let o1 = &objects[0];
-                let o2 = &objects[1];
+                let o1 = &objects[0].clone();
+                let o2 = &objects[1].clone();
 
                 match comparator(o1, o2) {
-                    Less => {
-                        left_child = &objects[0];
-                        right_child = &objects[1];
-                    },
+                    std::cmp::Ordering::Less => {
+                        left_child = objects[0].clone();
+                        right_child = objects[1].clone();
+                    }
                     _ => {
-                        left_child = &objects[1];
-                        right_child = &objects[0];
+                        left_child = objects[1].clone();
+                        right_child = objects[0].clone();
                     }
                 }
-            },
+            }
             _ => {
                 objects.sort_by(comparator);
                 let mid = objects.len() / 2;
-                left_child = &BoundedVolumeHierarchy::new(&mut objects[0..mid].to_vec(), time0, time1);
-                right_child = &BoundedVolumeHierarchy::new(&mut objects[mid..].to_vec(), time0, time1);
+                left_child =
+                    BoundedVolumeHierarchy::create_bvh(&mut objects[0..mid].to_vec(), time0, time1)
+                        .clone();
+                right_child =
+                    BoundedVolumeHierarchy::create_bvh(&mut objects[mid..].to_vec(), time0, time1).clone();
             }
         }
 
@@ -76,9 +81,9 @@ impl BoundedVolumeHierarchy {
             panic!("No bounding box in bvh_node constructor for hittable");
         }
 
-        Box::from(BoundedVolumeHierarchy {
-            left_child: Arc::new(left_child.into()),
-            right_child: Arc::new(right_child.into()),
+        Arc::from(BoundedVolumeHierarchy {
+            left_child,
+            right_child,
             bounding_box: box_left
                 .unwrap()
                 .surrounding_box_with(box_right.as_ref().unwrap()),

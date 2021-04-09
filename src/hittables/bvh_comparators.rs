@@ -1,7 +1,8 @@
 use crate::hittables::Hittable;
 use std::cmp::Ordering;
+use std::sync::Arc;
 
-fn box_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>, axis: usize) -> Ordering {
+fn box_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>, axis: usize) -> Ordering {
     let box_a = a.bounding_box(0., 0.);
     let box_b = b.bounding_box(0., 0.);
 
@@ -19,17 +20,17 @@ fn box_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>, axis: usize) -> Ord
     box_a_element.partial_cmp(&box_b_element).unwrap()
 }
 
-type BoxComparator = fn(&Box<dyn Hittable>, &Box<dyn Hittable>) -> Ordering;
+type BoxComparator = fn(&Arc<dyn Hittable>, &Arc<dyn Hittable>) -> Ordering;
 
-fn box_x_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
+fn box_x_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>) -> Ordering {
     box_compare(a, b, 0)
 }
 
-fn box_y_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
+fn box_y_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>) -> Ordering {
     box_compare(a, b, 1)
 }
 
-fn box_z_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
+fn box_z_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>) -> Ordering {
     box_compare(a, b, 2)
 }
 
