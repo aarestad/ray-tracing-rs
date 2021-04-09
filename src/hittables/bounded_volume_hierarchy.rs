@@ -1,10 +1,8 @@
-#![allow(dead_code)] // TODO remove once something calls create_bvh
-
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::bvh_comparators::BOX_COMPARATORS;
 use crate::hittables::{HitRecord, Hittable};
-use rand::Rng;
+use rand::prelude::SliceRandom;
 use std::sync::Arc;
 
 pub struct BoundedVolumeHierarchy {
@@ -31,7 +29,7 @@ impl Hittable for BoundedVolumeHierarchy {
             hit_left.as_ref().map_or(max_value, |hr| hr.value),
         );
 
-        hit_left.or(hit_right)
+        hit_right.or(hit_left)
     }
 }
 
@@ -41,7 +39,7 @@ impl BoundedVolumeHierarchy {
         time0: f64,
         time1: f64,
     ) -> Arc<dyn Hittable> {
-        let comparator = BOX_COMPARATORS[rand::thread_rng().gen_range(0..3)];
+        let comparator = BOX_COMPARATORS.choose(&mut rand::thread_rng()).unwrap();
 
         let left_child: Arc<dyn Hittable>;
         let right_child: Arc<dyn Hittable>;
@@ -70,12 +68,18 @@ impl BoundedVolumeHierarchy {
             _ => {
                 objects.sort_by(comparator);
                 let mid = objects.len() / 2;
-                left_child =
-                    BoundedVolumeHierarchy::create_bvh_arc(&mut objects[0..mid].to_vec(), time0, time1)
-                        .clone();
-                right_child =
-                    BoundedVolumeHierarchy::create_bvh_arc(&mut objects[mid..].to_vec(), time0, time1)
-                        .clone();
+                left_child = BoundedVolumeHierarchy::create_bvh_arc(
+                    &mut objects[0..mid].to_vec(),
+                    time0,
+                    time1,
+                )
+                .clone();
+                right_child = BoundedVolumeHierarchy::create_bvh_arc(
+                    &mut objects[mid..].to_vec(),
+                    time0,
+                    time1,
+                )
+                .clone();
             }
         }
 

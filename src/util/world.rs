@@ -1,6 +1,8 @@
 use crate::data::color64::Color64;
 use crate::data::point64::Point64;
 use crate::data::vec3_64::Vec3_64;
+use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
+use crate::hittables::hittable_vec::HittableVec;
 use crate::hittables::moving_sphere::MovingSphere;
 use crate::hittables::sphere::Sphere;
 use crate::hittables::Hittable;
@@ -9,8 +11,6 @@ use crate::materials::lambertian::Lambertian;
 use crate::materials::metal::Metal;
 use rand::Rng;
 use std::sync::Arc;
-use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
-use crate::hittables::hittable_vec::HittableVec;
 
 pub fn create_world(create_little_spheres: bool, use_bvh: bool) -> Arc<dyn Hittable> {
     let mut hittables: Vec<Arc<dyn Hittable>> = vec![Arc::from(Sphere {

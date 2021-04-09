@@ -12,7 +12,11 @@ pub fn parse_args(input: &[String]) -> Result<ProgramOptions, ArgsError> {
 
     let mut args = Args::new(program_name.as_str(), PROGRAM_DESC);
     args.flag("s", "create_little_spheres", "Create little spheres");
-    args.flag("b", "use_bvh", "Use BoundedVolumeHierarchy instead of HittableVec");
+    args.flag(
+        "b",
+        "use_bvh",
+        "Use BoundedVolumeHierarchy instead of HittableVec",
+    );
 
     args.parse(input)?;
 
