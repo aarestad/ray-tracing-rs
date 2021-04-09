@@ -7,7 +7,7 @@ use crate::materials::Material;
 
 pub mod axis_aligned_bounding_box;
 pub mod bounded_volume_hierarchy;
-mod bounding_box_comparators;
+mod bvh_comparators;
 pub mod hittable_vec;
 pub mod moving_sphere;
 pub mod sphere;

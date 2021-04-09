@@ -1,6 +1,6 @@
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
-use crate::hittables::bounding_box_comparators::BOX_COMPARATORS;
+use crate::hittables::bvh_comparators::BOX_COMPARATORS;
 use crate::hittables::{HitRecord, Hittable};
 use rand::Rng;
 use std::sync::Arc;
