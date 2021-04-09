@@ -1,11 +1,9 @@
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
-use crate::hittables::hittable_vec::HittableVec;
 use crate::hittables::{HitRecord, Hittable};
-use std::sync::Arc;
-use std::ops::Range;
 use rand::Rng;
-use std::fmt::{Display, Formatter};
+use std::cmp::Ordering;
+use std::sync::Arc;
 
 pub struct BoundedVolumeHierarchy {
     left_child: Arc<dyn Hittable>,
@@ -13,7 +11,7 @@ pub struct BoundedVolumeHierarchy {
     bounding_box: AxisAlignedBoundingBox,
 }
 
-fn box_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>, axis: usize) -> bool {
+fn box_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>, axis: usize) -> Ordering {
     let box_a = a.bounding_box(0., 0.);
     let box_b = b.bounding_box(0., 0.);
 
@@ -21,20 +19,27 @@ fn box_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>, axis: usize) -> boo
         panic!("No bounding box in bvh_node constructor for hittable");
     }
 
-    box_a.unwrap().minimum[axis] < box_b.unwrap().minimum[axis]
+    let box_a_element = box_a.unwrap().minimum[axis];
+    let box_b_element = box_b.unwrap().minimum[axis];
+
+    if box_a_element.is_nan() || box_b_element.is_nan() {
+        panic!("got an NaN as a box dimension value");
+    }
+
+    box_a_element.partial_cmp(&box_b_element).unwrap()
 }
 
-type BoxComparator = fn(&Box<dyn Hittable>, &Box<dyn Hittable>) -> bool;
+type BoxComparator = fn(&Box<dyn Hittable>, &Box<dyn Hittable>) -> Ordering;
 
-fn box_x_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> bool {
+fn box_x_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
     box_compare(a, b, 0)
 }
 
-fn box_y_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> bool {
+fn box_y_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
     box_compare(a, b, 1)
 }
 
-fn box_z_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> bool {
+fn box_z_compare(a: &Box<dyn Hittable>, b: &Box<dyn Hittable>) -> Ordering {
     box_compare(a, b, 2)
 }
 
@@ -63,30 +68,17 @@ impl Hittable for BoundedVolumeHierarchy {
 }
 
 impl BoundedVolumeHierarchy {
-    pub fn new(objects: &mut Vec<Box<dyn Hittable>>, range: Range<usize>, time0: f64, time1: f64) -> Box<dyn Hittable> {
-        let comparator = BOX_COMPARATORS[rand::thread_rng().gen_range((0..3))];
+    pub fn new(objects: Vec<Box<dyn Hittable>>, time0: f64, time1: f64) -> Box<dyn Hittable> {
+        let comparator = BOX_COMPARATORS[rand::thread_rng().gen_range(0..3)];
 
-        let left_child: &Box<dyn Hittable>;
-        let right_child: &Box<dyn Hittable>;
+        let left_child: Box<dyn Hittable>;
+        let right_child: Box<dyn Hittable>;
 
-        if range.len() == 1 {
-            left_child  = objects[range.start].as_ref();
-            right_child = objects[range.start].as_ref();
-        } else if range.len() == 2 {
-            if comparator(&objects[range.start], &objects[range.start + 1]) {
-                left_child  = objects[range.start].as_ref();
-                right_child = objects[range.start + 1].as_ref();
-            } else {
-                left_child  = objects[range.start + 1].as_ref();
-                right_child = objects[range.start].as_ref();
-            }
-        } else {
-            // std::sort(objects.begin() + start, objects.begin() + end, comparator);
-            objects.sort_by(comparator);
-            let mid = range.start + range.len() / 2;
-            left_child = BoundedVolumeHierarchy::new(objects, (range.start..mid), time0, time1);
-            right_child = BoundedVolumeHierarchy::new(objects, (range.start..mid), time0, time1);
-        }
+        // std::sort(objects.begin() + start, objects.begin() + end, comparator);
+        objects.sort_by(comparator);
+        let mid = objects.len() / 2;
+        left_child = BoundedVolumeHierarchy::new(objects[0..mid].to_vec(), time0, time1);
+        right_child = BoundedVolumeHierarchy::new(objects[mid..].to_vec(), time0, time1);
 
         let box_left = left_child.bounding_box(time0, time1);
         let box_right = right_child.bounding_box(time0, time1);
@@ -98,7 +90,9 @@ impl BoundedVolumeHierarchy {
         Box::from(BoundedVolumeHierarchy {
             left_child: Arc::new(left_child),
             right_child: Arc::new(right_child),
-            bounding_box: box_left.unwrap().surrounding_box_with(box_right.as_ref().unwrap())
+            bounding_box: box_left
+                .unwrap()
+                .surrounding_box_with(box_right.as_ref().unwrap()),
         })
     }
 }
