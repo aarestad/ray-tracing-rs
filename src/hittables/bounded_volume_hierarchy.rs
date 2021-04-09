@@ -37,13 +37,37 @@ impl BoundedVolumeHierarchy {
     pub fn new(objects: &mut Vec<Box<dyn Hittable>>, time0: f64, time1: f64) -> Box<dyn Hittable> {
         let comparator = BOX_COMPARATORS[rand::thread_rng().gen_range(0..3)];
 
-        let left_child: Box<dyn Hittable>;
-        let right_child: Box<dyn Hittable>;
+        let left_child: &Box<dyn Hittable>;
+        let right_child: &Box<dyn Hittable>;
 
-        objects.sort_by(comparator);
-        let mid = objects.len() / 2;
-        left_child = BoundedVolumeHierarchy::new(&mut objects[0..mid].to_vec(), time0, time1);
-        right_child = BoundedVolumeHierarchy::new(&mut objects[mid..].to_vec(), time0, time1);
+        match objects.len() {
+            0 => panic!("empty list of hittables passed to BoundedVolumeHierarchy::new"),
+            1 => {
+                left_child = &objects[0];
+                right_child = &objects[0];
+            },
+            2 => {
+                let o1 = &objects[0];
+                let o2 = &objects[1];
+
+                match comparator(o1, o2) {
+                    Less => {
+                        left_child = &objects[0];
+                        right_child = &objects[1];
+                    },
+                    _ => {
+                        left_child = &objects[1];
+                        right_child = &objects[0];
+                    }
+                }
+            },
+            _ => {
+                objects.sort_by(comparator);
+                let mid = objects.len() / 2;
+                left_child = &BoundedVolumeHierarchy::new(&mut objects[0..mid].to_vec(), time0, time1);
+                right_child = &BoundedVolumeHierarchy::new(&mut objects[mid..].to_vec(), time0, time1);
+            }
+        }
 
         let box_left = left_child.bounding_box(time0, time1);
         let box_right = right_child.bounding_box(time0, time1);
