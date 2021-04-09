@@ -36,7 +36,7 @@ impl Hittable for BoundedVolumeHierarchy {
 }
 
 impl BoundedVolumeHierarchy {
-    pub fn create_bvh(
+    pub fn create_bvh_arc(
         objects: &mut Vec<Arc<dyn Hittable>>,
         time0: f64,
         time1: f64,
@@ -71,10 +71,10 @@ impl BoundedVolumeHierarchy {
                 objects.sort_by(comparator);
                 let mid = objects.len() / 2;
                 left_child =
-                    BoundedVolumeHierarchy::create_bvh(&mut objects[0..mid].to_vec(), time0, time1)
+                    BoundedVolumeHierarchy::create_bvh_arc(&mut objects[0..mid].to_vec(), time0, time1)
                         .clone();
                 right_child =
-                    BoundedVolumeHierarchy::create_bvh(&mut objects[mid..].to_vec(), time0, time1)
+                    BoundedVolumeHierarchy::create_bvh_arc(&mut objects[mid..].to_vec(), time0, time1)
                         .clone();
             }
         }
