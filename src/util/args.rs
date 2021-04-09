@@ -4,6 +4,7 @@ const PROGRAM_DESC: &str = "Trace some rays";
 
 pub struct ProgramOptions {
     pub create_little_spheres: bool,
+    pub use_bvh: bool,
 }
 
 pub fn parse_args(input: &[String]) -> Result<ProgramOptions, ArgsError> {
@@ -11,10 +12,16 @@ pub fn parse_args(input: &[String]) -> Result<ProgramOptions, ArgsError> {
 
     let mut args = Args::new(program_name.as_str(), PROGRAM_DESC);
     args.flag("s", "create_little_spheres", "Create little spheres");
+    args.flag(
+        "b",
+        "use_bvh",
+        "Use BoundedVolumeHierarchy instead of HittableVec",
+    );
 
     args.parse(input)?;
 
     Ok(ProgramOptions {
         create_little_spheres: args.value_of("create_little_spheres")?,
+        use_bvh: args.value_of("use_bvh")?,
     })
 }

@@ -1,9 +1,10 @@
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::{HitRecord, Hittable};
+use std::sync::Arc;
 
 pub struct HittableVec {
-    pub hittables: Vec<Box<dyn Hittable>>,
+    pub hittables: Vec<Arc<dyn Hittable>>,
 }
 
 impl Hittable for HittableVec {
@@ -21,13 +22,13 @@ impl Hittable for HittableVec {
     }
 
     fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
-        let mut winner = None;
+        let mut winner: Option<HitRecord> = None;
 
         for hittable in self.hittables.iter() {
             let result = hittable.is_hit_by(
                 ray,
                 min_value,
-                winner.as_ref().map_or(max_value, |hr: &HitRecord| hr.value),
+                winner.as_ref().map_or(max_value, |hr| hr.value),
             );
 
             if result.is_some() {

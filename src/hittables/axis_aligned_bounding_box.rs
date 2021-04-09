@@ -2,7 +2,7 @@ use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use std::mem;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Copy, Clone)]
 pub struct AxisAlignedBoundingBox {
     pub minimum: Point64,
     pub maximum: Point64,

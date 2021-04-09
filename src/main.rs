@@ -5,7 +5,6 @@ use image::{DynamicImage, ImageResult, Rgb, RgbImage};
 use rand::Rng;
 use threadpool::ThreadPool;
 
-use crate::util::args::ProgramOptions;
 use crate::util::colors::{get_rgb, ray_color};
 use crate::util::world::create_world;
 use camera::Camera;
@@ -34,7 +33,7 @@ fn main() -> ImageResult<()> {
     let max_depth = 50;
 
     // World
-    let world = create_world(options.create_little_spheres);
+    let world = create_world(options.create_little_spheres, options.use_bvh);
 
     // Camera
     let look_from = Point64::new(13.0, 2.0, 3.0);
