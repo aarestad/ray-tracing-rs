@@ -15,6 +15,7 @@ use crate::textures::perlin::PerlinGenerator;
 use crate::textures::solid_color::SolidColor;
 use rand::Rng;
 use std::sync::Arc;
+use crate::textures::image::ImageTexture;
 
 pub fn random_world(create_little_spheres: bool, use_bvh: bool) -> Arc<dyn Hittable> {
     let checker_pattern = Checker {
@@ -173,5 +174,19 @@ pub fn two_perlin_spheres(noise_type: NoiseType) -> Arc<dyn Hittable> {
                 material,
             }),
         ],
+    })
+}
+
+pub fn earf() -> Arc<dyn Hittable> {
+    Arc::new(HittableVec {
+        hittables: vec![
+            Arc::from(Sphere {
+                center: Point64::new(0., 0., 0.),
+                radius: 2.,
+                material: Arc::new(Lambertian {
+                    albedo: Arc::new(ImageTexture::new("resources/earthmap.jpg".into()))
+                }),
+            })
+        ]
     })
 }

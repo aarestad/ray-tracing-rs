@@ -1,6 +1,6 @@
 [package]
 name = "ray-tracer"
-version = "1.2.7"
+version = "2.6.0"
 authors = ["Peter Aarestad <aarestad@gmail.com>"]
 edition = "2018"
 description = "Trace some rays"

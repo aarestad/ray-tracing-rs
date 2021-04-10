@@ -378,7 +378,7 @@ dependencies = [
 
 [[package]]
 name = "ray-tracer"
-version = "1.2.7"
+version = "2.6.0"
 dependencies = [
  "args",
  "array-init",

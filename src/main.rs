@@ -7,7 +7,7 @@ use threadpool::ThreadPool;
 
 use crate::textures::noise::NoiseType::{Marble, Perlin, Turbulence};
 use crate::util::colors::{get_rgb, ray_color};
-use crate::util::worlds::{random_world, two_perlin_spheres, two_spheres};
+use crate::util::worlds::{earf, random_world, two_perlin_spheres, two_spheres};
 use camera::Camera;
 use data::color64::Color64;
 use data::point64::Point64;
@@ -35,7 +35,7 @@ fn main() -> ImageResult<()> {
     let max_depth = 50;
 
     // World
-    let world_choice = 0;
+    let world_choice = 5;
 
     let world = match world_choice {
         0 => random_world(options.create_little_spheres, options.use_bvh),
@@ -43,6 +43,7 @@ fn main() -> ImageResult<()> {
         2 => two_perlin_spheres(Perlin),
         3 => two_perlin_spheres(Turbulence),
         4 => two_perlin_spheres(Marble),
+        5 => earf(),
         _ => panic!("bad world choice: {}", world_choice),
     };
 

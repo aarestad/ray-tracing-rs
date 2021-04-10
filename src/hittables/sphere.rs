@@ -4,7 +4,7 @@ use crate::data::vec3_64::Vec3_64;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::{HitRecord, Hittable};
 use crate::materials::Material;
-use std::f64::consts::PI;
+use std::f64::consts::{PI, TAU};
 use std::sync::Arc;
 
 #[derive(Clone)]
@@ -15,10 +15,10 @@ pub struct Sphere {
 }
 
 pub(crate) fn get_sphere_uv(p: Point64) -> (f64, f64) {
-    let theta = -p.y().acos();
-    let phi = -p.z().atan2(p.x()) + PI;
+    let theta = (-p.y()).acos();
+    let phi = (-p.z()).atan2(p.x()) + PI;
 
-    (phi / 2. * PI, theta / PI)
+    (phi / TAU, theta / PI)
 }
 
 impl Hittable for Sphere {
