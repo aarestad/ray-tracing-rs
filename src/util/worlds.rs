@@ -140,7 +140,7 @@ pub fn two_spheres() -> Arc<dyn Hittable> {
             Box::from(Sphere {
                 center: Point64::new(0., 10., 0.),
                 radius: 10.,
-                material: material.clone(),
+                material,
             }),
         ],
     })
@@ -163,7 +163,7 @@ pub fn two_perlin_spheres() -> Arc<dyn Hittable> {
             Box::from(Sphere {
                 center: Point64::new(0., 2., 0.),
                 radius: 2.,
-                material: material.clone(),
+                material,
             }),
         ],
     })

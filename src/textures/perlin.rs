@@ -24,29 +24,32 @@ impl PerlinGenerator {
         }
     }
 
-    pub fn noise(&self, p: &Point64) -> f64 {
-        let u = p.x() - p.x().floor();
-        let v = p.y() - p.y().floor();
-        let w = p.z() - p.z().floor();
+    pub fn noise(&self, point: &Point64) -> f64 {
+        let uvw = (
+            point.x() - point.x().floor(),
+            point.y() - point.y().floor(),
+            point.z() - point.z().floor(),
+        );
 
-        let i = p.x().floor() as i32;
-        let j = p.y().floor() as i32;
-        let k = p.z().floor() as i32;
+        let ijk = (
+            point.x().floor() as i32,
+            point.y().floor() as i32,
+            point.z().floor() as i32,
+        );
 
         let mut c = &mut [[[0.; 2]; 2]; 2];
 
-        for di in 0..2 {
-            for dj in 0..2 {
-                for dk in 0..2 {
-                    c[di][dj][dk] = self.random_floats[self.perm_x
-                        [((i + di as i32) & 255) as usize]
-                        ^ self.perm_y[((j + dj as i32) & 255) as usize]
-                        ^ self.perm_z[((k + dk as i32) & 255) as usize]];
+        for (di, ci) in c.iter_mut().enumerate() {
+            for (dj, cj) in ci.iter_mut().enumerate() {
+                for (dk, ck) in cj.iter_mut().enumerate() {
+                    *ck = self.random_floats[self.perm_x[((ijk.0 + di as i32) & 255) as usize]
+                        ^ self.perm_y[((ijk.1 + dj as i32) & 255) as usize]
+                        ^ self.perm_z[((ijk.2 + dk as i32) & 255) as usize]];
                 }
             }
         }
 
-        trilinear_interp(&mut c, u, v, w)
+        trilinear_interp(&mut c, uvw)
     }
 }
 
@@ -65,20 +68,20 @@ fn permute(arr: &mut [usize; POINT_COUNT], n: usize) {
     });
 }
 
-fn trilinear_interp(c: &mut [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+fn trilinear_interp(c: &mut [[[f64; 2]; 2]; 2], uvw: (f64, f64, f64)) -> f64 {
     let mut accum = 0.0;
 
-    for i in 0..2 {
-        for j in 0..2 {
-            for k in 0..2 {
+    for (i, ci) in c.iter().enumerate() {
+        for (j, cj) in ci.iter().enumerate() {
+            for (k, ck) in cj.iter().enumerate() {
                 let fi = i as f64;
                 let fj = j as f64;
                 let fk = k as f64;
 
-                accum += (fi * u + (1. - fi) * (1. - u))
-                    * (fj * v + (1. - fj) * (1. - v))
-                    * (fk * w + (1. - fk) * (1. - w))
-                    * c[i][j][k];
+                accum += (fi * uvw.0 + (1. - fi) * (1. - uvw.0))
+                    * (fj * uvw.1 + (1. - fj) * (1. - uvw.1))
+                    * (fk * uvw.2 + (1. - fk) * (1. - uvw.2))
+                    * ck;
             }
         }
     }
