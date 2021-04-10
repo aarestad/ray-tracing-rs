@@ -38,7 +38,7 @@ fn main() -> ImageResult<()> {
     let world_choice = 0;
 
     let world = match world_choice {
-        0 => random_world(options.create_little_spheres),
+        0 => random_world(options.create_little_spheres, options.use_bvh),
         1 => two_spheres(),
         2 => two_perlin_spheres(Perlin),
         3 => two_perlin_spheres(Turbulence),
