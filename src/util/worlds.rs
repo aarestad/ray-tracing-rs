@@ -1,6 +1,7 @@
 use crate::data::color64::Color64;
 use crate::data::point64::Point64;
 use crate::data::vec3_64::Vec3_64;
+use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
 use crate::hittables::hittable_vec::HittableVec;
 use crate::hittables::moving_sphere::MovingSphere;
 use crate::hittables::sphere::Sphere;
@@ -15,13 +16,13 @@ use crate::textures::solid_color::SolidColor;
 use rand::Rng;
 use std::sync::Arc;
 
-pub fn random_world(create_little_spheres: bool) -> Arc<dyn Hittable> {
+pub fn random_world(create_little_spheres: bool, use_bvh: bool) -> Arc<dyn Hittable> {
     let checker_pattern = Checker {
         odd: SolidColor::arc_from(Color64::new(0.2, 0.3, 0.1)),
         even: SolidColor::arc_from(Color64::new(0.9, 0.9, 0.9)),
     };
 
-    let mut hittables: Vec<Box<dyn Hittable>> = vec![Box::new(Sphere {
+    let mut hittables: Vec<Arc<dyn Hittable>> = vec![Arc::from(Sphere {
         center: Point64::new(0., -1000., 0.),
         radius: 1000.,
         material: Arc::new(Lambertian {
@@ -50,7 +51,7 @@ pub fn random_world(create_little_spheres: bool) -> Arc<dyn Hittable> {
                 if (*center - *reference_point).magnitude() > 0.9 {
                     if choose_mat < 0.1 {
                         // 10% moving Lambertian spheres
-                        hittables.push(Box::new(MovingSphere {
+                        hittables.push(Arc::new(MovingSphere {
                             center0: center,
                             center1: Point64(*center + Vec3_64(0., rng.gen(), 0.)),
                             time0: 0.,
@@ -64,7 +65,7 @@ pub fn random_world(create_little_spheres: bool) -> Arc<dyn Hittable> {
                         }));
                     } else if choose_mat < 0.8 {
                         // 70% stationary Lambertian spheres
-                        hittables.push(Box::new(Sphere {
+                        hittables.push(Arc::new(Sphere {
                             center,
                             radius: 0.2,
                             material: Arc::new(Lambertian {
@@ -75,7 +76,7 @@ pub fn random_world(create_little_spheres: bool) -> Arc<dyn Hittable> {
                         }));
                     } else if choose_mat < 0.95 {
                         // 15% metal spheres
-                        hittables.push(Box::new(Sphere {
+                        hittables.push(Arc::new(Sphere {
                             center,
                             radius: 0.2,
                             material: Arc::new(Metal {
@@ -85,7 +86,7 @@ pub fn random_world(create_little_spheres: bool) -> Arc<dyn Hittable> {
                         }));
                     } else {
                         // 5% glass
-                        hittables.push(Box::new(Sphere {
+                        hittables.push(Arc::new(Sphere {
                             center,
                             radius: 0.2,
                             material: glass.clone(),
@@ -96,30 +97,34 @@ pub fn random_world(create_little_spheres: bool) -> Arc<dyn Hittable> {
         }
     }
 
-    hittables.push(Box::new(Sphere {
-        center: Point64::new(0., 1., 0.),
-        radius: 1.,
+    hittables.push(Arc::new(Sphere {
+        center: Point64::new(0.0, 1.0, 0.0),
+        radius: 1.0,
         material: glass,
     }));
 
-    hittables.push(Box::new(Sphere {
-        center: Point64::new(-4., 1., 0.),
-        radius: 1.,
+    hittables.push(Arc::new(Sphere {
+        center: Point64::new(-4.0, 1.0, 0.0),
+        radius: 1.0,
         material: Arc::new(Lambertian {
             albedo: SolidColor::arc_from(Color64::new(0.4, 0.2, 0.1)),
         }),
     }));
 
-    hittables.push(Box::new(Sphere {
-        center: Point64::new(4., 1., 0.),
-        radius: 1.,
+    hittables.push(Arc::new(Sphere {
+        center: Point64::new(4.0, 1.0, 0.0),
+        radius: 1.0,
         material: Arc::new(Metal {
             albedo: Color64::new(0.7, 0.6, 0.5),
             fuzz: 0.,
         }),
     }));
 
-    Arc::new(HittableVec { hittables })
+    if use_bvh {
+        BoundedVolumeHierarchy::create_bvh_arc(&mut hittables, 0.0, 1.0)
+    } else {
+        Arc::new(HittableVec { hittables })
+    }
 }
 
 pub fn two_spheres() -> Arc<dyn Hittable> {
