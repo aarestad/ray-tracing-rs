@@ -9,15 +9,24 @@ use crate::hittables::Hittable;
 use crate::materials::dielectric::Dielectric;
 use crate::materials::lambertian::Lambertian;
 use crate::materials::metal::Metal;
+use crate::textures::checker::Checker;
+use crate::textures::noise::{Noise, NoiseType};
+use crate::textures::perlin::PerlinGenerator;
+use crate::textures::solid_color::SolidColor;
 use rand::Rng;
 use std::sync::Arc;
 
-pub fn create_world(create_little_spheres: bool, use_bvh: bool) -> Arc<dyn Hittable> {
+pub fn random_world(create_little_spheres: bool, use_bvh: bool) -> Arc<dyn Hittable> {
+    let checker_pattern = Checker {
+        odd: SolidColor::arc_from(Color64::new(0.2, 0.3, 0.1)),
+        even: SolidColor::arc_from(Color64::new(0.9, 0.9, 0.9)),
+    };
+
     let mut hittables: Vec<Arc<dyn Hittable>> = vec![Arc::from(Sphere {
-        center: Point64::new(0.0, -1000.0, 0.0),
-        radius: 1000.0,
+        center: Point64::new(0., -1000., 0.),
+        radius: 1000.,
         material: Arc::new(Lambertian {
-            color: Color64::new(0.5, 0.5, 0.5),
+            albedo: Arc::new(checker_pattern),
         }),
     })];
 
@@ -28,7 +37,7 @@ pub fn create_world(create_little_spheres: bool, use_bvh: bool) -> Arc<dyn Hitta
     if create_little_spheres {
         let mut rng = rand::thread_rng();
 
-        let reference_point = Point64::new(4.0, 0.2, 0.0);
+        let reference_point = Point64::new(4., 0.2, 0.);
 
         for a in 0..22 {
             for b in 0..22 {
@@ -44,12 +53,14 @@ pub fn create_world(create_little_spheres: bool, use_bvh: bool) -> Arc<dyn Hitta
                         // 10% moving Lambertian spheres
                         hittables.push(Arc::new(MovingSphere {
                             center0: center,
-                            center1: Point64(*center + Vec3_64(0.0, rng.gen(), 0.0)),
-                            time0: 0.0,
-                            time1: 1.0,
+                            center1: Point64(*center + Vec3_64(0., rng.gen(), 0.)),
+                            time0: 0.,
+                            time1: 1.,
                             radius: 0.2,
                             material: Arc::new(Lambertian {
-                                color: Color64(Vec3_64::random() * Vec3_64::random()),
+                                albedo: SolidColor::arc_from(Color64(
+                                    Vec3_64::random_in_unit_cube() * Vec3_64::random_in_unit_cube(),
+                                )),
                             }),
                         }));
                     } else if choose_mat < 0.8 {
@@ -58,7 +69,9 @@ pub fn create_world(create_little_spheres: bool, use_bvh: bool) -> Arc<dyn Hitta
                             center,
                             radius: 0.2,
                             material: Arc::new(Lambertian {
-                                color: Color64(Vec3_64::random() * Vec3_64::random()),
+                                albedo: SolidColor::arc_from(Color64(
+                                    Vec3_64::random_in_unit_cube() * Vec3_64::random_in_unit_cube(),
+                                )),
                             }),
                         }));
                     } else if choose_mat < 0.95 {
@@ -67,7 +80,7 @@ pub fn create_world(create_little_spheres: bool, use_bvh: bool) -> Arc<dyn Hitta
                             center,
                             radius: 0.2,
                             material: Arc::new(Metal {
-                                albedo: Color64(Vec3_64::rand_range(0.5, 1.0)),
+                                albedo: Color64(Vec3_64::rand_range(0.5, 1.)),
                                 fuzz: rng.gen_range(0.0..0.5),
                             }),
                         }));
@@ -94,7 +107,7 @@ pub fn create_world(create_little_spheres: bool, use_bvh: bool) -> Arc<dyn Hitta
         center: Point64::new(-4.0, 1.0, 0.0),
         radius: 1.0,
         material: Arc::new(Lambertian {
-            color: Color64::new(0.4, 0.2, 0.1),
+            albedo: SolidColor::arc_from(Color64::new(0.4, 0.2, 0.1)),
         }),
     }));
 
@@ -103,7 +116,7 @@ pub fn create_world(create_little_spheres: bool, use_bvh: bool) -> Arc<dyn Hitta
         radius: 1.0,
         material: Arc::new(Metal {
             albedo: Color64::new(0.7, 0.6, 0.5),
-            fuzz: 0.0,
+            fuzz: 0.,
         }),
     }));
 
@@ -112,4 +125,53 @@ pub fn create_world(create_little_spheres: bool, use_bvh: bool) -> Arc<dyn Hitta
     } else {
         Arc::new(HittableVec { hittables })
     }
+}
+
+pub fn two_spheres() -> Arc<dyn Hittable> {
+    let material = Arc::from(Lambertian {
+        albedo: Arc::from(Checker {
+            odd: SolidColor::arc_from(Color64::new(0.2, 0.3, 0.1)),
+            even: SolidColor::arc_from(Color64::new(0.9, 0.9, 0.9)),
+        }),
+    });
+
+    Arc::new(HittableVec {
+        hittables: vec![
+            Arc::from(Sphere {
+                center: Point64::new(0., -10., 0.),
+                radius: 10.,
+                material: material.clone(),
+            }),
+            Arc::from(Sphere {
+                center: Point64::new(0., 10., 0.),
+                radius: 10.,
+                material,
+            }),
+        ],
+    })
+}
+
+pub fn two_perlin_spheres(noise_type: NoiseType) -> Arc<dyn Hittable> {
+    let material = Arc::from(Lambertian {
+        albedo: Arc::from(Noise {
+            noise_gen: PerlinGenerator::new(),
+            scale: 4.,
+            noise_type,
+        }),
+    });
+
+    Arc::new(HittableVec {
+        hittables: vec![
+            Arc::from(Sphere {
+                center: Point64::new(0., -1000., 0.),
+                radius: 1000.,
+                material: material.clone(),
+            }),
+            Arc::from(Sphere {
+                center: Point64::new(0., 2., 0.),
+                radius: 2.,
+                material,
+            }),
+        ],
+    })
 }

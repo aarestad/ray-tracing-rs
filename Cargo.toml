@@ -9,7 +9,9 @@ description = "Trace some rays"
 
 [dependencies]
 rand = "0.8.3"
+rand_distr = "0.4.0"
 image = "0.23.14"
 threadpool = "1.8.1"
 num_cpus = "1.13.0"
 args = "2.2.0"
+array-init = "2.0.0"

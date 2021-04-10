@@ -30,8 +30,8 @@ impl Camera {
         exposure_time0: f64,
         exposure_time1: f64,
     ) -> Camera {
-        let h = (vfov_deg.to_radians() / 2.0).tan();
-        let viewport_height = 2.0 * h;
+        let h = (vfov_deg.to_radians() / 2.).tan();
+        let viewport_height = 2. * h;
         let viewport_width = aspect_ratio * viewport_height;
 
         let w = Point64((*look_from - *look_at).normalized());
@@ -49,9 +49,9 @@ impl Camera {
             v,
             _w: w,
             lower_left_corner: Point64(
-                *look_from - *horizontal / 2.0 - *vertical / 2.0 - *w * focus_dist,
+                *look_from - *horizontal / 2. - *vertical / 2. - *w * focus_dist,
             ),
-            lens_radius: aperture / 2.0,
+            lens_radius: aperture / 2.,
             exposure_time0,
             exposure_time1,
         }

@@ -5,8 +5,9 @@ use image::{DynamicImage, ImageResult, Rgb, RgbImage};
 use rand::Rng;
 use threadpool::ThreadPool;
 
+use crate::textures::noise::NoiseType::{Marble, Perlin, Turbulence};
 use crate::util::colors::{get_rgb, ray_color};
-use crate::util::world::create_world;
+use crate::util::worlds::{random_world, two_perlin_spheres, two_spheres};
 use camera::Camera;
 use data::color64::Color64;
 use data::point64::Point64;
@@ -18,6 +19,7 @@ mod camera;
 mod data;
 mod hittables;
 mod materials;
+mod textures;
 mod util;
 
 fn main() -> ImageResult<()> {
@@ -25,7 +27,7 @@ fn main() -> ImageResult<()> {
     let options = parse_args(&args).expect("bad args!");
 
     // Image
-    let aspect_ratio = 16.0 / 9.0;
+    let aspect_ratio = 16. / 9.;
     let image_width: u32 = 960;
     let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
     let samples_per_pixel = 100;
@@ -33,22 +35,31 @@ fn main() -> ImageResult<()> {
     let max_depth = 50;
 
     // World
-    let world = create_world(options.create_little_spheres, options.use_bvh);
+    let world_choice = 0;
+
+    let world = match world_choice {
+        0 => random_world(options.create_little_spheres, options.use_bvh),
+        1 => two_spheres(),
+        2 => two_perlin_spheres(Perlin),
+        3 => two_perlin_spheres(Turbulence),
+        4 => two_perlin_spheres(Marble),
+        _ => panic!("bad world choice: {}", world_choice),
+    };
 
     // Camera
-    let look_from = Point64::new(13.0, 2.0, 3.0);
-    let look_at = Point64::new(0.0, 0.0, 0.0);
+    let look_from = Point64::new(13., 2., 3.);
+    let look_at = Point64::new(0., 0., 0.);
 
     let camera = Arc::new(Camera::new(
         look_from,
         look_at,
-        Vec3_64(0.0, 1.0, 0.0),
-        20.0,
+        Vec3_64(0., 1., 0.),
+        20.,
         aspect_ratio,
-        0.1,
+        0.,
         (*look_from - *look_at).magnitude(),
-        0.0,
-        1.0,
+        0.,
+        1.,
     ));
 
     let pool = ThreadPool::new(num_cpus::get());
@@ -61,7 +72,7 @@ fn main() -> ImageResult<()> {
             let camera = camera.clone();
 
             pool.execute(move || {
-                let mut pixel_color = Color64::new(0.0, 0.0, 0.0);
+                let mut pixel_color = Color64::new(0., 0., 0.);
                 let mut rng = rand::thread_rng();
 
                 for _ in 0..samples_per_pixel {

@@ -20,6 +20,10 @@ impl Color64 {
     pub fn b(&self) -> f64 {
         self.0 .2
     }
+
+    pub fn gray(gray_level: f64) -> Self {
+        Color64(Vec3_64(gray_level, gray_level, gray_level))
+    }
 }
 
 impl Deref for Color64 {

@@ -2,6 +2,7 @@ use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::data::vec3_64::Vec3_64;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
+use crate::hittables::sphere::get_sphere_uv;
 use crate::hittables::{HitRecord, Hittable};
 use crate::materials::Material;
 use std::sync::Arc;
@@ -55,7 +56,7 @@ impl Hittable for MovingSphere {
         let root_one = (-half_b - sqrt_discriminant) / a;
         let root_two = (-half_b + sqrt_discriminant) / a;
 
-        if discriminant >= 0.0 {
+        if discriminant >= 0. {
             let root_one_in_range = min_value < root_one && root_one < max_value;
             let root_two_in_range = min_value < root_two && root_two < max_value;
 
@@ -70,7 +71,13 @@ impl Hittable for MovingSphere {
                 let outward_normal =
                     Point64((*location - *self.center_at(ray.exposure_time)) / self.radius);
 
-                Some(HitRecord::new(root, ray, outward_normal, &self.material))
+                Some(HitRecord::new(
+                    root,
+                    ray,
+                    outward_normal,
+                    &self.material,
+                    get_sphere_uv(outward_normal),
+                ))
             } else {
                 None
             }

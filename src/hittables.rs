@@ -15,6 +15,8 @@ pub mod sphere;
 #[derive(Clone)]
 pub struct HitRecord {
     pub value: f64,
+    pub u: f64,
+    pub v: f64,
     pub location: Point64,
     pub normal: Point64,
     pub front_face: bool,
@@ -27,8 +29,9 @@ impl HitRecord {
         ray: &Ray,
         outward_normal: Point64,
         material: &Arc<dyn Material>,
+        uv: (f64, f64),
     ) -> HitRecord {
-        let front_face = ray.direction.dot(&outward_normal) < 0.0;
+        let front_face = ray.direction.dot(&outward_normal) < 0.;
 
         let normal = if front_face {
             outward_normal
@@ -38,6 +41,8 @@ impl HitRecord {
 
         HitRecord {
             value,
+            u: uv.0,
+            v: uv.1,
             location: ray.point_at_parameter(value),
             normal,
             front_face,

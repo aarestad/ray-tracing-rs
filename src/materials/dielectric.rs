@@ -6,9 +6,9 @@ use crate::materials::{Material, ScatterRecord};
 
 fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
     // Use Schlick's approximation for reflectance
-    let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+    let mut r0 = (1. - ref_idx) / (1. + ref_idx);
     r0 = r0.powi(2);
-    r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
+    r0 + (1. - r0) * (1. - cosine).powi(5)
 }
 
 pub struct Dielectric {
@@ -18,16 +18,16 @@ pub struct Dielectric {
 impl Material for Dielectric {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
         let refraction_ratio = if hit_record.front_face {
-            1.0 / self.index_of_refraction
+            1. / self.index_of_refraction
         } else {
             self.index_of_refraction
         };
 
         let unit_direction = ray_in.direction.normalized();
 
-        let cos_theta = -unit_direction.dot(&*hit_record.normal).min(1.0);
-        let sin_theta = (1.0 - cos_theta.powi(2)).sqrt();
-        let cannot_refract = refraction_ratio * sin_theta > 1.0;
+        let cos_theta = -unit_direction.dot(&*hit_record.normal).min(1.);
+        let sin_theta = (1. - cos_theta.powi(2)).sqrt();
+        let cannot_refract = refraction_ratio * sin_theta > 1.;
 
         let direction =
             if cannot_refract || reflectance(cos_theta, refraction_ratio) > rand::random() {
@@ -38,7 +38,7 @@ impl Material for Dielectric {
 
         Some(ScatterRecord {
             hit_record: hit_record.clone(),
-            attenuation: Color64::new(1.0, 1.0, 1.0),
+            attenuation: Color64::new(1., 1., 1.),
             scattered: Ray {
                 origin: hit_record.location,
                 direction: Point64(direction),
