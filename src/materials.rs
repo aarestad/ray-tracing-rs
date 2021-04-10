@@ -4,6 +4,7 @@ use crate::data::ray::Ray;
 use crate::hittables::HitRecord;
 
 pub mod dielectric;
+pub mod diffuse_light;
 pub mod lambertian;
 pub mod metal;
 
