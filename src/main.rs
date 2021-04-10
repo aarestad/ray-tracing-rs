@@ -6,7 +6,7 @@ use rand::Rng;
 use threadpool::ThreadPool;
 
 use crate::util::colors::{get_rgb, ray_color};
-use crate::util::world::create_world;
+use crate::util::world::{random_world, two_spheres};
 use camera::Camera;
 use data::color64::Color64;
 use data::point64::Point64;
@@ -34,7 +34,8 @@ fn main() -> ImageResult<()> {
     let max_depth = 50;
 
     // World
-    let world = create_world(options.create_little_spheres);
+    // let world = random_world(options.create_little_spheres);
+    let world = two_spheres();
 
     // Camera
     let look_from = Point64::new(13.0, 2.0, 3.0);
@@ -46,7 +47,7 @@ fn main() -> ImageResult<()> {
         Vec3_64(0.0, 1.0, 0.0),
         20.0,
         aspect_ratio,
-        0.1,
+        0.0,
         (*look_from - *look_at).magnitude(),
         0.0,
         1.0,

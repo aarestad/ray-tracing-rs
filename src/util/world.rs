@@ -13,7 +13,7 @@ use rand::Rng;
 use std::sync::Arc;
 use crate::textures::checker::Checker;
 
-pub fn create_world(create_little_spheres: bool) -> Arc<dyn Hittable + Send + Sync> {
+pub fn random_world(create_little_spheres: bool) -> Arc<dyn Hittable> {
     let checker_pattern = Checker {
         odd: SolidColor::arc_from(Color64::new(0.2, 0.3, 0.1)),
         even: SolidColor::arc_from(Color64::new(0.9, 0.9, 0.9)),
@@ -118,4 +118,28 @@ pub fn create_world(create_little_spheres: bool) -> Arc<dyn Hittable + Send + Sy
     }));
 
     Arc::new(HittableVec { hittables })
+}
+
+pub fn two_spheres() -> Arc<dyn Hittable> {
+    let material = Arc::from(Lambertian {
+        albedo: Arc::from(Checker {
+            odd: SolidColor::arc_from(Color64::new(0.2, 0.3, 0.1)),
+            even: SolidColor::arc_from(Color64::new(0.9, 0.9, 0.9)),
+        }),
+    });
+
+    Arc::new(HittableVec {
+        hittables: vec![
+            Box::from(Sphere {
+                center: Point64::new(0., -10., 0.),
+                radius: 10.,
+                material: material.clone(),
+            }),
+            Box::from(Sphere {
+                center: Point64::new(0., 10., 0.),
+                radius: 10.,
+                material: material.clone(),
+            }),
+        ]
+    })
 }
