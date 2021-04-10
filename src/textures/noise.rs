@@ -11,6 +11,8 @@ pub struct Noise {
 
 impl Texture for Noise {
     fn value(&self, _u: f64, _v: f64, point: &Point64) -> Color64 {
-        Color64(Vec3_64(1., 1., 1.) * self.noise_gen.noise(&Point64(self.scale * **point)))
+        Color64(
+            Vec3_64(1., 1., 1.) * 0.5 * (1. + self.noise_gen.noise(&Point64(self.scale * **point))),
+        )
     }
 }
