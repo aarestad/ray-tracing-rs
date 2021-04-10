@@ -56,7 +56,7 @@ impl Hittable for MovingSphere {
         let root_one = (-half_b - sqrt_discriminant) / a;
         let root_two = (-half_b + sqrt_discriminant) / a;
 
-        if discriminant >= 0.0 {
+        if discriminant >= 0. {
             let root_one_in_range = min_value < root_one && root_one < max_value;
             let root_two_in_range = min_value < root_two && root_two < max_value;
 

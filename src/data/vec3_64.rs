@@ -42,7 +42,7 @@ impl Vec3_64 {
     }
 
     pub fn random_in_unit_cube() -> Vec3_64 {
-        Self::rand_range(0.0, 1.0)
+        Self::rand_range(0., 1.)
     }
 
     pub fn random_in_unit_sphere() -> Vec3_64 {
@@ -75,13 +75,13 @@ impl Vec3_64 {
     }
 
     pub fn reflect(&self, normal: &Vec3_64) -> Vec3_64 {
-        *self - 2.0 * (*self).dot(normal) * *normal
+        *self - 2. * (*self).dot(normal) * *normal
     }
 
     pub fn refract(&self, normal: &Vec3_64, etai_over_etat: f64) -> Vec3_64 {
-        let cos_theta = -self.dot(normal).min(1.0);
+        let cos_theta = -self.dot(normal).min(1.);
         let r_out_normal = etai_over_etat * (*self + cos_theta * *normal);
-        let r_out_parallel = -(1.0 - r_out_normal.mag_squared()).abs().sqrt() * *normal;
+        let r_out_parallel = -(1. - r_out_normal.mag_squared()).abs().sqrt() * *normal;
         r_out_normal + r_out_parallel
     }
 }

@@ -54,6 +54,20 @@ impl PerlinGenerator {
 
         trilinear_interp(&mut c, uvw)
     }
+
+    pub fn turbulence(&self, point: &Point64, depth: i32) -> f64 {
+        let mut accum = 0.;
+        let mut temp_p = *point;
+        let mut weight = 1.;
+
+        (0..depth).for_each(|_| {
+            accum += weight * self.noise(&temp_p);
+            weight *= 0.5;
+            temp_p = Point64(*temp_p * 2.);
+        });
+
+        accum.abs()
+    }
 }
 
 fn perlin_generate_perm() -> [usize; POINT_COUNT] {
@@ -78,7 +92,7 @@ fn trilinear_interp(c: &mut [[[Vec3_64; 2]; 2]; 2], uvw: (f64, f64, f64)) -> f64
         uvw.2.powi(2) * (3. - 2. * uvw.2),
     );
 
-    let mut accum = 0.0;
+    let mut accum = 0.;
 
     for (i, ci) in c.iter().enumerate() {
         for (j, cj) in ci.iter().enumerate() {

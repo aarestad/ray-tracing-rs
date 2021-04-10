@@ -31,7 +31,7 @@ impl HitRecord {
         material: &Arc<dyn Material>,
         uv: (f64, f64),
     ) -> HitRecord {
-        let front_face = ray.direction.dot(&outward_normal) < 0.0;
+        let front_face = ray.direction.dot(&outward_normal) < 0.;
 
         let normal = if front_face {
             outward_normal
