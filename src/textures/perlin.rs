@@ -25,10 +25,16 @@ impl PerlinGenerator {
     }
 
     pub fn noise(&self, point: &Point64) -> f64 {
-        let uvw = (
+        let mut uvw = (
             point.x() - point.x().floor(),
             point.y() - point.y().floor(),
             point.z() - point.z().floor(),
+        );
+
+        uvw = (
+            uvw.0.powi(2) * (3. - 2. * uvw.0),
+            uvw.1.powi(2) * (3. - 2. * uvw.1),
+            uvw.2.powi(2) * (3. - 2. * uvw.2),
         );
 
         let ijk = (
