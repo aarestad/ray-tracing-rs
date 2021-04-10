@@ -8,6 +8,7 @@ use crate::hittables::Hittable;
 use crate::materials::dielectric::Dielectric;
 use crate::materials::lambertian::Lambertian;
 use crate::materials::metal::Metal;
+use crate::textures::solid_color::SolidColor;
 use rand::Rng;
 use std::sync::Arc;
 
@@ -16,7 +17,7 @@ pub fn create_world(create_little_spheres: bool) -> Arc<dyn Hittable + Send + Sy
         center: Point64::new(0.0, -1000.0, 0.0),
         radius: 1000.0,
         material: Arc::new(Lambertian {
-            color: Color64::new(0.5, 0.5, 0.5),
+            albedo: SolidColor::arc_from(Color64::new(0.5, 0.5, 0.5)),
         }),
     })];
 
@@ -48,7 +49,7 @@ pub fn create_world(create_little_spheres: bool) -> Arc<dyn Hittable + Send + Sy
                             time1: 1.0,
                             radius: 0.2,
                             material: Arc::new(Lambertian {
-                                color: Color64(Vec3_64::random() * Vec3_64::random()),
+                                albedo: SolidColor::arc_from(Color64(Vec3_64::random() * Vec3_64::random())),
                             }),
                         }));
                     } else if choose_mat < 0.8 {
@@ -57,7 +58,7 @@ pub fn create_world(create_little_spheres: bool) -> Arc<dyn Hittable + Send + Sy
                             center,
                             radius: 0.2,
                             material: Arc::new(Lambertian {
-                                color: Color64(Vec3_64::random() * Vec3_64::random()),
+                                albedo: SolidColor::arc_from(Color64(Vec3_64::random() * Vec3_64::random())),
                             }),
                         }));
                     } else if choose_mat < 0.95 {
@@ -93,7 +94,7 @@ pub fn create_world(create_little_spheres: bool) -> Arc<dyn Hittable + Send + Sy
         center: Point64::new(-4.0, 1.0, 0.0),
         radius: 1.0,
         material: Arc::new(Lambertian {
-            color: Color64::new(0.4, 0.2, 0.1),
+            albedo: SolidColor::arc_from(Color64::new(0.4, 0.2, 0.1)),
         }),
     }));
 

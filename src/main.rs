@@ -19,6 +19,7 @@ mod data;
 mod hittables;
 mod materials;
 mod util;
+mod textures;
 
 fn main() -> ImageResult<()> {
     let args: Vec<String> = env::args().collect();

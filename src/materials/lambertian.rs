@@ -1,12 +1,13 @@
-use crate::data::color64::Color64;
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::data::vec3_64::Vec3_64;
 use crate::hittables::HitRecord;
 use crate::materials::{Material, ScatterRecord};
+use std::sync::Arc;
+use crate::textures::Texture;
 
 pub struct Lambertian {
-    pub color: Color64,
+    pub albedo: Arc<dyn Texture>,
 }
 
 impl Material for Lambertian {
@@ -15,8 +16,7 @@ impl Material for Lambertian {
 
         Some(ScatterRecord {
             hit_record: hit_record.clone(),
-            attenuation: self.color,
-
+            attenuation: self.albedo.value(hit_record.u, hit_record.v, &hit_record.location),
             scattered: Ray {
                 origin: hit_record.location,
                 direction: if scatter_direction.near_zero() {

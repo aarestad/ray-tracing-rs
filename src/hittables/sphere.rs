@@ -5,12 +5,20 @@ use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::{HitRecord, Hittable};
 use crate::materials::Material;
 use std::sync::Arc;
+use std::f64::consts::PI;
 
 #[derive(Clone)]
 pub struct Sphere {
     pub center: Point64,
     pub radius: f64,
     pub material: Arc<dyn Material>,
+}
+
+fn get_sphere_uv(p: Point64) -> (f64, f64) {
+    let theta = -p.y().acos();
+    let phi = -p.z().atan2(p.x()) + PI;
+
+    (phi / 2. * PI, theta / PI)
 }
 
 impl Hittable for Sphere {
@@ -45,7 +53,7 @@ impl Hittable for Sphere {
                 let location = ray.point_at_parameter(root);
                 let outward_normal = Point64((*location - *self.center) / self.radius);
 
-                Some(HitRecord::new(root, ray, outward_normal, &self.material))
+                Some(HitRecord::new(root, ray, outward_normal, &self.material, get_sphere_uv(outward_normal)))
             } else {
                 None
             }
