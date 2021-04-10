@@ -6,7 +6,7 @@ use std::ops::{Deref, DerefMut};
 pub struct Color64(pub Vec3_64);
 
 pub const WHITE: Color64 = Color64::new(1., 1., 1.);
-pub const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.);
+pub const LIGHT_BLUE: Color64 = Color64::new(0.7, 0.8, 1.);
 pub const BLACK: Color64 = Color64::new(0., 0., 0.);
 
 impl Color64 {

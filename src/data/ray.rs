@@ -15,35 +15,50 @@ impl Ray {
         Point64(*self.origin + t * *self.direction)
     }
 
-    pub fn color_in_world(&self, world: &dyn Hittable) -> Color64 {
-        self.color_in_world_recurse(world, MAX_DEPTH)
+    pub fn color_in_world(&self, world: &dyn Hittable, background: &Color64) -> Color64 {
+        self.color_in_world_recurse(world, background, MAX_DEPTH)
     }
 
-    fn color_in_world_recurse(&self, world: &dyn Hittable, depth: i32) -> Color64 {
+    fn color_in_world_recurse(
+        &self,
+        world: &dyn Hittable,
+        background: &Color64,
+        depth: i32,
+    ) -> Color64 {
         if depth < 1 {
             return BLACK;
         }
 
-        let hit_record = world.is_hit_by(self, 0.01, f64::INFINITY);
+        let hit_record = world.is_hit_by(self, 0.001, f64::INFINITY);
 
         match hit_record {
-            Some(hit_record) => match hit_record.material.scatter(self, &hit_record) {
-                Some(scatter_record) => Color64(
-                    *(scatter_record.attenuation)
-                        * *scatter_record
-                            .scattered
-                            .color_in_world_recurse(world, depth - 1),
-                ),
-                None => BLACK,
-            },
-
-            None => {
-                let unit_direction = Point64((*self.direction).normalized());
-                let color_factor = 0.5 * (unit_direction.y() + 1.);
-                let white_amt = (1. - color_factor) * *WHITE;
-                let blue_amt = color_factor * *LIGHT_BLUE;
-                Color64(white_amt + blue_amt)
+            Some(hit_record) => {
+                let emitted =
+                    hit_record
+                        .material
+                        .emitted(hit_record.u, hit_record.v, &hit_record.location);
+                match hit_record.material.scatter(self, &hit_record) {
+                    Some(scatter_record) => Color64(
+                        *emitted
+                            + (*scatter_record.attenuation
+                                * *scatter_record.scattered.color_in_world_recurse(
+                                    world,
+                                    background,
+                                    depth - 1,
+                                )),
+                    ),
+                    None => emitted,
+                }
             }
+
+            // None => {
+            //     let unit_direction = Point64((*self.direction).normalized());
+            //     let color_factor = 0.5 * (unit_direction.y() + 1.);
+            //     let white_amt = (1. - color_factor) * *WHITE;
+            //     let blue_amt = color_factor * *LIGHT_BLUE;
+            //     Color64(white_amt + blue_amt)
+            // }
+            None => *background,
         }
     }
 }
