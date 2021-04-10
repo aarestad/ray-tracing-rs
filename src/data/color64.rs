@@ -4,6 +4,10 @@ use std::ops::{Deref, DerefMut};
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Color64(pub Vec3_64);
 
+pub const WHITE: Color64 = Color64::new(1., 1., 1.);
+pub const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.);
+pub const BLACK: Color64 = Color64::new(0., 0., 0.);
+
 impl Color64 {
     pub const fn new(r: f64, g: f64, b: f64) -> Self {
         Color64(Vec3_64(r, g, b))

@@ -1,4 +1,5 @@
-use crate::data::color64::Color64;
+use crate::data::color64::{Color64, BLACK};
+use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::HitRecord;
 
@@ -14,4 +15,8 @@ pub struct ScatterRecord {
 
 pub trait Material: Send + Sync {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord>;
+
+    fn emitted(&self, _u: f64, _v: f64, _point: &Point64) -> Color64 {
+        BLACK
+    }
 }

@@ -1,12 +1,8 @@
-use crate::data::color64::Color64;
+use crate::data::color64::{Color64, BLACK, LIGHT_BLUE, WHITE};
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::Hittable;
 use image::Rgb;
-
-const WHITE: Color64 = Color64::new(1., 1., 1.);
-const LIGHT_BLUE: Color64 = Color64::new(0.5, 0.7, 1.);
-const BLACK: Color64 = Color64::new(0., 0., 0.);
 
 pub fn ray_color(ray: &Ray, world: &dyn Hittable, depth: i32) -> Color64 {
     if depth < 1 {
