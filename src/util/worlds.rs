@@ -150,6 +150,7 @@ pub fn two_perlin_spheres() -> Arc<dyn Hittable> {
     let material = Arc::from(Lambertian {
         albedo: Arc::from(Noise {
             noise_gen: PerlinGenerator::new(),
+            scale: 4.,
         }),
     });
 

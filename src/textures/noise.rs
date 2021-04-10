@@ -6,10 +6,11 @@ use crate::textures::Texture;
 
 pub struct Noise {
     pub(crate) noise_gen: PerlinGenerator,
+    pub(crate) scale: f64,
 }
 
 impl Texture for Noise {
     fn value(&self, _u: f64, _v: f64, point: &Point64) -> Color64 {
-        Color64(Vec3_64(1., 1., 1.) * self.noise_gen.noise(point))
+        Color64(Vec3_64(1., 1., 1.) * self.noise_gen.noise(&Point64(self.scale * **point)))
     }
 }
