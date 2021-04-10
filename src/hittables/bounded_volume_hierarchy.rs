@@ -83,19 +83,17 @@ impl BoundedVolumeHierarchy {
             }
         }
 
-        let box_left = left_child.bounding_box(time0, time1);
-        let box_right = right_child.bounding_box(time0, time1);
-
-        if box_left.is_none() || box_right.is_none() {
-            panic!("No bounding box in bvh_node constructor for hittable");
-        }
+        let box_left = left_child
+            .bounding_box(time0, time1)
+            .expect("No bounding box in bvh_node constructor for hittable");
+        let box_right = right_child
+            .bounding_box(time0, time1)
+            .expect("No bounding box in bvh_node constructor for hittable");
 
         Arc::from(BoundedVolumeHierarchy {
             left_child,
             right_child,
-            bounding_box: box_left
-                .unwrap()
-                .surrounding_box_with(box_right.as_ref().unwrap()),
+            bounding_box: box_left.surrounding_box_with(&box_right),
         })
     }
 }
