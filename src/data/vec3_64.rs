@@ -52,9 +52,8 @@ impl Vec3_64 {
         let x: f64 = rng.sample(StandardNormal);
         let y: f64 = rng.sample(StandardNormal);
         let z: f64 = rng.sample(StandardNormal);
-        let mag = (x.powi(2) + y.powi(2) + z.powi(2)).sqrt();
 
-        u * Vec3_64(x, y, z) / mag
+        u * Vec3_64(x, y, z).normalized()
     }
 
     pub fn random_in_unit_disk() -> Vec3_64 {

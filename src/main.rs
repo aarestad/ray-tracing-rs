@@ -34,7 +34,7 @@ fn main() -> ImageResult<()> {
     let max_depth = 50;
 
     // World
-    let world_choice = 2;
+    let world_choice = 0;
 
     let world = match world_choice {
         0 => random_world(options.create_little_spheres),
