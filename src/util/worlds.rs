@@ -137,12 +137,12 @@ pub fn two_spheres() -> Arc<dyn Hittable> {
 
     Arc::new(HittableVec {
         hittables: vec![
-            Box::from(Sphere {
+            Arc::from(Sphere {
                 center: Point64::new(0., -10., 0.),
                 radius: 10.,
                 material: material.clone(),
             }),
-            Box::from(Sphere {
+            Arc::from(Sphere {
                 center: Point64::new(0., 10., 0.),
                 radius: 10.,
                 material,
@@ -162,12 +162,12 @@ pub fn two_perlin_spheres(noise_type: NoiseType) -> Arc<dyn Hittable> {
 
     Arc::new(HittableVec {
         hittables: vec![
-            Box::from(Sphere {
+            Arc::from(Sphere {
                 center: Point64::new(0., -1000., 0.),
                 radius: 1000.,
                 material: material.clone(),
             }),
-            Box::from(Sphere {
+            Arc::from(Sphere {
                 center: Point64::new(0., 2., 0.),
                 radius: 2.,
                 material,
