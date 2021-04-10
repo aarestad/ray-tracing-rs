@@ -1,7 +1,7 @@
-use std::sync::Arc;
-use crate::textures::Texture;
 use crate::data::color64::Color64;
 use crate::data::point64::Point64;
+use crate::textures::Texture;
+use std::sync::Arc;
 
 struct Checker {
     pub odd: Arc<dyn Texture>,

@@ -18,8 +18,8 @@ mod camera;
 mod data;
 mod hittables;
 mod materials;
-mod util;
 mod textures;
+mod util;
 
 fn main() -> ImageResult<()> {
     let args: Vec<String> = env::args().collect();

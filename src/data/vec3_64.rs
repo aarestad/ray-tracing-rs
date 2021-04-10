@@ -1,4 +1,6 @@
 use rand::Rng;
+use rand_distr::StandardNormal;
+use std::f64::consts::TAU;
 use std::ops::{Add, AddAssign, Div, Index, Mul, Neg, Sub};
 
 #[derive(Debug, Copy, Clone, PartialEq, Default)]
@@ -29,10 +31,6 @@ impl Vec3_64 {
         )
     }
 
-    pub fn random() -> Vec3_64 {
-        Self::rand_range(0.0, 1.0)
-    }
-
     pub fn rand_range(min: f64, max: f64) -> Vec3_64 {
         let mut rng = rand::thread_rng();
 
@@ -43,30 +41,29 @@ impl Vec3_64 {
         )
     }
 
+    pub fn random_in_unit_cube() -> Vec3_64 {
+        Self::rand_range(0.0, 1.0)
+    }
+
     pub fn random_in_unit_sphere() -> Vec3_64 {
-        let mut rand_vec: Vec3_64;
+        let mut rng = rand::thread_rng();
 
-        loop {
-            rand_vec = Vec3_64::rand_range(-1.0, 1.0);
+        let u = rng.gen::<f64>().powf(1. / 3.);
+        let x: f64 = rng.sample(StandardNormal);
+        let y: f64 = rng.sample(StandardNormal);
+        let z: f64 = rng.sample(StandardNormal);
+        let mag = (x.powi(2) + y.powi(2) + z.powi(2)).sqrt();
 
-            if rand_vec.magnitude().powi(2) < 1.0 {
-                break;
-            }
-        }
-
-        rand_vec
+        u * Vec3_64(x, y, z) / mag
     }
 
     pub fn random_in_unit_disk() -> Vec3_64 {
         let mut rng = rand::thread_rng();
 
-        loop {
-            let p = Vec3_64(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+        let sqrt_r: f64 = rng.gen::<f64>().sqrt();
+        let theta: f64 = rng.gen_range(0.0..TAU);
 
-            if p.mag_squared() < 1.0 {
-                return p;
-            }
-        }
+        Vec3_64(sqrt_r * theta.cos(), sqrt_r * theta.sin(), 0.)
     }
 
     pub fn random_unit_vector() -> Vec3_64 {

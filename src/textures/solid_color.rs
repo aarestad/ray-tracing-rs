@@ -1,6 +1,6 @@
 use crate::data::color64::Color64;
-use crate::textures::Texture;
 use crate::data::point64::Point64;
+use crate::textures::Texture;
 use std::sync::Arc;
 
 pub struct SolidColor {
@@ -9,9 +9,7 @@ pub struct SolidColor {
 
 impl SolidColor {
     pub(crate) fn arc_from(color: Color64) -> Arc<Self> {
-        Arc::from(Self {
-            color,
-        })
+        Arc::from(Self { color })
     }
 }
 

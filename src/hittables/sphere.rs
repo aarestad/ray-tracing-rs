@@ -4,8 +4,8 @@ use crate::data::vec3_64::Vec3_64;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::{HitRecord, Hittable};
 use crate::materials::Material;
-use std::sync::Arc;
 use std::f64::consts::PI;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Sphere {
@@ -53,7 +53,13 @@ impl Hittable for Sphere {
                 let location = ray.point_at_parameter(root);
                 let outward_normal = Point64((*location - *self.center) / self.radius);
 
-                Some(HitRecord::new(root, ray, outward_normal, &self.material, get_sphere_uv(outward_normal)))
+                Some(HitRecord::new(
+                    root,
+                    ray,
+                    outward_normal,
+                    &self.material,
+                    get_sphere_uv(outward_normal),
+                ))
             } else {
                 None
             }

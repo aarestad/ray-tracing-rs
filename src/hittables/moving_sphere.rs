@@ -70,7 +70,13 @@ impl Hittable for MovingSphere {
                 let outward_normal =
                     Point64((*location - *self.center_at(ray.exposure_time)) / self.radius);
 
-                Some(HitRecord::new(root, ray, outward_normal, &self.material, Default::default()))
+                Some(HitRecord::new(
+                    root,
+                    ray,
+                    outward_normal,
+                    &self.material,
+                    Default::default(),
+                ))
             } else {
                 None
             }

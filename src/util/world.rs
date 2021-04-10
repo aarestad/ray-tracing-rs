@@ -49,7 +49,9 @@ pub fn create_world(create_little_spheres: bool) -> Arc<dyn Hittable + Send + Sy
                             time1: 1.0,
                             radius: 0.2,
                             material: Arc::new(Lambertian {
-                                albedo: SolidColor::arc_from(Color64(Vec3_64::random() * Vec3_64::random())),
+                                albedo: SolidColor::arc_from(Color64(
+                                    Vec3_64::random_in_unit_cube() * Vec3_64::random_in_unit_cube(),
+                                )),
                             }),
                         }));
                     } else if choose_mat < 0.8 {
@@ -58,7 +60,9 @@ pub fn create_world(create_little_spheres: bool) -> Arc<dyn Hittable + Send + Sy
                             center,
                             radius: 0.2,
                             material: Arc::new(Lambertian {
-                                albedo: SolidColor::arc_from(Color64(Vec3_64::random() * Vec3_64::random())),
+                                albedo: SolidColor::arc_from(Color64(
+                                    Vec3_64::random_in_unit_cube() * Vec3_64::random_in_unit_cube(),
+                                )),
                             }),
                         }));
                     } else if choose_mat < 0.95 {
