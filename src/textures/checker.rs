@@ -3,7 +3,7 @@ use crate::data::point64::Point64;
 use crate::textures::Texture;
 use std::sync::Arc;
 
-struct Checker {
+pub struct Checker {
     pub odd: Arc<dyn Texture>,
     pub even: Arc<dyn Texture>,
 }

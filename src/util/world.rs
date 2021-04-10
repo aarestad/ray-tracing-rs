@@ -11,13 +11,19 @@ use crate::materials::metal::Metal;
 use crate::textures::solid_color::SolidColor;
 use rand::Rng;
 use std::sync::Arc;
+use crate::textures::checker::Checker;
 
 pub fn create_world(create_little_spheres: bool) -> Arc<dyn Hittable + Send + Sync> {
+    let checker_pattern = Checker {
+        odd: SolidColor::arc_from(Color64::new(0.2, 0.3, 0.1)),
+        even: SolidColor::arc_from(Color64::new(0.9, 0.9, 0.9)),
+    };
+
     let mut hittables: Vec<Box<dyn Hittable>> = vec![Box::new(Sphere {
         center: Point64::new(0.0, -1000.0, 0.0),
         radius: 1000.0,
         material: Arc::new(Lambertian {
-            albedo: SolidColor::arc_from(Color64::new(0.5, 0.5, 0.5)),
+            albedo: Arc::new(checker_pattern),
         }),
     })];
 
