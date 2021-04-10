@@ -6,7 +6,6 @@ use rand::Rng;
 use threadpool::ThreadPool;
 
 use crate::textures::noise::NoiseType::{Marble, Perlin, Turbulence};
-use crate::util::colors::{get_rgb, ray_color};
 use crate::util::worlds::{earf, random_world, two_perlin_spheres, two_spheres};
 use camera::Camera;
 use data::color64::Color64;
@@ -32,10 +31,9 @@ fn main() -> ImageResult<()> {
     let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
     let samples_per_pixel = 100;
     let mut image = RgbImage::new(image_width, image_height);
-    let max_depth = 50;
 
     // World
-    let world_choice = 5;
+    let world_choice = 0;
 
     let world = match world_choice {
         0 => random_world(options.create_little_spheres, options.use_bvh),
@@ -83,13 +81,13 @@ fn main() -> ImageResult<()> {
                     let v = (y as f64 + rands[1]) / (image_height - 1) as f64;
                     let ray = camera.get_ray(u, v);
 
-                    *pixel_color += *ray_color(&ray, world.as_ref(), max_depth);
+                    *pixel_color += *ray.color_in_world(world.as_ref());
                 }
 
                 tx.send((
                     x,
                     image_height - y - 1,
-                    get_rgb(&pixel_color, samples_per_pixel),
+                    pixel_color.to_image_rgbu8(samples_per_pixel),
                 ))
                 .expect("no receiver");
             });

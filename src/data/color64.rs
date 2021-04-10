@@ -1,4 +1,5 @@
 use crate::data::vec3_64::Vec3_64;
+use image::Rgb;
 use std::ops::{Deref, DerefMut};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -27,6 +28,24 @@ impl Color64 {
 
     pub fn gray(gray_level: f64) -> Self {
         Color64(Vec3_64(gray_level, gray_level, gray_level))
+    }
+
+    pub fn to_image_rgbu8(&self, samples_per_pixel: i32) -> Rgb<u8> {
+        let mut r = self.r();
+        let mut g = self.g();
+        let mut b = self.b();
+
+        let scale = 1. / (samples_per_pixel as f64);
+        // Gamma correct for gamma = 2.
+        r = (scale * r).sqrt();
+        g = (scale * g).sqrt();
+        b = (scale * b).sqrt();
+
+        let scaled_red = (256. * r.clamp(0., 0.999)) as u8;
+        let scaled_green = (256. * g.clamp(0., 0.999)) as u8;
+        let scaled_blue = (256. * b.clamp(0., 0.999)) as u8;
+
+        Rgb([scaled_red, scaled_green, scaled_blue])
     }
 }
 
