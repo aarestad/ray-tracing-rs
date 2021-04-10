@@ -5,6 +5,7 @@ use image::{DynamicImage, ImageResult, Rgb, RgbImage};
 use rand::Rng;
 use threadpool::ThreadPool;
 
+use crate::textures::noise::NoiseType::{Marble, Perlin, Turbulence};
 use crate::util::colors::{get_rgb, ray_color};
 use crate::util::worlds::{random_world, two_perlin_spheres, two_spheres};
 use camera::Camera;
@@ -13,7 +14,6 @@ use data::point64::Point64;
 use data::vec3_64::Vec3_64;
 use std::env;
 use util::args::parse_args;
-use crate::textures::noise::NoiseType::{Perlin, Turbulence, Marble};
 
 mod camera;
 mod data;

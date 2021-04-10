@@ -18,10 +18,12 @@ pub struct Noise {
 impl Texture for Noise {
     fn value(&self, _u: f64, _v: f64, point: &Point64) -> Color64 {
         let gray_val = match self.noise_type {
-            NoiseType::Perlin =>  0.5 * (1. + self.noise_gen.noise(&Point64(self.scale * **point))),
+            NoiseType::Perlin => 0.5 * (1. + self.noise_gen.noise(&Point64(self.scale * **point))),
             NoiseType::Turbulence => self.noise_gen.turbulence(&Point64(self.scale * **point), 7),
-            NoiseType::Marble => 0.5
-                * (1. + (self.scale * point.z() + 10. * self.noise_gen.turbulence(point, 7)).sin()),
+            NoiseType::Marble => {
+                0.5 * (1.
+                    + (self.scale * point.z() + 10. * self.noise_gen.turbulence(point, 7)).sin())
+            }
         };
 
         Color64::gray(gray_val)
