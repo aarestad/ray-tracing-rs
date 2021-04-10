@@ -25,11 +25,11 @@ impl PerlinGenerator {
     }
 
     pub fn noise(&self, p: &Point64) -> f64 {
-        let i = (4. * p.x()) as usize & 255;
-        let j = (4. * p.y()) as usize & 255;
-        let k = (4. * p.z()) as usize & 255;
+        let i = ((4. * p.x()) as i32) & 255;
+        let j = ((4. * p.y()) as i32) & 255;
+        let k = ((4. * p.z()) as i32) & 255;
 
-        self.random_floats[self.perm_x[i] ^ self.perm_y[j] ^ self.perm_z[k]]
+        self.random_floats[self.perm_x[i as usize] ^ self.perm_y[j as usize] ^ self.perm_z[k as usize]]
     }
 }
 
