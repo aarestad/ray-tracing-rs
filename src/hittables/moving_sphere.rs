@@ -5,6 +5,7 @@ use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::{HitRecord, Hittable};
 use crate::materials::Material;
 use std::sync::Arc;
+use crate::hittables::sphere::get_sphere_uv;
 
 #[derive(Clone)]
 pub struct MovingSphere {
@@ -75,7 +76,7 @@ impl Hittable for MovingSphere {
                     ray,
                     outward_normal,
                     &self.material,
-                    Default::default(),
+                    get_sphere_uv(outward_normal),
                 ))
             } else {
                 None

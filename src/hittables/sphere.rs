@@ -14,7 +14,7 @@ pub struct Sphere {
     pub material: Arc<dyn Material>,
 }
 
-fn get_sphere_uv(p: Point64) -> (f64, f64) {
+pub(crate) fn get_sphere_uv(p: Point64) -> (f64, f64) {
     let theta = -p.y().acos();
     let phi = -p.z().atan2(p.x()) + PI;
 
