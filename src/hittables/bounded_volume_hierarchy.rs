@@ -1,5 +1,3 @@
-#![allow(dead_code)] // TODO remove once something calls create_bvh
-
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::bvh_comparators::BOX_COMPARATORS;
