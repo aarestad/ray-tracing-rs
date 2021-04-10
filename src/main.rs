@@ -6,7 +6,7 @@ use rand::Rng;
 use threadpool::ThreadPool;
 
 use crate::util::colors::{get_rgb, ray_color};
-use crate::util::world::{random_world, two_spheres};
+use crate::util::worlds::{random_world, two_perlin_spheres, two_spheres};
 use camera::Camera;
 use data::color64::Color64;
 use data::point64::Point64;
@@ -34,8 +34,14 @@ fn main() -> ImageResult<()> {
     let max_depth = 50;
 
     // World
-    // let world = random_world(options.create_little_spheres);
-    let world = two_spheres();
+    let world_choice = 2;
+
+    let world = match world_choice {
+        0 => random_world(options.create_little_spheres),
+        1 => two_spheres(),
+        2 => two_perlin_spheres(),
+        _ => panic!("bad world choice: {}", world_choice),
+    };
 
     // Camera
     let look_from = Point64::new(13.0, 2.0, 3.0);

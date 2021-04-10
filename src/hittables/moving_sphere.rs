@@ -2,10 +2,10 @@ use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::data::vec3_64::Vec3_64;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
+use crate::hittables::sphere::get_sphere_uv;
 use crate::hittables::{HitRecord, Hittable};
 use crate::materials::Material;
 use std::sync::Arc;
-use crate::hittables::sphere::get_sphere_uv;
 
 #[derive(Clone)]
 pub struct MovingSphere {

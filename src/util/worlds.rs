@@ -8,10 +8,12 @@ use crate::hittables::Hittable;
 use crate::materials::dielectric::Dielectric;
 use crate::materials::lambertian::Lambertian;
 use crate::materials::metal::Metal;
+use crate::textures::checker::Checker;
+use crate::textures::noise::Noise;
+use crate::textures::perlin::PerlinGenerator;
 use crate::textures::solid_color::SolidColor;
 use rand::Rng;
 use std::sync::Arc;
-use crate::textures::checker::Checker;
 
 pub fn random_world(create_little_spheres: bool) -> Arc<dyn Hittable> {
     let checker_pattern = Checker {
@@ -140,6 +142,29 @@ pub fn two_spheres() -> Arc<dyn Hittable> {
                 radius: 10.,
                 material: material.clone(),
             }),
-        ]
+        ],
+    })
+}
+
+pub fn two_perlin_spheres() -> Arc<dyn Hittable> {
+    let material = Arc::from(Lambertian {
+        albedo: Arc::from(Noise {
+            noise_gen: PerlinGenerator::new(),
+        }),
+    });
+
+    Arc::new(HittableVec {
+        hittables: vec![
+            Box::from(Sphere {
+                center: Point64::new(0., -1000., 0.),
+                radius: 1000.,
+                material: material.clone(),
+            }),
+            Box::from(Sphere {
+                center: Point64::new(0., 2., 0.),
+                radius: 2.,
+                material: material.clone(),
+            }),
+        ],
     })
 }
