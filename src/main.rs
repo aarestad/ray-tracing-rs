@@ -7,7 +7,9 @@ use threadpool::ThreadPool;
 
 use crate::data::color64::{BLACK, LIGHT_BLUE, WHITE};
 use crate::textures::noise::NoiseType::{Marble, Perlin, Turbulence};
-use crate::util::worlds::{earf, random_world, simple_light, two_perlin_spheres, two_spheres, cornell_box};
+use crate::util::worlds::{
+    cornell_box, earf, random_world, simple_light, two_perlin_spheres, two_spheres,
+};
 use camera::Camera;
 use data::color64::Color64;
 use data::point64::Point64;

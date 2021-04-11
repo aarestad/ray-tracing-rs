@@ -2,7 +2,7 @@ use crate::data::color64::Color64;
 use crate::data::point64::Point64;
 use crate::data::vec3_64::Vec3_64;
 use crate::hittables::axis_aligned_rect::AxisAlignedRect;
-use crate::hittables::axis_aligned_rect::AxisAlignment::{Z, X, Y};
+use crate::hittables::axis_aligned_rect::AxisAlignment::{X, Y, Z};
 use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
 use crate::hittables::hittable_vec::HittableVec;
 use crate::hittables::moving_sphere::MovingSphere;
@@ -229,15 +229,15 @@ pub fn simple_light() -> Arc<dyn Hittable> {
 
 pub fn cornell_box() -> Arc<dyn Hittable> {
     let red_material = Lambertian {
-        albedo: SolidColor::arc_from(Color64::new(0.65, 0.05, 0.05))
+        albedo: SolidColor::arc_from(Color64::new(0.65, 0.05, 0.05)),
     };
 
     let gray_material = Arc::from(Lambertian {
-        albedo: SolidColor::arc_from(Color64::gray(0.73))
+        albedo: SolidColor::arc_from(Color64::gray(0.73)),
     });
 
     let green_material = Lambertian {
-        albedo: SolidColor::arc_from(Color64::new(0.12, 0.45, 0.15))
+        albedo: SolidColor::arc_from(Color64::new(0.12, 0.45, 0.15)),
     };
 
     let light_source = DiffuseLight::new(Color64::gray(15.));
