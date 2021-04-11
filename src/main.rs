@@ -7,7 +7,7 @@ use threadpool::ThreadPool;
 
 use crate::data::color64::{BLACK, LIGHT_BLUE, WHITE};
 use crate::textures::noise::NoiseType::{Marble, Perlin, Turbulence};
-use crate::util::worlds::{earf, random_world, simple_light, two_perlin_spheres, two_spheres};
+use crate::util::worlds::{earf, random_world, simple_light, two_perlin_spheres, two_spheres, cornell_box};
 use camera::Camera;
 use data::color64::Color64;
 use data::point64::Point64;
@@ -27,14 +27,14 @@ fn main() -> ImageResult<()> {
     let options = parse_args(&args).expect("bad args!");
 
     // Image
-    let aspect_ratio = 16. / 9.;
-    let image_width: u32 = 960;
+    let aspect_ratio = 1.0;
+    let image_width: u32 = 600;
     let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
-    let samples_per_pixel = 400;
+    let samples_per_pixel = 200;
     let mut image = RgbImage::new(image_width, image_height);
 
     // World
-    let world_choice = 6;
+    let world_choice = 7;
 
     let (background, world) = match world_choice {
         0 => (
@@ -47,20 +47,21 @@ fn main() -> ImageResult<()> {
         4 => (LIGHT_BLUE, two_perlin_spheres(Marble)),
         5 => (WHITE, earf()),
         6 => (BLACK, simple_light()),
+        7 => (BLACK, cornell_box()),
         _ => panic!("bad world choice: {}", world_choice),
     };
 
     // Camera
     // let look_from = Point64::new(13., 2., 3.);
     // let look_at = Point64::new(0., 0., 0.);
-    let look_from = Point64::new(26., 3., 6.);
-    let look_at = Point64::new(0., 2., 0.);
+    let look_from = Point64::new(278., 278., -800.);
+    let look_at = Point64::new(278., 278., 0.);
 
     let camera = Arc::new(Camera::new(
         look_from,
         look_at,
         Vec3_64(0., 1., 0.),
-        20.,
+        40.,
         aspect_ratio,
         0.,
         (*look_from - *look_at).magnitude(),

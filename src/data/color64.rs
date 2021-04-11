@@ -36,6 +36,7 @@ impl Color64 {
         let mut b = self.b();
 
         let scale = 1. / (samples_per_pixel as f64);
+
         // Gamma correct for gamma = 2.
         r = (scale * r).sqrt();
         g = (scale * g).sqrt();
