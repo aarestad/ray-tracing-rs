@@ -1,4 +1,4 @@
-use crate::data::color64::{Color64, BLACK, LIGHT_BLUE, WHITE};
+use crate::data::color64::{Color64, BLACK};
 use crate::data::point64::Point64;
 use crate::hittables::Hittable;
 
@@ -51,13 +51,6 @@ impl Ray {
                 }
             }
 
-            // None => {
-            //     let unit_direction = Point64((*self.direction).normalized());
-            //     let color_factor = 0.5 * (unit_direction.y() + 1.);
-            //     let white_amt = (1. - color_factor) * *WHITE;
-            //     let blue_amt = color_factor * *LIGHT_BLUE;
-            //     Color64(white_amt + blue_amt)
-            // }
             None => *background,
         }
     }

@@ -10,12 +10,12 @@ use crate::materials::dielectric::Dielectric;
 use crate::materials::lambertian::Lambertian;
 use crate::materials::metal::Metal;
 use crate::textures::checker::Checker;
+use crate::textures::image::ImageTexture;
 use crate::textures::noise::{Noise, NoiseType};
 use crate::textures::perlin::PerlinGenerator;
 use crate::textures::solid_color::SolidColor;
 use rand::Rng;
 use std::sync::Arc;
-use crate::textures::image::ImageTexture;
 
 pub fn random_world(create_little_spheres: bool, use_bvh: bool) -> Arc<dyn Hittable> {
     let checker_pattern = Checker {
@@ -179,14 +179,12 @@ pub fn two_perlin_spheres(noise_type: NoiseType) -> Arc<dyn Hittable> {
 
 pub fn earf() -> Arc<dyn Hittable> {
     Arc::new(HittableVec {
-        hittables: vec![
-            Arc::from(Sphere {
-                center: Point64::new(0., 0., 0.),
-                radius: 2.,
-                material: Arc::new(Lambertian {
-                    albedo: Arc::new(ImageTexture::new("resources/earthmap.jpg".into()))
-                }),
-            })
-        ]
+        hittables: vec![Arc::from(Sphere {
+            center: Point64::new(0., 0., 0.),
+            radius: 2.,
+            material: Arc::new(Lambertian {
+                albedo: Arc::new(ImageTexture::new("resources/earthmap.jpg".into())),
+            }),
+        })],
     })
 }

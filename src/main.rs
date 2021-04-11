@@ -5,8 +5,7 @@ use image::{DynamicImage, ImageResult, Rgb, RgbImage};
 use rand::Rng;
 use threadpool::ThreadPool;
 
-use crate::data::color64::{BLACK, LIGHT_BLUE};
-use crate::hittables::Hittable;
+use crate::data::color64::{LIGHT_BLUE, WHITE};
 use crate::textures::noise::NoiseType::{Marble, Perlin, Turbulence};
 use crate::util::worlds::{earf, random_world, two_perlin_spheres, two_spheres};
 use camera::Camera;
@@ -33,33 +32,20 @@ fn main() -> ImageResult<()> {
     let image_height: u32 = (image_width as f64 / aspect_ratio) as u32;
     let samples_per_pixel = 100;
     let mut image = RgbImage::new(image_width, image_height);
-    let mut background = LIGHT_BLUE;
 
     // World
     let world_choice = 5;
 
-    let world: Arc<dyn Hittable>;
-
-    match world_choice {
-        0 => {
-            world = random_world(options.create_little_spheres, options.use_bvh);
-        }
-        1 => {
-            world = two_spheres();
-        }
-        2 => {
-            world = two_perlin_spheres(Perlin);
-        }
-        3 => {
-            world = two_perlin_spheres(Turbulence);
-        }
-        4 => {
-            world = two_perlin_spheres(Marble);
-        }
-        5 => {
-            // background = BLACK;
-            world = earf();
-        }
+    let (background, world) = match world_choice {
+        0 => (
+            LIGHT_BLUE,
+            random_world(options.create_little_spheres, options.use_bvh),
+        ),
+        1 => (LIGHT_BLUE, two_spheres()),
+        2 => (LIGHT_BLUE, two_perlin_spheres(Perlin)),
+        3 => (LIGHT_BLUE, two_perlin_spheres(Turbulence)),
+        4 => (LIGHT_BLUE, two_perlin_spheres(Marble)),
+        5 => (WHITE, earf()),
         _ => panic!("bad world choice: {}", world_choice),
     };
 
