@@ -1,24 +1,25 @@
 use crate::data::color64::Color64;
 use crate::data::point64::Point64;
 use crate::data::vec3_64::Vec3_64;
+use crate::hittables::axis_aligned_rect::AxisAlignedRect;
+use crate::hittables::axis_aligned_rect::AxisAlignment::Z;
 use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
 use crate::hittables::hittable_vec::HittableVec;
 use crate::hittables::moving_sphere::MovingSphere;
 use crate::hittables::sphere::Sphere;
 use crate::hittables::Hittable;
 use crate::materials::dielectric::Dielectric;
+use crate::materials::diffuse_light::DiffuseLight;
 use crate::materials::lambertian::Lambertian;
 use crate::materials::metal::Metal;
 use crate::textures::checker::Checker;
 use crate::textures::image::ImageTexture;
+use crate::textures::noise::NoiseType::Marble;
 use crate::textures::noise::{Noise, NoiseType};
 use crate::textures::perlin::PerlinGenerator;
 use crate::textures::solid_color::SolidColor;
 use rand::Rng;
 use std::sync::Arc;
-use crate::textures::noise::NoiseType::Marble;
-use crate::materials::diffuse_light::DiffuseLight;
-use crate::hittables::xy_rect::XYRect;
 
 pub fn random_world(create_little_spheres: bool, use_bvh: bool) -> Arc<dyn Hittable> {
     let checker_pattern = Checker {
@@ -215,12 +216,13 @@ pub fn simple_light() -> Arc<dyn Hittable> {
                 radius: 2.,
                 material,
             }),
-            Arc::from(XYRect {
+            Arc::from(AxisAlignedRect {
                 material: Arc::from(light),
-                xy0: (3., 1.),
-                xy1: (5., 3.),
-                z_value: -2.
-            })
+                min: (3., 1.),
+                max: (5., 3.),
+                axis_value: -2.,
+                axis_alignment: Z,
+            }),
         ],
     })
 }

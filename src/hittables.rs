@@ -6,12 +6,12 @@ use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::materials::Material;
 
 mod axis_aligned_bounding_box;
+pub mod axis_aligned_rect;
 pub mod bounded_volume_hierarchy;
 mod bvh_comparators;
 pub mod hittable_vec;
 pub mod moving_sphere;
 pub mod sphere;
-pub mod xy_rect;
 
 #[derive(Clone)]
 pub struct HitRecord {

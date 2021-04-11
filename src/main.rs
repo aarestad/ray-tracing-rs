@@ -5,9 +5,9 @@ use image::{DynamicImage, ImageResult, Rgb, RgbImage};
 use rand::Rng;
 use threadpool::ThreadPool;
 
-use crate::data::color64::{LIGHT_BLUE, WHITE, BLACK};
+use crate::data::color64::{BLACK, LIGHT_BLUE, WHITE};
 use crate::textures::noise::NoiseType::{Marble, Perlin, Turbulence};
-use crate::util::worlds::{earf, random_world, two_perlin_spheres, two_spheres, simple_light};
+use crate::util::worlds::{earf, random_world, simple_light, two_perlin_spheres, two_spheres};
 use camera::Camera;
 use data::color64::Color64;
 use data::point64::Point64;
