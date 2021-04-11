@@ -5,9 +5,18 @@ use crate::hittables::HitRecord;
 use crate::materials::{Material, ScatterRecord};
 use crate::textures::Texture;
 use std::sync::Arc;
+use crate::textures::solid_color::SolidColor;
 
-struct DiffuseLight {
+pub struct DiffuseLight {
     emitter: Arc<dyn Texture>,
+}
+
+impl DiffuseLight {
+    pub fn new(color:  Color64) -> Self {
+        Self {
+            emitter: SolidColor::arc_from(color)
+        }
+    }
 }
 
 impl Material for DiffuseLight {

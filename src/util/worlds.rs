@@ -16,6 +16,9 @@ use crate::textures::perlin::PerlinGenerator;
 use crate::textures::solid_color::SolidColor;
 use rand::Rng;
 use std::sync::Arc;
+use crate::textures::noise::NoiseType::Marble;
+use crate::materials::diffuse_light::DiffuseLight;
+use crate::hittables::xy_rect::XYRect;
 
 pub fn random_world(create_little_spheres: bool, use_bvh: bool) -> Arc<dyn Hittable> {
     let checker_pattern = Checker {
@@ -186,5 +189,38 @@ pub fn earf() -> Arc<dyn Hittable> {
                 albedo: Arc::new(ImageTexture::new("resources/earthmap.jpg".into())),
             }),
         })],
+    })
+}
+
+pub fn simple_light() -> Arc<dyn Hittable> {
+    let material = Arc::from(Lambertian {
+        albedo: Arc::from(Noise {
+            noise_gen: PerlinGenerator::new(),
+            scale: 4.,
+            noise_type: Marble,
+        }),
+    });
+
+    let light = DiffuseLight::new(Color64::new(4., 4., 4.));
+
+    Arc::new(HittableVec {
+        hittables: vec![
+            Arc::from(Sphere {
+                center: Point64::new(0., -1000., 0.),
+                radius: 1000.,
+                material: material.clone(),
+            }),
+            Arc::from(Sphere {
+                center: Point64::new(0., 2., 0.),
+                radius: 2.,
+                material,
+            }),
+            Arc::from(XYRect {
+                material: Arc::from(light),
+                xy0: (3., 1.),
+                xy1: (5., 3.),
+                z_value: -2.
+            })
+        ],
     })
 }
