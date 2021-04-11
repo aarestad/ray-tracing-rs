@@ -57,7 +57,7 @@ impl Hittable for Sphere {
                     root,
                     ray,
                     outward_normal,
-                    &self.material,
+                    self.material.clone(),
                     get_sphere_uv(outward_normal),
                 ))
             } else {

@@ -11,6 +11,7 @@ mod bvh_comparators;
 pub mod hittable_vec;
 pub mod moving_sphere;
 pub mod sphere;
+pub mod xy_rect;
 
 #[derive(Clone)]
 pub struct HitRecord {
@@ -28,7 +29,7 @@ impl HitRecord {
         value: f64,
         ray: &Ray,
         outward_normal: Point64,
-        material: &Arc<dyn Material>,
+        material: Arc<dyn Material>,
         uv: (f64, f64),
     ) -> HitRecord {
         let front_face = ray.direction.dot(&outward_normal) < 0.;
@@ -46,7 +47,7 @@ impl HitRecord {
             location: ray.point_at_parameter(value),
             normal,
             front_face,
-            material: material.clone(),
+            material,
         }
     }
 }
