@@ -5,7 +5,6 @@ use std::ops::{Deref, DerefMut};
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Color64(pub Vec3_64);
 
-pub const WHITE: Color64 = Color64::new(1., 1., 1.);
 pub const LIGHT_BLUE: Color64 = Color64::new(0.7, 0.8, 1.);
 pub const BLACK: Color64 = Color64::new(0., 0., 0.);
 
@@ -30,7 +29,7 @@ impl Color64 {
         Color64(Vec3_64(gray_level, gray_level, gray_level))
     }
 
-    pub fn to_image_rgbu8(&self, samples_per_pixel: i32) -> Rgb<u8> {
+    pub fn to_image_rgbu8(&self, samples_per_pixel: u32) -> Rgb<u8> {
         let mut r = self.r();
         let mut g = self.g();
         let mut b = self.b();

@@ -6,7 +6,7 @@ pub struct Point64(pub Vec3_64);
 
 #[allow(dead_code)] // x() and z()
 impl Point64 {
-    pub fn new(x: f64, y: f64, z: f64) -> Self {
+    pub const fn new(x: f64, y: f64, z: f64) -> Self {
         Point64(Vec3_64(x, y, z))
     }
 
