@@ -1,13 +1,15 @@
 use std::sync::mpsc::channel;
 use std::sync::Arc;
 
-use image::{DynamicImage, ImageResult, RgbImage};
+use image::{ImageResult, RgbImage};
 use rand::Rng;
 use threadpool::ThreadPool;
 
 use crate::textures::noise::NoiseType::{Marble, Perlin, Turbulence};
 use crate::util::worlds::World;
 use data::color64::Color64;
+use image::DynamicImage::ImageRgb8;
+use libwebp_image::webp_write_rgb;
 use std::env;
 use std::fs::File;
 use util::args::parse_args;
@@ -95,9 +97,9 @@ fn main() -> ImageResult<()> {
     }
 
     let mut file = File::create("output.webp")?;
-    libwebp_image::webp_write_rgb(&image, &mut file)?;
+    webp_write_rgb(&image, &mut file)?;
 
-    DynamicImage::ImageRgb8(image).save("output.png")?;
+    ImageRgb8(image).save("output.png")?;
 
     println!("Done!");
 
