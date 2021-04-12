@@ -1,7 +1,7 @@
 use std::sync::mpsc::channel;
 use std::sync::Arc;
 
-use image::{DynamicImage, ImageResult, Rgb, RgbImage};
+use image::{DynamicImage, ImageResult, RgbImage};
 use rand::Rng;
 use threadpool::ThreadPool;
 
@@ -22,7 +22,7 @@ fn main() -> ImageResult<()> {
     let args: Vec<String> = env::args().collect();
     let options = parse_args(&args).expect("bad args!");
 
-    let world_choice = 7;
+    let world_choice = 5;
 
     let world = match world_choice {
         0 => Arc::from(World::random_world(
@@ -40,7 +40,7 @@ fn main() -> ImageResult<()> {
     };
 
     let pool = ThreadPool::new(num_cpus::get());
-    let (tx, rx) = channel::<(u32, u32, Rgb<u8>)>();
+    let (tx, rx) = channel::<(u32, u32, Color64)>();
 
     (0..world.image_height).for_each(|y| {
         (0..world.image_width).for_each(|x| {
@@ -62,12 +62,8 @@ fn main() -> ImageResult<()> {
                         *ray.color_in_world(world.hittable.as_ref(), &world.background_color);
                 }
 
-                tx.send((
-                    x,
-                    world.image_height - y - 1,
-                    pixel_color.to_image_rgbu8(world.samples_per_pixel),
-                ))
-                .expect("no receiver");
+                tx.send((x, world.image_height - y - 1, pixel_color))
+                    .expect("no receiver");
             });
         });
     });
@@ -77,7 +73,11 @@ fn main() -> ImageResult<()> {
     let mut image = RgbImage::new(world.image_width, world.image_height);
 
     for pixel in rx.iter() {
-        image.put_pixel(pixel.0, pixel.1, pixel.2);
+        image.put_pixel(
+            pixel.0,
+            pixel.1,
+            pixel.2.to_image_rgbu8(world.samples_per_pixel),
+        );
         pixel_count += 1;
 
         if pixel_count % world.image_width == 0 {
