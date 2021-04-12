@@ -4,18 +4,16 @@ use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::data::vec3_64::Vec3_64;
 use rand::Rng;
+use std::ops::Range;
 
 pub struct Camera {
     origin: Point64,
     lower_left_corner: Point64,
     horizontal: Point64,
     vertical: Point64,
-    u: Point64,
-    v: Point64,
-    _w: Point64,
+    uvw: (Point64, Point64, Point64),
     lens_radius: f64,
-    exposure_time0: f64,
-    exposure_time1: f64,
+    exposure_time: Range<f64>,
 }
 
 impl Camera {
@@ -23,12 +21,11 @@ impl Camera {
         look_from: Point64,
         look_at: Point64,
         vup: Vec3_64,
-        vfov_deg: f64, // vertical field ovf view
+        vfov_deg: f64, // vertical field of view
         aspect_ratio: f64,
         aperture: f64,
         focus_dist: f64,
-        exposure_time0: f64,
-        exposure_time1: f64,
+        exposure_time: Range<f64>,
     ) -> Camera {
         let h = (vfov_deg.to_radians() / 2.).tan();
         let viewport_height = 2. * h;
@@ -45,21 +42,18 @@ impl Camera {
             origin: look_from,
             horizontal,
             vertical,
-            u,
-            v,
-            _w: w,
+            uvw: (u, v, w),
             lower_left_corner: Point64(
                 *look_from - *horizontal / 2. - *vertical / 2. - *w * focus_dist,
             ),
             lens_radius: aperture / 2.,
-            exposure_time0,
-            exposure_time1,
+            exposure_time,
         }
     }
 
     pub fn get_ray(&self, s: f64, t: f64) -> Ray {
         let rd = Point64(self.lens_radius * Vec3_64::random_in_unit_disk());
-        let offset = *self.u * rd.x() + *self.v * rd.y();
+        let offset = *self.uvw.0 * rd.x() + *self.uvw.1 * rd.y();
 
         Ray {
             origin: Point64(*self.origin + offset),
@@ -68,7 +62,7 @@ impl Camera {
                     - *self.origin
                     - offset,
             ),
-            exposure_time: rand::thread_rng().gen_range(self.exposure_time0..self.exposure_time1),
+            exposure_time: rand::thread_rng().gen_range(self.exposure_time.clone()),
         }
     }
 }
