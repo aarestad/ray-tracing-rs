@@ -5,11 +5,11 @@ use image::{DynamicImage, ImageResult, Rgb, RgbImage};
 use rand::Rng;
 use threadpool::ThreadPool;
 
-use crate::util::worlds::{World};
+use crate::textures::noise::NoiseType::{Marble, Perlin, Turbulence};
+use crate::util::worlds::World;
 use data::color64::Color64;
 use std::env;
 use util::args::parse_args;
-use crate::textures::noise::NoiseType::{Perlin, Turbulence, Marble};
 
 mod camera;
 mod data;
@@ -25,7 +25,10 @@ fn main() -> ImageResult<()> {
     let world_choice = 7;
 
     let world = match world_choice {
-        0 => Arc::from(World::random_world(options.create_little_spheres, options.use_bvh)),
+        0 => Arc::from(World::random_world(
+            options.create_little_spheres,
+            options.use_bvh,
+        )),
         1 => Arc::from(World::two_spheres()),
         2 => Arc::from(World::two_perlin_spheres(Perlin)),
         3 => Arc::from(World::two_perlin_spheres(Turbulence)),
@@ -55,7 +58,8 @@ fn main() -> ImageResult<()> {
                     let v = (y as f64 + rands[1]) / (world.image_height - 1) as f64;
                     let ray = world.camera.get_ray(u, v);
 
-                    *pixel_color += *ray.color_in_world(world.hittable.as_ref(), &world.background_color);
+                    *pixel_color +=
+                        *ray.color_in_world(world.hittable.as_ref(), &world.background_color);
                 }
 
                 tx.send((

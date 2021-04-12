@@ -1,4 +1,5 @@
-use crate::data::color64::{Color64, LIGHT_BLUE, BLACK};
+use crate::camera::Camera;
+use crate::data::color64::{Color64, BLACK, LIGHT_BLUE};
 use crate::data::point64::Point64;
 use crate::data::vec3_64::Vec3_64;
 use crate::hittables::axis_aligned_rect::AxisAlignedRect;
@@ -19,9 +20,8 @@ use crate::textures::noise::{Noise, NoiseType};
 use crate::textures::perlin::PerlinGenerator;
 use crate::textures::solid_color::SolidColor;
 use rand::Rng;
-use std::sync::Arc;
-use crate::camera::Camera;
 use std::ops::Range;
+use std::sync::Arc;
 
 pub(crate) struct World {
     pub image_width: u32,
@@ -91,7 +91,8 @@ impl World {
                                 radius: 0.2,
                                 material: Arc::new(Lambertian {
                                     albedo: SolidColor::arc_from(Color64(
-                                        Vec3_64::random_in_unit_cube() * Vec3_64::random_in_unit_cube(),
+                                        Vec3_64::random_in_unit_cube()
+                                            * Vec3_64::random_in_unit_cube(),
                                     )),
                                 }),
                             }));
@@ -102,7 +103,8 @@ impl World {
                                 radius: 0.2,
                                 material: Arc::new(Lambertian {
                                     albedo: SolidColor::arc_from(Color64(
-                                        Vec3_64::random_in_unit_cube() * Vec3_64::random_in_unit_cube(),
+                                        Vec3_64::random_in_unit_cube()
+                                            * Vec3_64::random_in_unit_cube(),
                                     )),
                                 }),
                             }));
@@ -168,7 +170,7 @@ impl World {
                 DEFAULT_LOOK_AT,
                 DEFAULT_VUP,
                 20.0,
-                DEFAULT_IMAGE_WIDTH as f64/ DEFAULT_IMAGE_HEIGHT as f64,
+                DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64,
                 0.1,
                 DEFAULT_FOCUS_DISTANCE,
                 DEFAULT_EXPOSURE_TIME,
@@ -210,7 +212,7 @@ impl World {
                 DEFAULT_LOOK_AT,
                 DEFAULT_VUP,
                 20.0,
-                DEFAULT_IMAGE_WIDTH as f64/ DEFAULT_IMAGE_HEIGHT as f64,
+                DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64,
                 0.0,
                 DEFAULT_FOCUS_DISTANCE,
                 DEFAULT_EXPOSURE_TIME,
@@ -253,7 +255,7 @@ impl World {
                 DEFAULT_LOOK_AT,
                 DEFAULT_VUP,
                 20.0,
-                DEFAULT_IMAGE_WIDTH as f64/ DEFAULT_IMAGE_HEIGHT as f64,
+                DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64,
                 DEFAULT_APERTURE,
                 DEFAULT_FOCUS_DISTANCE,
                 DEFAULT_EXPOSURE_TIME,
@@ -281,7 +283,7 @@ impl World {
                 DEFAULT_LOOK_AT,
                 DEFAULT_VUP,
                 20.0,
-                DEFAULT_IMAGE_WIDTH as f64/ DEFAULT_IMAGE_HEIGHT as f64,
+                DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64,
                 DEFAULT_APERTURE,
                 DEFAULT_FOCUS_DISTANCE,
                 DEFAULT_EXPOSURE_TIME,
@@ -333,7 +335,7 @@ impl World {
                 Point64::new(0., 2., 0.),
                 DEFAULT_VUP,
                 20.0,
-                DEFAULT_IMAGE_WIDTH as f64/ DEFAULT_IMAGE_HEIGHT as f64,
+                DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64,
                 DEFAULT_APERTURE,
                 DEFAULT_FOCUS_DISTANCE,
                 DEFAULT_EXPOSURE_TIME,
