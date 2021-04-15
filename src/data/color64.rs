@@ -1,32 +1,32 @@
-use crate::data::vec3_64::Vec3_64;
 use image::Rgb;
+use nalgebra::Vector3;
 use std::ops::{Deref, DerefMut};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct Color64(pub Vec3_64);
+pub struct Color64(pub Vector3<f64>);
 
 pub const LIGHT_BLUE: Color64 = Color64::new(0.7, 0.8, 1.);
 pub const BLACK: Color64 = Color64::new(0., 0., 0.);
 
 impl Color64 {
     pub const fn new(r: f64, g: f64, b: f64) -> Self {
-        Color64(Vec3_64(r, g, b))
+        Color64(Vector3::new(r, g, b))
     }
 
     pub fn r(&self) -> f64 {
-        self.0 .0
+        self.0[0]
     }
 
     pub fn g(&self) -> f64 {
-        self.0 .1
+        self.0[1]
     }
 
     pub fn b(&self) -> f64 {
-        self.0 .2
+        self.0[2]
     }
 
     pub fn gray(gray_level: f64) -> Self {
-        Color64(Vec3_64(gray_level, gray_level, gray_level))
+        Color64(Vector3::new(gray_level, gray_level, gray_level))
     }
 
     pub fn to_image_rgbu8(&self, samples_per_pixel: u32) -> Rgb<u8> {
@@ -50,7 +50,7 @@ impl Color64 {
 }
 
 impl Deref for Color64 {
-    type Target = Vec3_64;
+    type Target = Vector3<f64>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
