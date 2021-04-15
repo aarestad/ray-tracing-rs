@@ -41,7 +41,7 @@ impl Ray {
                 match hit_record.material.scatter(self, &hit_record) {
                     Some(scatter_record) => Color64(
                         *emitted
-                            + &component_mul(
+                            + component_mul(
                                 &*scatter_record.attenuation,
                                 &*scatter_record.scattered.color_in_world_recurse(
                                     world,
