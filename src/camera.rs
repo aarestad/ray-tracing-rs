@@ -2,9 +2,10 @@
 
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
-use crate::data::vec3_64::Vec3_64;
 use rand::Rng;
 use std::ops::Range;
+use nalgebra::Vector3;
+use crate::data::vector3::random_in_unit_disk;
 
 pub struct Camera {
     origin: Point64,
@@ -20,7 +21,7 @@ impl Camera {
     pub fn new(
         look_from: Point64,
         look_at: Point64,
-        vup: Vec3_64,
+        vup: Vector3<f64>,
         vfov_deg: f64, // vertical field of view
         aspect_ratio: f64,
         aperture: f64,
@@ -31,8 +32,8 @@ impl Camera {
         let viewport_height = 2. * h;
         let viewport_width = aspect_ratio * viewport_height;
 
-        let w = Point64((*look_from - *look_at).normalized());
-        let u = Point64(vup.cross(&w).normalized());
+        let w = Point64((*look_from - *look_at).normalize());
+        let u = Point64(vup.cross(&w).normalize());
         let v = Point64(w.cross(&u));
 
         let horizontal = Point64(viewport_width * *u * focus_dist);
@@ -52,7 +53,7 @@ impl Camera {
     }
 
     pub fn get_ray(&self, s: f64, t: f64) -> Ray {
-        let rd = Point64(self.lens_radius * Vec3_64::random_in_unit_disk());
+        let rd = Point64(self.lens_radius * random_in_unit_disk());
         let offset = *self.uvw.0 * rd.x() + *self.uvw.1 * rd.y();
 
         Ray {

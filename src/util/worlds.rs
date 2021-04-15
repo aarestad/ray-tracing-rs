@@ -1,7 +1,6 @@
 use crate::camera::Camera;
 use crate::data::color64::{Color64, BLACK, LIGHT_BLUE};
 use crate::data::point64::Point64;
-use crate::data::vec3_64::Vec3_64;
 use crate::hittables::axis_aligned_rect::AxisAlignedRect;
 use crate::hittables::axis_aligned_rect::AxisAlignment::{X, Y, Z};
 use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
@@ -22,6 +21,8 @@ use crate::textures::solid_color::SolidColor;
 use rand::Rng;
 use std::ops::Range;
 use std::sync::Arc;
+use nalgebra::{Vector3};
+use crate::data::vector3::{random_in_unit_cube, rand_range};
 
 pub(crate) struct World {
     pub image_width: u32,
@@ -35,7 +36,7 @@ pub(crate) struct World {
 const DEFAULT_LOOK_FROM: Point64 = Point64::new(13., 2., 3.);
 const DEFAULT_LOOK_AT: Point64 = Point64::new(0., 0., 0.);
 const DEFAULT_SAMPLES_PER_PIXEL: u32 = 200;
-const DEFAULT_VUP: Vec3_64 = Vec3_64(0., 1., 0.);
+const DEFAULT_VUP: Vector3<f64> = Vector3::new(0., 1., 0.);
 const DEFAULT_IMAGE_WIDTH: u32 = 960;
 const DEFAULT_IMAGE_HEIGHT: u32 = 540;
 const DEFAULT_VFOV_DEG: f64 = 40.;
@@ -85,14 +86,13 @@ impl World {
                             // 10% moving Lambertian spheres
                             hittables.push(Arc::new(MovingSphere {
                                 center0: center,
-                                center1: Point64(*center + Vec3_64(0., rng.gen(), 0.)),
+                                center1: Point64(*center + Vector3::new(0., rng.gen(), 0.)),
                                 time0: 0.,
                                 time1: 1.,
                                 radius: 0.2,
                                 material: Arc::new(Lambertian {
                                     albedo: SolidColor::arc_from(Color64(
-                                        Vec3_64::random_in_unit_cube()
-                                            * Vec3_64::random_in_unit_cube(),
+                                        random_in_unit_cube().component_mul(&random_in_unit_cube())
                                     )),
                                 }),
                             }));
@@ -103,8 +103,7 @@ impl World {
                                 radius: 0.2,
                                 material: Arc::new(Lambertian {
                                     albedo: SolidColor::arc_from(Color64(
-                                        Vec3_64::random_in_unit_cube()
-                                            * Vec3_64::random_in_unit_cube(),
+                                        random_in_unit_cube().component_mul(&random_in_unit_cube())
                                     )),
                                 }),
                             }));
@@ -114,7 +113,7 @@ impl World {
                                 center,
                                 radius: 0.2,
                                 material: Arc::new(Metal {
-                                    albedo: Color64(Vec3_64::rand_range(0.5, 1.)),
+                                    albedo: Color64(rand_range(0.5, 1.)),
                                     fuzz: rng.gen_range(0.0..0.5),
                                 }),
                             }));

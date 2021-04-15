@@ -1,10 +1,10 @@
 use crate::data::color64::Color64;
 use crate::data::point64::Point64;
-use crate::data::vec3_64::Vec3_64;
 use crate::textures::Texture;
 use image::io::Reader as ImageReader;
 use image::{DynamicImage, GenericImageView};
 use std::path::Path;
+use nalgebra::Vector3;
 
 pub struct ImageTexture {
     image: Option<DynamicImage>,
@@ -56,7 +56,7 @@ impl Texture for ImageTexture {
 
             let pixel = image.get_pixel(i, j).0;
 
-            Color64(Vec3_64(pixel[0] as f64, pixel[1] as f64, pixel[2] as f64) * COLOR_SCALE)
+            Color64(Vector3::new(pixel[0] as f64, pixel[1] as f64, pixel[2] as f64) * COLOR_SCALE)
         }
     }
 }

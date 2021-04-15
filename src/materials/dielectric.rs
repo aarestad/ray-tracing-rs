@@ -3,6 +3,7 @@ use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::HitRecord;
 use crate::materials::{Material, ScatterRecord};
+use crate::data::vector3::{reflect, refract};
 
 fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
     // Use Schlick's approximation for reflectance
@@ -23,17 +24,17 @@ impl Material for Dielectric {
             self.index_of_refraction
         };
 
-        let unit_direction = ray_in.direction.normalized();
+        let unit_direction = ray_in.direction.normalize();
 
         let cos_theta = -unit_direction.dot(&*hit_record.normal).min(1.);
-        let sin_theta = (1. - cos_theta.powi(2)).sqrt();
+        let sin_theta = (1. - (cos_theta.powi(2) as f64)).sqrt();
         let cannot_refract = refraction_ratio * sin_theta > 1.;
 
         let direction =
             if cannot_refract || reflectance(cos_theta, refraction_ratio) > rand::random() {
-                unit_direction.reflect(&*hit_record.normal)
+                reflect(unit_direction, &*hit_record.normal)
             } else {
-                unit_direction.refract(&*hit_record.normal, refraction_ratio)
+                refract(unit_direction, &*hit_record.normal, refraction_ratio)
             };
 
         Some(ScatterRecord {

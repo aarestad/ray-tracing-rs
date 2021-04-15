@@ -1,11 +1,11 @@
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
-use crate::data::vec3_64::Vec3_64;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::{HitRecord, Hittable};
 use crate::materials::Material;
 use std::f64::consts::{PI, TAU};
 use std::sync::Arc;
+use nalgebra::Vector3;
 
 #[derive(Clone)]
 pub struct Sphere {
@@ -24,8 +24,8 @@ pub(crate) fn get_sphere_uv(p: Point64) -> (f64, f64) {
 impl Hittable for Sphere {
     fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<AxisAlignedBoundingBox> {
         Some(AxisAlignedBoundingBox {
-            minimum: Point64(*self.center - Vec3_64(self.radius, self.radius, self.radius)),
-            maximum: Point64(*self.center + Vec3_64(self.radius, self.radius, self.radius)),
+            minimum: Point64(*self.center - Vector3::new(self.radius, self.radius, self.radius)),
+            maximum: Point64(*self.center + Vector3::new(self.radius, self.radius, self.radius)),
         })
     }
 

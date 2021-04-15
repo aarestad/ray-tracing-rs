@@ -1,10 +1,10 @@
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
-use crate::data::vec3_64::Vec3_64;
 use crate::hittables::HitRecord;
 use crate::materials::{Material, ScatterRecord};
 use crate::textures::Texture;
 use std::sync::Arc;
+use crate::data::vector3::{random_unit_vector, near_zero};
 
 pub struct Lambertian {
     pub albedo: Arc<dyn Texture>,
@@ -12,7 +12,7 @@ pub struct Lambertian {
 
 impl Material for Lambertian {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
-        let scatter_direction = *hit_record.normal + Vec3_64::random_unit_vector();
+        let scatter_direction = *hit_record.normal + random_unit_vector();
 
         Some(ScatterRecord {
             hit_record: hit_record.clone(),
@@ -21,7 +21,7 @@ impl Material for Lambertian {
                 .value(hit_record.u, hit_record.v, &hit_record.location),
             scattered: Ray {
                 origin: hit_record.location,
-                direction: if scatter_direction.near_zero() {
+                direction: if near_zero(scatter_direction) {
                     hit_record.normal
                 } else {
                     Point64(scatter_direction)
