@@ -2,6 +2,7 @@ use nalgebra::{Vector3};
 use rand::Rng;
 use rand_distr::StandardNormal;
 use std::f64::consts::TAU;
+use std::ops::Mul;
 
 pub fn random_in_unit_sphere() -> Vector3<f64> {
     let mut rng = rand::thread_rng();
@@ -41,18 +42,19 @@ pub fn random_in_unit_cube() -> Vector3<f64> {
     rand_range(0., 1.)
 }
 
-pub fn near_zero(vec: Vector3<f64>) -> bool {
+pub fn near_zero(vec: &Vector3<f64>) -> bool {
     let epsilon = 1e-8;
     vec[0] < epsilon && vec[1] < epsilon && vec[2] < epsilon
 }
 
-pub fn reflect(vec: Vector3<f64>, normal: &Vector3<f64>) -> Vector3<f64> {
-    *vec - 2. * (*vec).dot(normal) * *normal
+pub fn reflect(vec: &Vector3<f64>, normal: &Vector3<f64>) -> Vector3<f64> {
+    let dot_prod = vec.dot(normal);
+    *vec - (normal.mul(2. * dot_prod))
 }
 
-pub fn refract(&vec: Vector3<f64>, normal: &Vector3<f64>, etai_over_etat: f64) -> Vector3<f64> {
+pub fn refract(vec: &Vector3<f64>, normal: &Vector3<f64>, etai_over_etat: f64) -> Vector3<f64> {
     let cos_theta = -vec.dot(normal).min(1.);
     let r_out_normal = etai_over_etat * (*vec + cos_theta * *normal);
-    let r_out_parallel = -(1. - r_out_normal.mag_squared()).abs().sqrt() * *normal;
+    let r_out_parallel = -(1. - r_out_normal.magnitude()).abs().sqrt() * *normal;
     r_out_normal + r_out_parallel
 }

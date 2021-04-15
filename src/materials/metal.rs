@@ -12,7 +12,7 @@ pub struct Metal {
 
 impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
-        let reflected = reflect(ray_in.direction.normalize(), &hit_record.normal);
+        let reflected = reflect(&ray_in.direction.normalize(), &hit_record.normal);
 
         if reflected.dot(&hit_record.normal) > 0. {
             Some(ScatterRecord {

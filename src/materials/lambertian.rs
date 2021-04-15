@@ -21,7 +21,7 @@ impl Material for Lambertian {
                 .value(hit_record.u, hit_record.v, &hit_record.location),
             scattered: Ray {
                 origin: hit_record.location,
-                direction: if near_zero(scatter_direction) {
+                direction: if near_zero(&scatter_direction) {
                     hit_record.normal
                 } else {
                     Point64(scatter_direction)

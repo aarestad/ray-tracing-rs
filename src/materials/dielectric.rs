@@ -32,9 +32,9 @@ impl Material for Dielectric {
 
         let direction =
             if cannot_refract || reflectance(cos_theta, refraction_ratio) > rand::random() {
-                reflect(unit_direction, &*hit_record.normal)
+                reflect(&unit_direction, &*hit_record.normal)
             } else {
-                refract(unit_direction, &*hit_record.normal, refraction_ratio)
+                refract(&unit_direction, &*hit_record.normal, refraction_ratio)
             };
 
         Some(ScatterRecord {
