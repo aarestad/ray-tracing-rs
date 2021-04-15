@@ -2,10 +2,10 @@
 
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
+use crate::data::vector3::random_in_unit_disk;
+use nalgebra::Vector3;
 use rand::Rng;
 use std::ops::Range;
-use nalgebra::Vector3;
-use crate::data::vector3::random_in_unit_disk;
 
 pub struct Camera {
     origin: Point64,

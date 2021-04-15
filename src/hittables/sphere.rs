@@ -3,9 +3,9 @@ use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::{HitRecord, Hittable};
 use crate::materials::Material;
+use nalgebra::Vector3;
 use std::f64::consts::{PI, TAU};
 use std::sync::Arc;
-use nalgebra::Vector3;
 
 #[derive(Clone)]
 pub struct Sphere {

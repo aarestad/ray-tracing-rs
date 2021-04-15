@@ -1,4 +1,4 @@
-use nalgebra::{Vector3};
+use nalgebra::Vector3;
 use rand::Rng;
 use rand_distr::StandardNormal;
 use std::f64::consts::TAU;
@@ -57,4 +57,8 @@ pub fn refract(vec: &Vector3<f64>, normal: &Vector3<f64>, etai_over_etat: f64) -
     let r_out_normal = etai_over_etat * (*vec + cos_theta * *normal);
     let r_out_parallel = -(1. - r_out_normal.magnitude()).abs().sqrt() * *normal;
     r_out_normal + r_out_parallel
+}
+
+pub fn component_mul(v1: &Vector3<f64>, v2: &Vector3<f64>) -> Vector3<f64> {
+    Vector3::new(v1[0] * v2[0], v1[1] * v2[1], v1[2] * v2[2])
 }

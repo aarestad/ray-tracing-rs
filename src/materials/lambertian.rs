@@ -1,10 +1,10 @@
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
+use crate::data::vector3::{near_zero, random_unit_vector};
 use crate::hittables::HitRecord;
 use crate::materials::{Material, ScatterRecord};
 use crate::textures::Texture;
 use std::sync::Arc;
-use crate::data::vector3::{random_unit_vector, near_zero};
 
 pub struct Lambertian {
     pub albedo: Arc<dyn Texture>,

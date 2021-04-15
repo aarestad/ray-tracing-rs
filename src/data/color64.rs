@@ -1,6 +1,6 @@
 use image::Rgb;
-use std::ops::{Deref, DerefMut};
 use nalgebra::Vector3;
+use std::ops::{Deref, DerefMut};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Color64(pub Vector3<f64>);

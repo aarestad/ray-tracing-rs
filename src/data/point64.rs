@@ -1,5 +1,5 @@
-use std::ops::Deref;
 use nalgebra::Vector3;
+use std::ops::Deref;
 
 #[derive(Debug, Copy, Clone, PartialEq, Default)]
 pub struct Point64(pub Vector3<f64>);

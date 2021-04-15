@@ -4,8 +4,8 @@ use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::sphere::get_sphere_uv;
 use crate::hittables::{HitRecord, Hittable};
 use crate::materials::Material;
-use std::sync::Arc;
 use nalgebra::Vector3;
+use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct MovingSphere {
@@ -29,7 +29,7 @@ impl MovingSphere {
 
 impl Hittable for MovingSphere {
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<AxisAlignedBoundingBox> {
-        let half_box_side = Vector3::new(self.radius, self.radius ,self.radius);
+        let half_box_side = Vector3::new(self.radius, self.radius, self.radius);
         let center0 = *self.center_at(time0);
         let center1 = *self.center_at(time1);
 

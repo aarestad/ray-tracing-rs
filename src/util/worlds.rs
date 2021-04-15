@@ -1,6 +1,7 @@
 use crate::camera::Camera;
 use crate::data::color64::{Color64, BLACK, LIGHT_BLUE};
 use crate::data::point64::Point64;
+use crate::data::vector3::{rand_range, random_in_unit_cube};
 use crate::hittables::axis_aligned_rect::AxisAlignedRect;
 use crate::hittables::axis_aligned_rect::AxisAlignment::{X, Y, Z};
 use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
@@ -18,11 +19,10 @@ use crate::textures::noise::NoiseType::Marble;
 use crate::textures::noise::{Noise, NoiseType};
 use crate::textures::perlin::PerlinGenerator;
 use crate::textures::solid_color::SolidColor;
+use nalgebra::Vector3;
 use rand::Rng;
 use std::ops::Range;
 use std::sync::Arc;
-use nalgebra::{Vector3};
-use crate::data::vector3::{random_in_unit_cube, rand_range};
 
 pub(crate) struct World {
     pub image_width: u32,
@@ -92,7 +92,7 @@ impl World {
                                 radius: 0.2,
                                 material: Arc::new(Lambertian {
                                     albedo: SolidColor::arc_from(Color64(
-                                        random_in_unit_cube().component_mul(&random_in_unit_cube())
+                                        random_in_unit_cube().component_mul(&random_in_unit_cube()),
                                     )),
                                 }),
                             }));
@@ -103,7 +103,7 @@ impl World {
                                 radius: 0.2,
                                 material: Arc::new(Lambertian {
                                     albedo: SolidColor::arc_from(Color64(
-                                        random_in_unit_cube().component_mul(&random_in_unit_cube())
+                                        random_in_unit_cube().component_mul(&random_in_unit_cube()),
                                     )),
                                 }),
                             }));
