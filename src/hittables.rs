@@ -14,6 +14,7 @@ pub mod hittable_vec;
 pub mod moving_sphere;
 pub mod sphere;
 pub mod translation;
+pub mod rotation;
 
 #[derive(Clone)]
 pub struct HitRecord {
