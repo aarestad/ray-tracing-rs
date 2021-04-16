@@ -4,7 +4,6 @@ use std::ops::Deref;
 #[derive(Debug, Copy, Clone, PartialEq, Default)]
 pub struct Point64(pub Vector3<f64>);
 
-#[allow(dead_code)] // x() and z()
 impl Point64 {
     pub const fn new(x: f64, y: f64, z: f64) -> Self {
         Point64(Vector3::new(x, y, z))

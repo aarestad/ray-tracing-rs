@@ -5,6 +5,7 @@ use crate::data::vector3::{rand_range, random_in_unit_cube};
 use crate::hittables::axis_aligned_rect::AxisAlignedRect;
 use crate::hittables::axis_aligned_rect::AxisAlignment::{X, Y, Z};
 use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
+use crate::hittables::cuboid::Cuboid;
 use crate::hittables::hittable_vec::HittableVec;
 use crate::hittables::moving_sphere::MovingSphere;
 use crate::hittables::sphere::Sphere;
@@ -396,12 +397,22 @@ impl World {
                     axis_alignment: Y,
                 }),
                 Arc::from(AxisAlignedRect {
-                    material: gray_material,
+                    material: gray_material.clone(),
                     min: (0., 0.),
                     max: (555., 555.),
                     axis_value: 555.,
                     axis_alignment: Z,
                 }),
+                Arc::from(Cuboid::new(
+                    Point64::new(130., 0., 65.),
+                    Point64::new(295., 165., 230.),
+                    gray_material.clone(),
+                )),
+                Arc::from(Cuboid::new(
+                    Point64::new(265., 0., 295.),
+                    Point64::new(430., 330., 460.),
+                    gray_material,
+                )),
             ],
         });
 
