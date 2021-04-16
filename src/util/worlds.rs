@@ -24,6 +24,7 @@ use nalgebra::Vector3;
 use rand::Rng;
 use std::ops::Range;
 use std::sync::Arc;
+use crate::hittables::translation::Translation;
 
 pub(crate) struct World {
     pub image_width: u32,
@@ -403,16 +404,22 @@ impl World {
                     axis_value: 555.,
                     axis_alignment: Z,
                 }),
-                Arc::from(Cuboid::new(
-                    Point64::new(130., 0., 65.),
-                    Point64::new(295., 165., 230.),
-                    gray_material.clone(),
-                )),
-                Arc::from(Cuboid::new(
-                    Point64::new(265., 0., 295.),
-                    Point64::new(430., 330., 460.),
-                    gray_material,
-                )),
+                Arc::from(Translation {
+                    hittable: Box::new(Cuboid::new(
+                        Point64::new(0., 0., 0.),
+                        Point64::new(165., 330., 165.),
+                        gray_material.clone(),
+                    )),
+                    offset: Vector3::new(265., 0., 295.)
+                }),
+                Arc::from(Translation {
+                    hittable: Box::new(Cuboid::new(
+                        Point64::new(0., 0., 0.),
+                        Point64::new(165., 165., 165.),
+                        gray_material,
+                    )),
+                    offset: Vector3::new(130., 0., 65.)
+                }),
             ],
         });
 
