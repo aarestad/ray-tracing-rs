@@ -2,7 +2,7 @@ use crate::camera::Camera;
 use crate::data::color64::{Color64, BLACK, LIGHT_BLUE};
 use crate::data::point64::Point64;
 use crate::data::vector3::{rand_range, random_in_unit_cube};
-use crate::hittables::axis_aligned_rect::AxisAlignedRect;
+use crate::hittables::axis_aligned_rect::{AxisAlignedRect, AxisAlignment};
 use crate::hittables::axis_aligned_rect::AxisAlignment::{X, Y, Z};
 use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
 use crate::hittables::cuboid::Cuboid;
@@ -439,6 +439,125 @@ impl World {
                 DEFAULT_EXPOSURE_TIME,
             ),
             hittable,
+        }
+    }
+
+    pub fn final_scene() -> World {
+        let mut rng = rand::thread_rng();
+
+        let ground = Arc::new(Lambertian {
+            albedo: SolidColor::arc_from(Color64::new(0.48, 0.83, 0.53))
+        });
+
+        let mut boxes: Vec<Arc<dyn Hittable>> = vec![];
+
+        let boxes_per_side = 20;
+
+        (0..boxes_per_side).for_each(|i| {
+            (0..boxes_per_side).for_each(|j| {
+                let w = 100.0;
+                let x0 = -1000.0 + i as f64 * w;
+                let z0 = -1000.0 + j as f64 * w;
+                let y0 = 0.0;
+                let x1 = x0 + w;
+                let y1 = rng.gen_range(1.0..101.0);
+                let z1 = z0 + w;
+
+                boxes.push(Arc::new(Cuboid::new(
+                    Point64::new(x0, y0, z0),
+                    Point64::new(x1, y1, z1),
+                    ground.clone(),
+                )));
+            });
+        });
+
+        World {
+            image_width: 800,
+            image_height: 800,
+            samples_per_pixel: 100,
+            background_color: BLACK,
+            camera: Camera::new(
+                Point64::new(478., 278., -600.),
+                Point64::new(278., 278., 0.),
+                DEFAULT_VUP,
+                DEFAULT_VFOV_DEG,
+                1.,
+                DEFAULT_APERTURE,
+                DEFAULT_FOCUS_DISTANCE,
+                DEFAULT_EXPOSURE_TIME,
+            ),
+            hittable: Arc::new(HittableVec {
+                hittables: vec![
+                    // floor
+                    BoundedVolumeHierarchy::create_bvh_arc(&mut boxes, 0., 1.),
+
+                    // light
+                    Arc::new(AxisAlignedRect {
+                        material: Arc::new(DiffuseLight::new(Color64::new(7., 7., 7.))),
+                        min: (123.0, 147.0),
+                        max: (423.0, 412.0),
+                        axis_value: 554.0,
+                        axis_alignment: AxisAlignment::Y,
+                    }),
+
+                    // moving sphere
+                    Arc::new(MovingSphere {
+                        center0: Point64::new(400., 400., 200.),
+                        center1: Point64::new(430., 400., 400.),
+                        radius: 50.0,
+                        material: Arc::new(Lambertian {
+                            albedo: SolidColor::arc_from(Color64::new(0.7, 0.3, 0.1))
+                        }),
+                        time0: 0.0,
+                        time1: 1.0
+                    }),
+
+                    // dielectric sphere
+                    Arc::new(Sphere {
+                        center: Point64::new(260., 150., 45.),
+                        radius: 50.0,
+                        material: Arc::new(Dielectric {
+                            index_of_refraction: 1.5,
+                        })
+                    }),
+
+                    // metal sphere
+                    Arc::new(Sphere {
+                        center: Point64::new(0., 150., 145.),
+                        radius: 50.0,
+                        material: Arc::new(Metal {
+                            albedo: Color64::new(0.8, 0.8, 0.9),
+                            fuzz: 1.0
+                        })
+                    }),
+
+                    // blue subsurface reflection sphere TODO
+
+                    // earth
+                    Arc::new(Sphere {
+                        center: Point64::new(400., 200., 400.),
+                        radius: 100.,
+                        material:
+                        Arc::new(Lambertian {
+                            albedo: Arc::new(ImageTexture::new("resources/earthmap.jpg".to_string())),
+                        }),
+                    }),
+
+                    // Perlin noise sphere
+                    Arc::new(Sphere {
+                        center: Point64::new(220., 280., 300.),
+                        radius: 80.,
+                        material:
+                        Arc::new(Lambertian {
+                            albedo: Arc::new(Noise {
+                                noise_gen: PerlinGenerator::new(),
+                                scale: 0.1,
+                                noise_type: NoiseType::Perlin
+                            })
+                        }),
+                    }),
+                ],
+            }),
         }
     }
 }

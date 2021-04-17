@@ -25,7 +25,7 @@ fn main() -> ImageResult<()> {
     let args: Vec<String> = env::args().collect();
     let options = parse_args(&args).expect("bad args!");
 
-    let world_choice = 7;
+    let world_choice = 8;
 
     let world = match world_choice {
         0 => Arc::from(World::random_world(
@@ -39,6 +39,7 @@ fn main() -> ImageResult<()> {
         5 => Arc::from(World::earth()),
         6 => Arc::from(World::simple_light()),
         7 => Arc::from(World::cornell_box()),
+        8 => Arc::from(World::final_scene()),
         _ => panic!("bad world choice: {}", world_choice),
     };
 
