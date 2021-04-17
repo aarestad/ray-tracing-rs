@@ -1,9 +1,10 @@
 use crate::camera::Camera;
 use crate::data::color64::{Color64, BLACK, LIGHT_BLUE};
 use crate::data::point64::Point64;
+use crate::data::vector3;
 use crate::data::vector3::{rand_range, random_in_unit_cube};
-use crate::hittables::axis_aligned_rect::{AxisAlignedRect, AxisAlignment};
 use crate::hittables::axis_aligned_rect::AxisAlignment::{X, Y, Z};
+use crate::hittables::axis_aligned_rect::{AxisAlignedRect, AxisAlignment};
 use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
 use crate::hittables::cuboid::Cuboid;
 use crate::hittables::hittable_vec::HittableVec;
@@ -405,7 +406,7 @@ impl World {
                     axis_alignment: Z,
                 }),
                 Arc::from(Translation {
-                    hittable: Box::new(Cuboid::new(
+                    hittable: Arc::new(Cuboid::new(
                         Point64::new(0., 0., 0.),
                         Point64::new(165., 330., 165.),
                         gray_material.clone(),
@@ -413,7 +414,7 @@ impl World {
                     offset: Vector3::new(265., 0., 295.),
                 }),
                 Arc::from(Translation {
-                    hittable: Box::new(Cuboid::new(
+                    hittable: Arc::new(Cuboid::new(
                         Point64::new(0., 0., 0.),
                         Point64::new(165., 165., 165.),
                         gray_material,
@@ -446,9 +447,10 @@ impl World {
         let mut rng = rand::thread_rng();
 
         let ground = Arc::new(Lambertian {
-            albedo: SolidColor::arc_from(Color64::new(0.48, 0.83, 0.53))
+            albedo: SolidColor::arc_from(Color64::new(0.48, 0.83, 0.53)),
         });
 
+        // create the floor boxes
         let mut boxes: Vec<Arc<dyn Hittable>> = vec![];
 
         let boxes_per_side = 20;
@@ -471,6 +473,23 @@ impl World {
             });
         });
 
+        // create the box of spheres
+        let mut box_of_spheres: Vec<Arc<dyn Hittable>> = vec![];
+
+        let white_ish = Arc::new(Lambertian {
+            albedo: SolidColor::arc_from(Color64::gray(0.73)),
+        });
+
+        let num_of_spheres_in_box = 1000;
+
+        (0..num_of_spheres_in_box).for_each(|_| {
+            box_of_spheres.push(Arc::new(Sphere {
+                center: Point64(vector3::rand_range(0., 165.)),
+                radius: 10.,
+                material: white_ish.clone(),
+            }));
+        });
+
         World {
             image_width: 800,
             image_height: 800,
@@ -490,7 +509,6 @@ impl World {
                 hittables: vec![
                     // floor
                     BoundedVolumeHierarchy::create_bvh_arc(&mut boxes, 0., 1.),
-
                     // light
                     Arc::new(AxisAlignedRect {
                         material: Arc::new(DiffuseLight::new(Color64::new(7., 7., 7.))),
@@ -499,62 +517,67 @@ impl World {
                         axis_value: 554.0,
                         axis_alignment: AxisAlignment::Y,
                     }),
-
                     // moving sphere
                     Arc::new(MovingSphere {
                         center0: Point64::new(400., 400., 200.),
-                        center1: Point64::new(430., 400., 400.),
+                        center1: Point64::new(430., 400., 200.),
                         radius: 50.0,
                         material: Arc::new(Lambertian {
-                            albedo: SolidColor::arc_from(Color64::new(0.7, 0.3, 0.1))
+                            albedo: SolidColor::arc_from(Color64::new(0.7, 0.3, 0.1)),
                         }),
                         time0: 0.0,
-                        time1: 1.0
+                        time1: 1.0,
                     }),
-
                     // dielectric sphere
                     Arc::new(Sphere {
                         center: Point64::new(260., 150., 45.),
                         radius: 50.0,
                         material: Arc::new(Dielectric {
                             index_of_refraction: 1.5,
-                        })
+                        }),
                     }),
-
                     // metal sphere
                     Arc::new(Sphere {
                         center: Point64::new(0., 150., 145.),
                         radius: 50.0,
                         material: Arc::new(Metal {
                             albedo: Color64::new(0.8, 0.8, 0.9),
-                            fuzz: 1.0
-                        })
+                            fuzz: 1.0,
+                        }),
                     }),
-
-                    // blue subsurface reflection sphere TODO
+                    // TODO blue subsurface reflection sphere
 
                     // earth
                     Arc::new(Sphere {
                         center: Point64::new(400., 200., 400.),
                         radius: 100.,
-                        material:
-                        Arc::new(Lambertian {
-                            albedo: Arc::new(ImageTexture::new("resources/earthmap.jpg".to_string())),
+                        material: Arc::new(Lambertian {
+                            albedo: Arc::new(ImageTexture::new(
+                                "resources/earthmap.jpg".to_string(),
+                            )),
                         }),
                     }),
-
                     // Perlin noise sphere
                     Arc::new(Sphere {
                         center: Point64::new(220., 280., 300.),
                         radius: 80.,
-                        material:
-                        Arc::new(Lambertian {
+                        material: Arc::new(Lambertian {
                             albedo: Arc::new(Noise {
                                 noise_gen: PerlinGenerator::new(),
                                 scale: 0.1,
-                                noise_type: NoiseType::Perlin
-                            })
+                                noise_type: NoiseType::Perlin,
+                            }),
                         }),
+                    }),
+                    // rotated/translated box of spheres
+                    // TODO rotation
+                    Arc::new(Translation {
+                        hittable: BoundedVolumeHierarchy::create_bvh_arc(
+                            &mut box_of_spheres,
+                            0.0,
+                            1.0,
+                        ),
+                        offset: Vector3::new(-100., 270., 395.),
                     }),
                 ],
             }),

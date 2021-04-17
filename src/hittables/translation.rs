@@ -3,9 +3,10 @@ use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::{HitRecord, Hittable};
 use nalgebra::Vector3;
+use std::sync::Arc;
 
 pub struct Translation {
-    pub hittable: Box<dyn Hittable>,
+    pub hittable: Arc<dyn Hittable>,
     pub offset: Vector3<f64>,
 }
 

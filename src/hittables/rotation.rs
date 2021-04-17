@@ -4,9 +4,10 @@ use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::axis_aligned_rect::AxisAlignment;
 use crate::hittables::{HitRecord, Hittable};
+use std::sync::Arc;
 
 pub struct Rotation {
-    hittable: Box<dyn Hittable>,
+    hittable: Arc<dyn Hittable>,
     axis_alignment: AxisAlignment,
     sin_cos_theta: (f64, f64),
     bounding_box: Option<AxisAlignedBoundingBox>,
