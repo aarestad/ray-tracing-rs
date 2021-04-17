@@ -1,5 +1,5 @@
 use nalgebra::Vector3;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 
 #[derive(Debug, Copy, Clone, PartialEq, Default)]
 pub struct Point64(pub Vector3<f64>);
@@ -27,5 +27,11 @@ impl Deref for Point64 {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl DerefMut for Point64 {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
     }
 }

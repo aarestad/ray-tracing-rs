@@ -25,6 +25,7 @@ use rand::Rng;
 use std::ops::Range;
 use std::sync::Arc;
 use crate::hittables::translation::Translation;
+use crate::hittables::rotation::Rotation;
 
 pub(crate) struct World {
     pub image_width: u32,
@@ -404,22 +405,22 @@ impl World {
                     axis_value: 555.,
                     axis_alignment: Z,
                 }),
-                Arc::from(Translation {
+                Arc::from(Rotation::new_y(Box::new(Translation {
                     hittable: Box::new(Cuboid::new(
                         Point64::new(0., 0., 0.),
                         Point64::new(165., 330., 165.),
                         gray_material.clone(),
                     )),
                     offset: Vector3::new(265., 0., 295.)
-                }),
-                Arc::from(Translation {
+                }), 15.)),
+                Arc::from(Rotation::new_y(Box::new(Translation {
                     hittable: Box::new(Cuboid::new(
                         Point64::new(0., 0., 0.),
                         Point64::new(165., 165., 165.),
                         gray_material,
                     )),
                     offset: Vector3::new(130., 0., 65.)
-                }),
+                }), -18.)),
             ],
         });
 
