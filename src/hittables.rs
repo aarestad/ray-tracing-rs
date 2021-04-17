@@ -12,9 +12,9 @@ mod bvh_comparators;
 pub mod cuboid;
 pub mod hittable_vec;
 pub mod moving_sphere;
+pub mod rotation;
 pub mod sphere;
 pub mod translation;
-pub mod rotation;
 
 #[derive(Clone)]
 pub struct HitRecord {

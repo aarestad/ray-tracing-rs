@@ -1,8 +1,8 @@
-use crate::hittables::{Hittable, HitRecord};
-use nalgebra::{Vector3};
-use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
-use crate::data::ray::Ray;
 use crate::data::point64::Point64;
+use crate::data::ray::Ray;
+use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
+use crate::hittables::{HitRecord, Hittable};
+use nalgebra::Vector3;
 
 pub struct Translation {
     pub hittable: Box<dyn Hittable>,
@@ -18,8 +18,8 @@ impl Hittable for Translation {
         }
 
         Some(AxisAlignedBoundingBox {
-            minimum: Point64(*orig_bounding_box.unwrap().minimum + &self.offset),
-            maximum: Point64(*orig_bounding_box.unwrap().maximum + &self.offset),
+            minimum: Point64(*orig_bounding_box.unwrap().minimum + self.offset),
+            maximum: Point64(*orig_bounding_box.unwrap().maximum + self.offset),
         })
     }
 
@@ -33,10 +33,14 @@ impl Hittable for Translation {
         let opt_hit_record = self.hittable.is_hit_by(&moved_ray, min_value, max_value);
 
         match opt_hit_record {
-            Some(hr) => {
-                Some(HitRecord::new(hr.value, &moved_ray, hr.normal, hr.material.clone(), (hr.u, hr.v)))
-            },
-            None => None
+            Some(hr) => Some(HitRecord::new(
+                hr.value,
+                &moved_ray,
+                hr.normal,
+                hr.material.clone(),
+                (hr.u, hr.v),
+            )),
+            None => None,
         }
     }
 }

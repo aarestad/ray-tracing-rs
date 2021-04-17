@@ -9,6 +9,7 @@ use crate::hittables::cuboid::Cuboid;
 use crate::hittables::hittable_vec::HittableVec;
 use crate::hittables::moving_sphere::MovingSphere;
 use crate::hittables::sphere::Sphere;
+use crate::hittables::translation::Translation;
 use crate::hittables::Hittable;
 use crate::materials::dielectric::Dielectric;
 use crate::materials::diffuse_light::DiffuseLight;
@@ -24,7 +25,6 @@ use nalgebra::Vector3;
 use rand::Rng;
 use std::ops::Range;
 use std::sync::Arc;
-use crate::hittables::translation::Translation;
 
 pub(crate) struct World {
     pub image_width: u32,
@@ -410,7 +410,7 @@ impl World {
                         Point64::new(165., 330., 165.),
                         gray_material.clone(),
                     )),
-                    offset: Vector3::new(265., 0., 295.)
+                    offset: Vector3::new(265., 0., 295.),
                 }),
                 Arc::from(Translation {
                     hittable: Box::new(Cuboid::new(
@@ -418,7 +418,7 @@ impl World {
                         Point64::new(165., 165., 165.),
                         gray_material,
                     )),
-                    offset: Vector3::new(130., 0., 65.)
+                    offset: Vector3::new(130., 0., 65.),
                 }),
             ],
         });
