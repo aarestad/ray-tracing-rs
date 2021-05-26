@@ -1,5 +1,3 @@
-#![allow(clippy::upper_case_acronyms, dead_code)] // it doesn't like "XYRect"
-
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
