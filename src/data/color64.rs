@@ -29,7 +29,7 @@ impl Color64 {
         Color64(Vector3::new(gray_level, gray_level, gray_level))
     }
 
-    pub fn to_image_rgbu8(&self, samples_per_pixel: u32) -> Rgb<u8> {
+    pub fn to_image_rgbu8(self, samples_per_pixel: u32) -> Rgb<u8> {
         let mut r = self.r();
         let mut g = self.g();
         let mut b = self.b();
