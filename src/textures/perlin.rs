@@ -41,7 +41,7 @@ impl PerlinGenerator {
             point.z().floor() as i32,
         );
 
-        let mut c = &mut [[[Vector3::new(0., 0., 0.); 2]; 2]; 2];
+        let c = &mut [[[Vector3::new(0., 0., 0.); 2]; 2]; 2];
 
         for (di, ci) in c.iter_mut().enumerate() {
             for (dj, cj) in ci.iter_mut().enumerate() {
@@ -53,7 +53,7 @@ impl PerlinGenerator {
             }
         }
 
-        trilinear_interp(&mut c, uvw)
+        trilinear_interp(c, uvw)
     }
 
     pub fn turbulence(&self, point: &Point64, depth: i32) -> f64 {
