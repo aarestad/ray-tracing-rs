@@ -19,12 +19,15 @@ pub fn parse_args(input: &[String]) -> Result<ProgramOptions, ArgsError> {
         "use_bvh",
         "Use BoundedVolumeHierarchy instead of HittableVec",
     );
-    args.flag(
-        "h",
-        "help",
-        "Print this help message",
+    args.flag("h", "help", "Print this help message");
+    args.option(
+        "w",
+        "world_choice",
+        "Select world (int from 1-8)",
+        "[1-8]",
+        Occur::Optional,
+        Option::Some(String::from("0")),
     );
-    args.option("w", "world_choice", "Select world (int from 1-8)", "[1-8]", Occur::Optional, Option::Some(String::from("0")));
 
     args.parse(input)?;
 

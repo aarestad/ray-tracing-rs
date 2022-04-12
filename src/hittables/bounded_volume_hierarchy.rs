@@ -35,7 +35,7 @@ impl Hittable for BoundedVolumeHierarchy {
 
 impl BoundedVolumeHierarchy {
     pub fn create_bvh_arc(
-        objects: &mut Vec<Arc<dyn Hittable>>,
+        objects: &mut [Arc<dyn Hittable>],
         time0: f64,
         time1: f64,
     ) -> Arc<dyn Hittable> {
