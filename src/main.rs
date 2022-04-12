@@ -25,7 +25,7 @@ fn main() -> ImageResult<()> {
     let args: Vec<String> = env::args().collect();
     let options = parse_args(&args).expect("bad args!");
 
-    let world_choice = 8;
+    let world_choice = options.world_choice;
 
     let world = match world_choice {
         0 => Arc::from(World::random_world(
