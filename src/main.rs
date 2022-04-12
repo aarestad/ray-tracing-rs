@@ -25,6 +25,11 @@ fn main() -> ImageResult<()> {
     let args: Vec<String> = env::args().collect();
     let options = parse_args(&args).expect("bad args!");
 
+    if options.help {
+        println!("{}", options.help_str);
+        return Ok(());
+    }
+
     let world_choice = options.world_choice;
 
     let world = match world_choice {

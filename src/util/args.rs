@@ -5,6 +5,8 @@ pub struct ProgramOptions {
     pub create_little_spheres: bool,
     pub use_bvh: bool,
     pub world_choice: u8,
+    pub help: bool,
+    pub help_str: String,
 }
 
 pub fn parse_args(input: &[String]) -> Result<ProgramOptions, ArgsError> {
@@ -17,7 +19,12 @@ pub fn parse_args(input: &[String]) -> Result<ProgramOptions, ArgsError> {
         "use_bvh",
         "Use BoundedVolumeHierarchy instead of HittableVec",
     );
-    args.option("w", "world_choice", "Select world (int from 1-8", "[1-8]", Occur::Optional, Option::Some(String::from("0")));
+    args.flag(
+        "h",
+        "help",
+        "Print this help message",
+    );
+    args.option("w", "world_choice", "Select world (int from 1-8)", "[1-8]", Occur::Optional, Option::Some(String::from("0")));
 
     args.parse(input)?;
 
@@ -25,5 +32,7 @@ pub fn parse_args(input: &[String]) -> Result<ProgramOptions, ArgsError> {
         create_little_spheres: args.value_of("create_little_spheres")?,
         use_bvh: args.value_of("use_bvh")?,
         world_choice: args.value_of("world_choice")?,
+        help: args.value_of("help")?,
+        help_str: args.full_usage(),
     })
 }
