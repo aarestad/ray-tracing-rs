@@ -4,6 +4,7 @@ use crate::data::ray::Ray;
 use crate::data::vector3::{reflect, refract};
 use crate::hittables::HitRecord;
 use crate::materials::{Material, ScatterRecord};
+use rand_distr::num_traits::Inv;
 
 fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
     // Use Schlick's approximation for reflectance
@@ -19,7 +20,7 @@ pub struct Dielectric {
 impl Material for Dielectric {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
         let refraction_ratio = if hit_record.front_face {
-            1. / self.index_of_refraction
+            self.index_of_refraction.inv()
         } else {
             self.index_of_refraction
         };
