@@ -8,9 +8,14 @@ pub struct Checker {
     pub even: Arc<dyn Texture>,
 }
 
+// Larger scale -> smaller squares
+const CHECKER_SCALE: f64 = 10.;
+
 impl Texture for Checker {
     fn value(&self, u: f64, v: f64, point: &Point64) -> Color64 {
-        let sines = (10. * point.x()).sin() * (10. * point.y()).sin() * (10. * point.z()).sin();
+        let sines = (CHECKER_SCALE * point.x()).sin()
+            * (CHECKER_SCALE * point.y()).sin()
+            * (CHECKER_SCALE * point.z()).sin();
 
         if sines < 0. {
             self.odd.value(u, v, point)
