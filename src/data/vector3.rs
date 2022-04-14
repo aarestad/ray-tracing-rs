@@ -42,9 +42,10 @@ pub fn random_in_unit_cube() -> Vector3<f64> {
     rand_range(0., 1.)
 }
 
+const EPSILON: f64 = 1e-8;
+
 pub fn near_zero(vec: &Vector3<f64>) -> bool {
-    let epsilon = 1e-8;
-    vec[0] < epsilon && vec[1] < epsilon && vec[2] < epsilon
+    vec[0] < EPSILON && vec[1] < EPSILON && vec[2] < EPSILON
 }
 
 pub fn reflect(vec: &Vector3<f64>, normal: &Vector3<f64>) -> Vector3<f64> {
