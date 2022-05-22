@@ -41,9 +41,9 @@ impl Color64 {
         g = (scale * g).sqrt();
         b = (scale * b).sqrt();
 
-        let scaled_red = (256. * r.clamp(0., 0.999)) as u8;
-        let scaled_green = (256. * g.clamp(0., 0.999)) as u8;
-        let scaled_blue = (256. * b.clamp(0., 0.999)) as u8;
+        let scaled_red = (255. * r.clamp(0., 1.)) as u8;
+        let scaled_green = (255. * g.clamp(0., 1.)) as u8;
+        let scaled_blue = (255. * b.clamp(0., 1.)) as u8;
 
         Rgb([scaled_red, scaled_green, scaled_blue])
     }
