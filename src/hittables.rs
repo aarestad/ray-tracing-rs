@@ -15,6 +15,7 @@ pub mod moving_sphere;
 pub mod rotation;
 pub mod sphere;
 pub mod translation;
+pub mod triangle;
 
 #[derive(Clone)]
 pub struct HitRecord {

@@ -1,0 +1,10 @@
+{
+  "cSpell.words": [
+    "etai",
+    "etat",
+    "hittables"
+  ],
+  "rust-analyzer.linkedProjects": [
+    "./Cargo.toml"
+  ]
+}

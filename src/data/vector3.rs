@@ -4,6 +4,10 @@ use rand_distr::StandardNormal;
 use std::f64::consts::TAU;
 use std::ops::Mul;
 
+use crate::util::EPSILON;
+
+pub type Vector = Vector3<f64>;
+
 pub fn random_in_unit_sphere() -> Vector3<f64> {
     let mut rng = rand::thread_rng();
 
@@ -41,8 +45,6 @@ pub fn rand_range(min: f64, max: f64) -> Vector3<f64> {
 pub fn random_in_unit_cube() -> Vector3<f64> {
     rand_range(0., 1.)
 }
-
-const EPSILON: f64 = 1e-8;
 
 pub fn near_zero(vec: &Vector3<f64>) -> bool {
     vec[0] < EPSILON && vec[1] < EPSILON && vec[2] < EPSILON

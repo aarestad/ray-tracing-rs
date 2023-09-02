@@ -5,17 +5,16 @@ authors = ["Peter Aarestad <aarestad@gmail.com>"]
 edition = "2021"
 description = "Trace some rays"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-rand = "0.8.3"
-rand_distr = "0.4.0"
-image = "0.23.14"
+rand = "0.8.5"
+rand_distr = "0.4.3"
+image = "0.24.7"
 threadpool = "1.8.1"
-num_cpus = "1.13.0"
+num_cpus = "1.16.0"
 args = "2.2.0"
 getopts = "0.2.21"
-array-init = "2.0.0"
-libwebp-image = "0.2.0"
-nalgebra = "0.26.1"
-parry3d = "0.4.0"
+array-init = "2.1.0"
+libwebp-image = "0.3.0"
+nalgebra = "0.32.3"
+parry3d = "0.13.5"
+approx = "0.5.1"
