@@ -139,28 +139,6 @@ mod test {
         assert!(t.is_hit_by(&r, 0.0, 100.0).is_none());
     }
 
-    // #[test]
-    // fn ray_misses_p1_p2_edge() {
-    //     let t = Triangle::new((
-    //         Point64::new(0., 1., 0.),
-    //         Point64::new(-1., 0., 0.),
-    //         Point64::new(1., 0., 0.),
-    //     ));
-    //     let r = Ray::new(Point64::new(-1., 1., -2.), Vector::vector(0., 0., 1.));
-    //     assert!(t.intersections(&r).ints().is_empty());
-    // }
-
-    // #[test]
-    // fn ray_misses_p2_p3_edge() {
-    //     let t = Triangle::new((
-    //         Point64::new(0., 1., 0.),
-    //         Point64::new(-1., 0., 0.),
-    //         Point64::new(1., 0., 0.),
-    //     ));
-    //     let r = Ray::new(Point64::new(0., -1., -2.), Vector::vector(0., 0., 1.));
-    //     assert!(t.intersections(&r).ints().is_empty());
-    // }
-
     #[test]
     fn ray_hits_triangle() {
         let t = Triangle::new(
