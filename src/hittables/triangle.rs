@@ -1,7 +1,5 @@
 use std::sync::Arc;
 
-use nalgebra::Point;
-
 use super::{axis_aligned_bounding_box::AxisAlignedBoundingBox, HitRecord, Hittable};
 use crate::{
     data::{point64::Point64, ray::Ray, vector3::Vector},
@@ -54,7 +52,7 @@ impl Hittable for Triangle {
         })
     }
 
-    fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
+    fn is_hit_by(&self, ray: &Ray, _min_value: f64, _max_value: f64) -> Option<HitRecord> {
         let cross_e2 = ray.direction.cross(&self.e2);
         let determinant = self.e1.dot(&cross_e2);
 
@@ -90,8 +88,6 @@ impl Hittable for Triangle {
 #[cfg(test)]
 mod test {
     use std::sync::Arc;
-
-    use approx::assert_abs_diff_eq;
 
     use crate::{
         data::{point64::Point64, ray::Ray},

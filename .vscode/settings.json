@@ -1,9 +1,15 @@
 {
   "editor.inlayHints.enabled": "offUnlessPressed",
   "cSpell.words": [
+    "earthmap",
     "etai",
     "etat",
-    "hittables"
+    "hittables",
+    "lambertian",
+    "libwebp",
+    "perlin",
+    "threadpool",
+    "VFOV"
   ],
   "rust-analyzer.linkedProjects": [
     "./Cargo.toml"

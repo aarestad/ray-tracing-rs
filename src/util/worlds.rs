@@ -11,6 +11,7 @@ use crate::hittables::hittable_vec::HittableVec;
 use crate::hittables::moving_sphere::MovingSphere;
 use crate::hittables::sphere::Sphere;
 use crate::hittables::translation::Translation;
+use crate::hittables::triangle::Triangle;
 use crate::hittables::Hittable;
 use crate::materials::dielectric::Dielectric;
 use crate::materials::diffuse_light::DiffuseLight;
@@ -155,6 +156,16 @@ impl World {
                 fuzz: 0.,
             }),
         }));
+
+        hittables.push(Arc::new(Triangle::new(
+            Point64::new(2.0, 1.0, 0.0),
+            Point64::new(1.0, 0.0, 2.0),
+            Point64::new(0.0, 2.0, 1.0),
+            Arc::new(Metal {
+                albedo: Color64::new(0.7, 0.6, 0.5),
+                fuzz: 0.,
+            }),
+        )));
 
         let hittable = if use_bvh {
             BoundedVolumeHierarchy::create_bvh_arc(&mut hittables, 0.0, 1.0)
