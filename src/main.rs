@@ -9,9 +9,7 @@ use crate::textures::noise::NoiseType::{Marble, Perlin, Turbulence};
 use crate::util::worlds::World;
 use data::color64::Color64;
 use image::DynamicImage::ImageRgb8;
-use libwebp_image::webp_write_rgb;
 use std::env;
-use std::fs::File;
 use util::args::parse_args;
 
 mod camera;
@@ -101,9 +99,6 @@ fn main() -> ImageResult<()> {
             break;
         }
     }
-
-    let mut file = File::create("output.webp")?;
-    webp_write_rgb(&image, &mut file)?;
 
     ImageRgb8(image).save("output.png")?;
 
