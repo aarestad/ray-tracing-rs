@@ -52,7 +52,7 @@ impl World {
         self.image_height * self.image_width
     }
 
-    pub fn random_world(create_little_spheres: bool, use_bvh: bool) -> World {
+    pub fn random_world(use_bvh: bool) -> World {
         let checker_pattern = Checker {
             odd: SolidColor::arc_from(Color64::new(0.2, 0.3, 0.1)),
             even: SolidColor::arc_from(Color64::new(0.9, 0.9, 0.9)),

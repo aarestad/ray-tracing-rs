@@ -9,6 +9,7 @@ pub mod lambertian;
 pub mod metal;
 
 pub struct ScatterRecord {
+    #[allow(dead_code)]
     pub hit_record: HitRecord,
     pub attenuation: Color64,
     pub scattered: Ray,

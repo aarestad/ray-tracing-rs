@@ -42,8 +42,8 @@ impl Ray {
                     Some(scatter_record) => Color64(
                         *emitted
                             + component_mul(
-                                &*scatter_record.attenuation,
-                                &*scatter_record.scattered.color_in_world_recurse(
+                                &scatter_record.attenuation,
+                                &scatter_record.scattered.color_in_world_recurse(
                                     world,
                                     background,
                                     depth - 1,

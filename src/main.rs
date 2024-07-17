@@ -31,10 +31,7 @@ fn main() -> ImageResult<()> {
     let world_choice = options.world_choice;
 
     let world = match world_choice {
-        0 => Arc::from(World::random_world(
-            options.create_little_spheres,
-            options.use_bvh,
-        )),
+        0 => Arc::from(World::random_world(options.use_bvh)),
         1 => Arc::from(World::two_spheres()),
         2 => Arc::from(World::two_perlin_spheres(Perlin)),
         3 => Arc::from(World::two_perlin_spheres(Turbulence)),

@@ -19,6 +19,7 @@ pub struct Triangle {
 }
 
 impl Triangle {
+    #[allow(dead_code)]
     pub fn new(p1: Point64, p2: Point64, p3: Point64, material: Arc<dyn Material>) -> Self {
         let e1 = p2.0 - p1.0;
         let e2 = p3.0 - p1.0;
@@ -64,7 +65,7 @@ impl Hittable for Triangle {
         let p1_to_origin = ray.origin.0 - self.p1.0;
         let u = f * p1_to_origin.dot(&cross_e2);
 
-        if u < 0.0 || u > 1.0 {
+        if !(0.0..=1.0).contains(&u) {
             return None;
         }
 
