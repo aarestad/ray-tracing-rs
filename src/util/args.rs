@@ -26,7 +26,7 @@ pub fn parse_args(input: &[String]) -> Result<ProgramOptions, ArgsError> {
         "Select world (int from 1-8)",
         "[1-8]",
         Occur::Optional,
-        Some(String::from("5")),
+        Some(String::from("0")),
     );
 
     args.parse(input)?;
