@@ -17,3 +17,11 @@ array-init = "2.1.0"
 nalgebra = "0.33.0"
 parry3d = "0.17.0"
 approx = "0.5.1"
+
+[[bin]]
+name = "ppm_test"
+path = "src/util/ppm.rs"
+
+[[bin]]
+name = "ray-tracer"
+path = "src/main.rs"
