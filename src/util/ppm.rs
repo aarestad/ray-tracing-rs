@@ -1,5 +1,5 @@
 use std::io;
-use std::io::{Error, Write};
+use std::io::Write;
 use image::RgbImage;
 
 pub fn image_to_ppm(image: &RgbImage, file: &mut dyn Write) -> io::Result<()> {
@@ -32,5 +32,5 @@ pub fn main() -> io::Result<()> {
         }
     }
 
-    image_to_ppm(&img, &mut io::stdout())
+    Ok(image_to_ppm(&img, &mut io::stdout())?)
 }
