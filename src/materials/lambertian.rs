@@ -1,6 +1,6 @@
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
-use crate::data::vector3::{near_zero, random_unit_vector};
+use crate::data::vector3::{near_zero, random_in_unit_sphere};
 use crate::hittables::HitRecord;
 use crate::materials::{Material, ScatterRecord};
 use crate::textures::Texture;
@@ -12,7 +12,7 @@ pub struct Lambertian {
 
 impl Material for Lambertian {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
-        let scatter_direction = *hit_record.normal + random_unit_vector();
+        let scatter_direction = *hit_record.normal + random_in_unit_sphere();
 
         Some(ScatterRecord {
             hit_record: hit_record.clone(),

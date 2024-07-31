@@ -4,6 +4,7 @@ version = "1.7.3"
 authors = ["Peter Aarestad <aarestad@gmail.com>"]
 edition = "2021"
 description = "Trace some rays"
+default-run = "ray-tracer"
 
 [dependencies]
 rand = "0.8.5"

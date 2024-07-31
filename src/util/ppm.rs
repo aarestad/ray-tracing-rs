@@ -3,12 +3,12 @@ use std::io::Write;
 use image::RgbImage;
 
 pub fn image_to_ppm(image: &RgbImage, file: &mut dyn Write) -> io::Result<()> {
-    file.write("P3\n".as_bytes())?;
-    file.write(format!("{} {}\n255\n", image.width(), image.height()).as_bytes())?;
+    file.write_all("P3\n".as_bytes())?;
+    file.write_all(format!("{} {}\n255\n", image.width(), image.height()).as_bytes())?;
 
     for pixel in image.pixels() {
         let [r, g, b] = pixel.0;
-        file.write(format!("{} {} {}\n", r, g, b).as_bytes())?;
+        file.write_all(format!("{} {} {}\n", r, g, b).as_bytes())?;
     }
 
     Ok(())
@@ -32,5 +32,5 @@ pub fn main() -> io::Result<()> {
         }
     }
 
-    Ok(image_to_ppm(&img, &mut io::stdout())?)
+    image_to_ppm(&img, &mut io::stdout())
 }

@@ -1,6 +1,5 @@
 use crate::data::color64::{Color64, BLACK};
 use crate::data::point64::Point64;
-use crate::data::vector3::component_mul;
 use crate::hittables::Hittable;
 
 pub struct Ray {
@@ -41,8 +40,7 @@ impl Ray {
                 match hit_record.material.scatter(self, &hit_record) {
                     Some(scatter_record) => Color64(
                         *emitted
-                            + component_mul(
-                                &scatter_record.attenuation,
+                            + &scatter_record.attenuation.component_mul(
                                 &scatter_record.scattered.color_in_world_recurse(
                                     world,
                                     background,
