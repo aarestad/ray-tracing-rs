@@ -1,6 +1,6 @@
+use image::RgbImage;
 use std::io;
 use std::io::Write;
-use image::RgbImage;
 
 pub fn image_to_ppm(image: &RgbImage, file: &mut dyn Write) -> io::Result<()> {
     file.write_all("P3\n".as_bytes())?;
@@ -26,9 +26,15 @@ pub fn main() -> io::Result<()> {
             let g = j as f64 / ((image_height - 1) as f64);
             let b = 0.0;
 
-            img.put_pixel(i, j, image::Rgb::from([(r * 255.0).floor() as u8,
-                (g * 255.0f64).floor() as u8,
-                (b * 255.0f64).floor() as u8]));
+            img.put_pixel(
+                i,
+                j,
+                image::Rgb::from([
+                    (r * 255.0).floor() as u8,
+                    (g * 255.0f64).floor() as u8,
+                    (b * 255.0f64).floor() as u8,
+                ]),
+            );
         }
     }
 

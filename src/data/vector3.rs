@@ -34,11 +34,7 @@ pub fn rand_range(min: f64, max: f64) -> Vector {
 
     let dist = Uniform::new_inclusive(min, max);
 
-    Vector3::new(
-        rng.sample(dist),
-        rng.sample(dist),
-        rng.sample(dist),
-    )
+    Vector3::new(rng.sample(dist), rng.sample(dist), rng.sample(dist))
 }
 
 pub fn random_in_unit_cube() -> Vector {
@@ -63,22 +59,21 @@ pub fn refract(vec: &Vector, normal: &Vector, etai_over_etat: f64) -> Vector {
 
 #[cfg(test)]
 mod test {
-    use approx::assert_abs_diff_eq;
-    use super::EPSILON;
-    use super::Vector;
-    use super::random_in_unit_sphere;
-    use super::random_in_unit_disk;
     use super::near_zero;
     use super::rand_range;
     use super::random_in_unit_cube;
+    use super::random_in_unit_disk;
+    use super::random_in_unit_sphere;
     use super::reflect;
     use super::refract;
-
+    use super::Vector;
+    use super::EPSILON;
+    use approx::assert_abs_diff_eq;
 
     #[test]
     fn accessors() {
         let v = Vector::new(1.0, 2.0, 3.0);
-        
+
         assert_eq!(v.x, 1.0);
         assert_eq!(v.y, 2.0);
         assert_eq!(v.z, 3.0);
@@ -91,10 +86,14 @@ mod test {
     #[test]
     fn unary_methods() {
         let v = Vector::new(1.0, 2.0, 3.0);
-        
+
         assert_eq!(-v, Vector::new(-1.0, -2.0, -3.0));
         assert_abs_diff_eq!(v.magnitude(), 3.7416573867, epsilon = EPSILON);
-        assert_abs_diff_eq!(v.normalize(), Vector::new(0.2672612419, 0.53452248, 0.80178372), epsilon=EPSILON);
+        assert_abs_diff_eq!(
+            v.normalize(),
+            Vector::new(0.2672612419, 0.53452248, 0.80178372),
+            epsilon = EPSILON
+        );
     }
 
     #[test]
@@ -102,7 +101,11 @@ mod test {
         let v = Vector::new(1.0, 2.0, 3.0);
 
         assert_eq!(v * 3.0, Vector::new(3.0, 6.0, 9.0));
-        assert_abs_diff_eq!(v / 3.0, Vector::new(0.33333333, 0.66666666, 1.0), epsilon=EPSILON);
+        assert_abs_diff_eq!(
+            v / 3.0,
+            Vector::new(0.33333333, 0.66666666, 1.0),
+            epsilon = EPSILON
+        );
     }
 
     #[test]
@@ -114,13 +117,13 @@ mod test {
         assert_eq!(v1 - v2, Vector::new(-3.0, -3.0, -3.0));
         assert_eq!(v1.component_mul(&v2), Vector::new(4.0, 10.0, 18.0));
         assert_eq!(v1.dot(&v2), 32.0);
-        assert_eq!(v1.cross(&v2), Vector::new(-3.0, 6.0,-3.0));
+        assert_eq!(v1.cross(&v2), Vector::new(-3.0, 6.0, -3.0));
     }
 
     #[test]
     fn custom_methods() {
         for _ in 0..1000 {
-            assert_abs_diff_eq!(random_in_unit_sphere().magnitude(), 1.0, epsilon=EPSILON);
+            assert_abs_diff_eq!(random_in_unit_sphere().magnitude(), 1.0, epsilon = EPSILON);
 
             let random_disk_v = random_in_unit_disk();
             assert_eq!(random_disk_v.z, 0.0);
@@ -147,6 +150,10 @@ mod test {
         let v2 = Vector::new(4.0, 5.0, 6.0);
 
         assert_abs_diff_eq!(reflect(&v1, &v2), Vector::new(-255.0, -318.0, -381.0));
-        assert_abs_diff_eq!(refract(&v1, &v2, 0.5), Vector::new(-6.556601564455425, -7.820751955569282, -9.084902346683137), epsilon=EPSILON);
+        assert_abs_diff_eq!(
+            refract(&v1, &v2, 0.5),
+            Vector::new(-6.556601564455425, -7.820751955569282, -9.084902346683137),
+            epsilon = EPSILON
+        );
     }
 }
