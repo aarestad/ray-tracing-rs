@@ -14,15 +14,15 @@ impl Color64 {
     }
 
     pub fn r(&self) -> f64 {
-        self.0[0]
+        self.x
     }
 
     pub fn g(&self) -> f64 {
-        self.0[1]
+        self.y
     }
 
     pub fn b(&self) -> f64 {
-        self.0[2]
+        self.z
     }
 
     pub fn gray(gray_level: f64) -> Self {
