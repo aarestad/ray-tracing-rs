@@ -1,6 +1,7 @@
 use crate::data::color64::{Color64, BLACK};
 use crate::data::point64::Point64;
 use crate::hittables::Hittable;
+use std::ops::Add;
 
 pub struct Ray {
     pub origin: Point64,
@@ -9,6 +10,14 @@ pub struct Ray {
 }
 
 const MAX_DEPTH: i32 = 50;
+
+impl Add for Color64 {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Color64(self.0 + rhs.0)
+    }
+}
 
 impl Ray {
     pub fn point_at_parameter(&self, t: f64) -> Point64 {
@@ -38,16 +47,17 @@ impl Ray {
                         .material
                         .emitted(hit_record.u, hit_record.v, &hit_record.location);
                 match hit_record.material.scatter(self, &hit_record) {
-                    Some(scatter_record) => Color64(
-                        *emitted
+                    Some(scatter_record) => {
+                        emitted
                             + scatter_record.attenuation.component_mul(
                                 &scatter_record.scattered.color_in_world_recurse(
                                     world,
                                     background,
                                     depth - 1,
                                 ),
-                            ),
-                    ),
+                            )
+                    }
+
                     None => emitted,
                 }
             }

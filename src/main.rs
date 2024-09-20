@@ -10,6 +10,7 @@ use crate::util::worlds::World;
 use data::color64::Color64;
 use image::DynamicImage::ImageRgb8;
 use std::env;
+use std::ops::AddAssign;
 use util::args::parse_args;
 
 mod camera;
@@ -18,6 +19,12 @@ mod hittables;
 mod materials;
 mod textures;
 mod util;
+
+impl AddAssign for Color64 {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
+    }
+}
 
 fn main() -> ImageResult<()> {
     let args: Vec<String> = env::args().collect();
@@ -62,8 +69,8 @@ fn main() -> ImageResult<()> {
                     let v = (y as f64 + rands[1]) / (world.image_height - 1) as f64;
                     let ray = world.camera.get_ray(u, v);
 
-                    *pixel_color +=
-                        *ray.color_in_world(world.hittable.as_ref(), &world.background_color);
+                    pixel_color +=
+                        ray.color_in_world(world.hittable.as_ref(), &world.background_color);
                 }
 
                 tx.send((x, world.image_height - y - 1, pixel_color))
