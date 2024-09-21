@@ -25,17 +25,17 @@ impl Material for Dielectric {
             self.index_of_refraction
         };
 
-        let unit_direction = ray_in.direction.normalize();
+        let unit_direction = ray_in.direction.0.normalize();
 
-        let cos_theta = -unit_direction.dot(&*hit_record.normal).min(1.);
+        let cos_theta = -unit_direction.dot(&hit_record.normal.0).min(1.);
         let sin_theta = (1. - cos_theta.powi(2)).sqrt();
         let cannot_refract = refraction_ratio * sin_theta > 1.;
 
         let direction =
             if cannot_refract || reflectance(cos_theta, refraction_ratio) > rand::random() {
-                reflect(&unit_direction, &hit_record.normal)
+                reflect(&unit_direction, &hit_record.normal.0)
             } else {
-                refract(&unit_direction, &hit_record.normal, refraction_ratio)
+                refract(&unit_direction, &hit_record.normal.0, refraction_ratio)
             };
 
         Some(ScatterRecord {

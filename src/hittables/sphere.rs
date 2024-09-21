@@ -24,16 +24,16 @@ pub(crate) fn get_sphere_uv(p: Point64) -> (f64, f64) {
 impl Hittable for Sphere {
     fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<AxisAlignedBoundingBox> {
         Some(AxisAlignedBoundingBox {
-            minimum: Point64(*self.center - Vector3::new(self.radius, self.radius, self.radius)),
-            maximum: Point64(*self.center + Vector3::new(self.radius, self.radius, self.radius)),
+            minimum: Point64(self.center.0 - Vector3::new(self.radius, self.radius, self.radius)),
+            maximum: Point64(self.center.0 + Vector3::new(self.radius, self.radius, self.radius)),
         })
     }
 
     fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
-        let ray_origin_to_center = *ray.origin - *self.center;
-        let a = ray.direction.dot(&ray.direction);
-        let half_b = ray_origin_to_center.dot(&ray.direction);
-        let c = ray_origin_to_center.dot(&ray_origin_to_center) - self.radius.powi(2);
+        let ray_origin_to_center: Point64 = ray.origin - self.center;
+        let a = ray.direction.0.dot(&ray.direction.0);
+        let half_b = ray_origin_to_center.0.dot(&ray.direction.0);
+        let c = ray_origin_to_center.0.dot(&ray_origin_to_center.0) - self.radius.powi(2);
         let discriminant = half_b.powi(2) - a * c;
         let sqrt_discriminant = discriminant.sqrt();
         let root_one = (-half_b - sqrt_discriminant) / a;
@@ -51,7 +51,7 @@ impl Hittable for Sphere {
                 };
 
                 let location = ray.point_at_parameter(root);
-                let outward_normal = Point64((*location - *self.center) / self.radius);
+                let outward_normal = (location - self.center) / self.radius;
 
                 Some(HitRecord::new(
                     root,

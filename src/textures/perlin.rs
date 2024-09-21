@@ -64,7 +64,7 @@ impl PerlinGenerator {
         (0..depth).for_each(|_| {
             accum += weight * self.noise(&temp_p);
             weight *= 0.5;
-            temp_p = Point64(*temp_p * 2.);
+            temp_p *= 2.;
         });
 
         accum.abs()

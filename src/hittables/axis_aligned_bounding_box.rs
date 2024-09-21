@@ -11,9 +11,9 @@ pub struct AxisAlignedBoundingBox {
 impl AxisAlignedBoundingBox {
     pub fn is_hit_by(&self, ray: &Ray, t_min: f64, t_max: f64) -> bool {
         (0..3).all(|idx| {
-            let inv_direction = 1. / ray.direction[idx];
-            let mut t0 = ((*self.minimum)[idx] - (*ray.origin)[idx]) * inv_direction;
-            let mut t1 = ((*self.maximum)[idx] - (*ray.origin)[idx]) * inv_direction;
+            let inv_direction = 1. / ray.direction.0[idx];
+            let mut t0 = (self.minimum.0[idx] - ray.origin.0[idx]) * inv_direction;
+            let mut t1 = (self.maximum.0[idx] - ray.origin.0[idx]) * inv_direction;
 
             if inv_direction < 0. {
                 mem::swap(&mut t0, &mut t1);

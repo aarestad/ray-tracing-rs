@@ -1,5 +1,5 @@
 use nalgebra::Vector3;
-use std::ops::Deref;
+use std::ops::{Add, Div, Mul, MulAssign, Neg, Sub};
 
 #[derive(Debug, Copy, Clone, PartialEq, Default)]
 pub struct Point64(pub Vector3<f64>);
@@ -22,10 +22,56 @@ impl Point64 {
     }
 }
 
-impl Deref for Point64 {
-    type Target = Vector3<f64>;
+impl Add for Point64 {
+    type Output = Self;
 
-    fn deref(&self) -> &Self::Target {
-        &self.0
+    fn add(self, rhs: Self) -> Self::Output {
+        Point64(self.0 + rhs.0)
+    }
+}
+
+impl Neg for Point64 {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Point64(-self.0)
+    }
+}
+
+impl Sub for Point64 {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Point64(self.0 - rhs.0)
+    }
+}
+
+impl Sub<Vector3<f64>> for Point64 {
+    type Output = Self;
+
+    fn sub(self, rhs: Vector3<f64>) -> Self::Output {
+        Point64(self.0 - rhs)
+    }
+}
+
+impl Mul<f64> for Point64 {
+    type Output = Self;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        Point64(self.0 * rhs)
+    }
+}
+
+impl MulAssign<f64> for Point64 {
+    fn mul_assign(&mut self, rhs: f64) {
+        self.0 *= rhs
+    }
+}
+
+impl Div<f64> for Point64 {
+    type Output = Self;
+
+    fn div(self, rhs: f64) -> Self::Output {
+        Point64(self.0 / rhs)
     }
 }

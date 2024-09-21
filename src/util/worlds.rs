@@ -1,10 +1,9 @@
 use crate::camera::Camera;
 use crate::data::color64::{Color64, BLACK, LIGHT_BLUE};
 use crate::data::point64::Point64;
-use crate::data::vector3;
 use crate::data::vector3::{rand_range, random_in_unit_cube};
+use crate::hittables::axis_aligned_rect::AxisAlignedRect;
 use crate::hittables::axis_aligned_rect::AxisAlignment::{X, Y, Z};
-use crate::hittables::axis_aligned_rect::{AxisAlignedRect, AxisAlignment};
 use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
 use crate::hittables::cuboid::Cuboid;
 use crate::hittables::hittable_vec::HittableVec;
@@ -83,12 +82,12 @@ impl World {
                     (b - 11) as f64 + 0.9 * rng.gen::<f64>(),
                 );
 
-                if (*center - *reference_point).magnitude() > 0.9 {
+                if (center - reference_point).0.magnitude() > 0.9 {
                     if choose_mat < 0.1 {
                         // 10% moving Lambertian spheres
                         hittables.push(Arc::new(MovingSphere {
                             center0: center,
-                            center1: Point64(*center + Vector3::new(0., rng.gen(), 0.)),
+                            center1: Point64(center.0 + Vector3::new(0., rng.gen(), 0.)),
                             time0: 0.,
                             time1: 1.,
                             radius: 0.2,
@@ -482,7 +481,7 @@ impl World {
 
         (0..num_of_spheres_in_box).for_each(|_| {
             box_of_spheres.push(Arc::new(Sphere {
-                center: Point64(vector3::rand_range(0., 165.)),
+                center: Point64(rand_range(0., 165.)),
                 radius: 10.,
                 material: white_ish.clone(),
             }));
@@ -513,7 +512,7 @@ impl World {
                         min: (123.0, 147.0),
                         max: (423.0, 412.0),
                         axis_value: 554.0,
-                        axis_alignment: AxisAlignment::Y,
+                        axis_alignment: Y,
                     }),
                     // moving sphere
                     Arc::new(MovingSphere {

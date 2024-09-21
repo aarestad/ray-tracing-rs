@@ -12,7 +12,7 @@ pub struct Lambertian {
 
 impl Material for Lambertian {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
-        let scatter_direction = *hit_record.normal + random_in_unit_sphere();
+        let scatter_direction = hit_record.normal.0 + random_in_unit_sphere();
 
         Some(ScatterRecord {
             hit_record: hit_record.clone(),

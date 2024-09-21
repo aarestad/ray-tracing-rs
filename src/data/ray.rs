@@ -21,7 +21,7 @@ impl Add for Color64 {
 
 impl Ray {
     pub fn point_at_parameter(&self, t: f64) -> Point64 {
-        Point64(*self.origin + t * *self.direction)
+        self.origin + self.direction * t
     }
 
     pub fn color_in_world(&self, world: &dyn Hittable, background: &Color64) -> Color64 {

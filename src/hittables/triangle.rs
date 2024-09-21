@@ -54,7 +54,7 @@ impl Hittable for Triangle {
     }
 
     fn is_hit_by(&self, ray: &Ray, _min_value: f64, _max_value: f64) -> Option<HitRecord> {
-        let cross_e2 = ray.direction.cross(&self.e2);
+        let cross_e2 = ray.direction.0.cross(&self.e2);
         let determinant = self.e1.dot(&cross_e2);
 
         if determinant.abs() < EPSILON {
@@ -70,7 +70,7 @@ impl Hittable for Triangle {
         }
 
         let origin_cross_e1 = p1_to_origin.cross(&self.e1);
-        let v = f * ray.direction.dot(&origin_cross_e1);
+        let v = f * ray.direction.0.dot(&origin_cross_e1);
 
         if v < 0.0 || (u + v) > 1.0 {
             return None;

@@ -32,21 +32,19 @@ impl Camera {
         let viewport_height = 2. * h;
         let viewport_width = aspect_ratio * viewport_height;
 
-        let w = Point64((*look_from - *look_at).normalize());
-        let u = Point64(vup.cross(&w).normalize());
-        let v = Point64(w.cross(&u));
+        let w = Point64((look_from - look_at).0.normalize());
+        let u = Point64(vup.cross(&w.0).normalize());
+        let v = Point64(w.0.cross(&u.0));
 
-        let horizontal = Point64(viewport_width * *u * focus_dist);
-        let vertical = Point64(viewport_height * *v * focus_dist);
+        let horizontal = u * viewport_width * focus_dist;
+        let vertical = v * viewport_height * focus_dist;
 
         Camera {
             origin: look_from,
             horizontal,
             vertical,
             uvw: (u, v, w),
-            lower_left_corner: Point64(
-                *look_from - *horizontal / 2. - *vertical / 2. - *w * focus_dist,
-            ),
+            lower_left_corner: look_from - horizontal / 2. - vertical / 2. - w * focus_dist,
             lens_radius: aperture / 2.,
             exposure_time,
         }
@@ -54,15 +52,13 @@ impl Camera {
 
     pub fn get_ray(&self, s: f64, t: f64) -> Ray {
         let rd = Point64(self.lens_radius * random_in_unit_disk());
-        let offset = *self.uvw.0 * rd.x() + *self.uvw.1 * rd.y();
+        let offset = self.uvw.0 * rd.x() + self.uvw.1 * rd.y();
 
         Ray {
-            origin: Point64(*self.origin + offset),
-            direction: Point64(
-                *self.lower_left_corner + s * *self.horizontal + t * *self.vertical
-                    - *self.origin
-                    - offset,
-            ),
+            origin: self.origin + offset,
+            direction: self.lower_left_corner + self.horizontal * s + self.vertical * t
+                - self.origin
+                - offset,
             exposure_time: rand::thread_rng().gen_range(self.exposure_time.clone()),
         }
     }

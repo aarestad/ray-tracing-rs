@@ -14,19 +14,19 @@ impl Hittable for Translation {
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<AxisAlignedBoundingBox> {
         let orig_bounding_box = self.hittable.bounding_box(time0, time1);
 
-        if orig_bounding_box.is_none() {
-            return orig_bounding_box;
-        }
+        match orig_bounding_box {
+            None => orig_bounding_box,
 
-        Some(AxisAlignedBoundingBox {
-            minimum: Point64(*orig_bounding_box.unwrap().minimum + self.offset),
-            maximum: Point64(*orig_bounding_box.unwrap().maximum + self.offset),
-        })
+            Some(aabb) => Some(AxisAlignedBoundingBox {
+                minimum: Point64(aabb.minimum.0 + self.offset),
+                maximum: Point64(aabb.maximum.0 + self.offset),
+            }),
+        }
     }
 
     fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
         let moved_ray = Ray {
-            origin: Point64(*ray.origin - self.offset),
+            origin: Point64(ray.origin.0 - self.offset),
             direction: ray.direction,
             exposure_time: ray.exposure_time,
         };

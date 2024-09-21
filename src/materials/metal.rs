@@ -12,9 +12,9 @@ pub struct Metal {
 
 impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
-        let reflected = reflect(&ray_in.direction.normalize(), &hit_record.normal);
+        let reflected = reflect(&ray_in.direction.0.normalize(), &hit_record.normal.0);
 
-        if reflected.dot(&hit_record.normal) > 0. {
+        if reflected.dot(&hit_record.normal.0) > 0. {
             Some(ScatterRecord {
                 hit_record: hit_record.clone(),
                 attenuation: self.albedo,

@@ -52,8 +52,8 @@ impl Hittable for AxisAlignedRect {
     }
 
     fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
-        let t = (self.axis_value - ray.origin[self.axis_alignment.to_usize()])
-            / ray.direction[self.axis_alignment.to_usize()];
+        let t = (self.axis_value - ray.origin.0[self.axis_alignment.to_usize()])
+            / ray.direction.0[self.axis_alignment.to_usize()];
 
         if !(min_value..max_value).contains(&t) {
             return None;
