@@ -59,7 +59,7 @@ impl Camera {
             direction: self.lower_left_corner + self.horizontal * s + self.vertical * t
                 - self.origin
                 - offset,
-            exposure_time: rand::thread_rng().gen_range(self.exposure_time.clone()),
+            exposure_time: rand::rng().random_range(self.exposure_time.clone()),
         }
     }
 }

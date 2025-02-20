@@ -1,5 +1,5 @@
-use std::sync::mpsc::channel;
 use std::sync::Arc;
+use std::sync::mpsc::channel;
 
 use image::{ImageResult, RgbImage};
 use rand::Rng;
@@ -60,10 +60,10 @@ fn main() -> ImageResult<()> {
 
             pool.execute(move || {
                 let mut pixel_color = Color64::new(0., 0., 0.);
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
 
                 for _ in 0..world.samples_per_pixel {
-                    let rands: [f64; 2] = rng.gen();
+                    let rands: [f64; 2] = rng.random();
 
                     let u = (x as f64 + rands[0]) / (world.image_width - 1) as f64;
                     let v = (y as f64 + rands[1]) / (world.image_height - 1) as f64;

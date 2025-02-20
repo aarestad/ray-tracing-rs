@@ -1,7 +1,7 @@
 use crate::data::color64::Color64;
 use crate::data::point64::Point64;
-use crate::textures::perlin::PerlinGenerator;
 use crate::textures::Texture;
+use crate::textures::perlin::PerlinGenerator;
 
 pub enum NoiseType {
     Perlin,

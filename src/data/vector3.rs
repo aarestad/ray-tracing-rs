@@ -9,10 +9,10 @@ use crate::util::EPSILON;
 pub type Vector = Vector3<f64>;
 
 pub fn random_in_unit_sphere() -> Vector {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
-    let theta = TAU * rng.gen::<f64>();
-    let phi = (1.0 - 2.0 * rng.gen::<f64>()).acos();
+    let theta = TAU * rng.random::<f64>();
+    let phi = (1.0 - 2.0 * rng.random::<f64>()).acos();
     let x = phi.sin() * theta.cos();
     let y = phi.sin() * theta.sin();
     let z = phi.cos();
@@ -21,18 +21,18 @@ pub fn random_in_unit_sphere() -> Vector {
 }
 
 pub fn random_in_unit_disk() -> Vector {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
-    let sqrt_r: f64 = rng.gen::<f64>().sqrt();
-    let theta: f64 = rng.gen_range(0.0..TAU);
+    let sqrt_r: f64 = rng.random::<f64>().sqrt();
+    let theta: f64 = rng.random_range(0.0..TAU);
 
     Vector3::new(sqrt_r * theta.cos(), sqrt_r * theta.sin(), 0.)
 }
 
 pub fn rand_range(min: f64, max: f64) -> Vector {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
-    let dist = Uniform::new_inclusive(min, max);
+    let dist = Uniform::new_inclusive(min, max).unwrap();
 
     Vector3::new(rng.sample(dist), rng.sample(dist), rng.sample(dist))
 }

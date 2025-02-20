@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use super::{axis_aligned_bounding_box::AxisAlignedBoundingBox, HitRecord, Hittable};
+use super::{HitRecord, Hittable, axis_aligned_bounding_box::AxisAlignedBoundingBox};
 use crate::{
     data::{point64::Point64, ray::Ray, vector3::Vector},
     materials::Material,

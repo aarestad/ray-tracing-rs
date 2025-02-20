@@ -78,10 +78,10 @@ fn perlin_generate_perm() -> [usize; POINT_COUNT] {
 }
 
 fn permute(arr: &mut [usize; POINT_COUNT], n: usize) {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     (1..n).rev().for_each(|i| {
-        let target = rng.gen_range(0..i);
+        let target = rng.random_range(0..i);
         arr.swap(i, target);
     });
 }

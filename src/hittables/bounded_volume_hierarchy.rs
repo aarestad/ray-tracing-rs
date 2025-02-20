@@ -2,7 +2,7 @@ use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::bvh_comparators::BOX_COMPARATORS;
 use crate::hittables::{HitRecord, Hittable};
-use rand::prelude::SliceRandom;
+use rand::prelude::IndexedRandom;
 use std::sync::Arc;
 
 pub struct BoundedVolumeHierarchy {
@@ -39,7 +39,7 @@ impl BoundedVolumeHierarchy {
         time0: f64,
         time1: f64,
     ) -> Arc<dyn Hittable> {
-        let comparator = BOX_COMPARATORS.choose(&mut rand::thread_rng()).unwrap();
+        let comparator = BOX_COMPARATORS.choose(&mut rand::rng()).unwrap();
 
         let left_child: Arc<dyn Hittable>;
         let right_child: Arc<dyn Hittable>;

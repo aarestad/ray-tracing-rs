@@ -3,8 +3,8 @@ use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::HitRecord;
 use crate::materials::{Material, ScatterRecord};
-use crate::textures::solid_color::SolidColor;
 use crate::textures::Texture;
+use crate::textures::solid_color::SolidColor;
 use std::sync::Arc;
 
 pub struct DiffuseLight {

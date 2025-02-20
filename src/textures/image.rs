@@ -1,8 +1,7 @@
 use crate::data::color64::Color64;
 use crate::data::point64::Point64;
 use crate::textures::Texture;
-use image::io::Reader as ImageReader;
-use image::{DynamicImage, GenericImageView};
+use image::{DynamicImage, GenericImageView, ImageReader};
 use nalgebra::Vector3;
 use std::path::Path;
 

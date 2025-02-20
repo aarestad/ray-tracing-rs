@@ -1,4 +1,4 @@
-use crate::data::color64::{Color64, BLACK};
+use crate::data::color64::{BLACK, Color64};
 use crate::data::point64::Point64;
 use crate::hittables::Hittable;
 use std::ops::Add;

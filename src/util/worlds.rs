@@ -1,8 +1,9 @@
 use crate::camera::Camera;
-use crate::data::color64::{Color64, BLACK, LIGHT_BLUE};
+use crate::data::color64::{BLACK, Color64, LIGHT_BLUE};
 use crate::data::point64::Point64;
 use crate::data::vector3::{rand_range, random_in_unit_cube};
 use crate::hittables::axis_aligned_rect::AxisAlignedRect;
+use crate::hittables::Hittable;
 use crate::hittables::axis_aligned_rect::AxisAlignment::{X, Y, Z};
 use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
 use crate::hittables::cuboid::Cuboid;
@@ -10,7 +11,6 @@ use crate::hittables::hittable_vec::HittableVec;
 use crate::hittables::moving_sphere::MovingSphere;
 use crate::hittables::sphere::Sphere;
 use crate::hittables::translation::Translation;
-use crate::hittables::Hittable;
 use crate::materials::dielectric::Dielectric;
 use crate::materials::diffuse_light::DiffuseLight;
 use crate::materials::lambertian::Lambertian;
@@ -69,17 +69,17 @@ impl World {
             index_of_refraction: 1.5,
         });
 
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
         let reference_point = Point64::new(4., 0.2, 0.);
 
         for a in 0..22 {
             for b in 0..22 {
-                let choose_mat = rng.gen::<f64>();
+                let choose_mat = rng.random::<f64>();
                 let center = Point64::new(
-                    (a - 11) as f64 + 0.9 * rng.gen::<f64>(),
+                    (a - 11) as f64 + 0.9 * rng.random::<f64>(),
                     0.2,
-                    (b - 11) as f64 + 0.9 * rng.gen::<f64>(),
+                    (b - 11) as f64 + 0.9 * rng.random::<f64>(),
                 );
 
                 if (center - reference_point).0.magnitude() > 0.9 {
@@ -87,7 +87,7 @@ impl World {
                         // 10% moving Lambertian spheres
                         hittables.push(Arc::new(MovingSphere {
                             center0: center,
-                            center1: Point64(center.0 + Vector3::new(0., rng.gen(), 0.)),
+                            center1: Point64(center.0 + Vector3::new(0., rng.random(), 0.)),
                             time0: 0.,
                             time1: 1.,
                             radius: 0.2,
@@ -115,7 +115,7 @@ impl World {
                             radius: 0.2,
                             material: Arc::new(Metal {
                                 albedo: Color64(rand_range(0.5, 1.)),
-                                fuzz: rng.gen_range(0.0..0.5),
+                                fuzz: rng.random_range(0.0..0.5),
                             }),
                         }));
                     } else {
@@ -441,7 +441,7 @@ impl World {
     }
 
     pub fn final_scene() -> World {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
         let ground = Arc::new(Lambertian {
             albedo: SolidColor::arc_from(Color64::new(0.48, 0.83, 0.53)),
@@ -459,7 +459,7 @@ impl World {
                 let z0 = -1000.0 + j as f64 * w;
                 let y0 = 0.0;
                 let x1 = x0 + w;
-                let y1 = rng.gen_range(1.0..101.0);
+                let y1 = rng.random_range(1.0..101.0);
                 let z1 = z0 + w;
 
                 boxes.push(Arc::new(Cuboid::new(
