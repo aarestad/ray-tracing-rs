@@ -53,18 +53,16 @@ impl Hittable for Sphere {
                 let location = ray.point_at_parameter(root);
                 let outward_normal = (location - self.center) / self.radius;
 
-                Some(HitRecord::new(
+                return Some(HitRecord::new(
                     root,
                     ray,
                     outward_normal,
                     self.material.clone(),
                     get_sphere_uv(outward_normal),
-                ))
-            } else {
-                None
+                ));
             }
-        } else {
-            None
         }
+
+        None
     }
 }

@@ -59,6 +59,8 @@ pub fn refract(vec: &Vector, normal: &Vector, etai_over_etat: f64) -> Vector {
 
 #[cfg(test)]
 mod test {
+    use super::EPSILON;
+    use super::Vector;
     use super::near_zero;
     use super::rand_range;
     use super::random_in_unit_cube;
@@ -66,8 +68,6 @@ mod test {
     use super::random_in_unit_sphere;
     use super::reflect;
     use super::refract;
-    use super::Vector;
-    use super::EPSILON;
     use approx::assert_abs_diff_eq;
 
     #[test]
