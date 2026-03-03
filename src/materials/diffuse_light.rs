@@ -3,18 +3,16 @@ use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::HitRecord;
 use crate::materials::{Material, ScatterRecord};
-use crate::textures::Texture;
-use crate::textures::solid_color::SolidColor;
-use std::sync::Arc;
+use crate::textures::Textures;
 
 pub struct DiffuseLight {
-    emitter: Arc<dyn Texture>,
+    emitter: Textures,
 }
 
 impl DiffuseLight {
     pub fn new(color: Color64) -> Self {
         Self {
-            emitter: SolidColor::arc_from(color),
+            emitter: Textures::SolidColor(color),
         }
     }
 }

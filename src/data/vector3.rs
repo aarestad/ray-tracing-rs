@@ -1,5 +1,5 @@
 use nalgebra::Vector3;
-use rand::Rng;
+use rand::{Rng, RngExt};
 use rand_distr::Uniform;
 use std::f64::consts::TAU;
 use std::ops::Mul;

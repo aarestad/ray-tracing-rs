@@ -3,11 +3,10 @@ use crate::data::ray::Ray;
 use crate::data::vector3::{near_zero, random_in_unit_sphere};
 use crate::hittables::HitRecord;
 use crate::materials::{Material, ScatterRecord};
-use crate::textures::Texture;
-use std::sync::Arc;
+use crate::textures::Textures;
 
 pub struct Lambertian {
-    pub albedo: Arc<dyn Texture>,
+    pub albedo: Textures,
 }
 
 impl Material for Lambertian {

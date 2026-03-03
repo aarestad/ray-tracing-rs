@@ -62,6 +62,14 @@ impl Mul<f64> for Point64 {
     }
 }
 
+impl Mul<&f64> for &Point64 {
+    type Output = Point64;
+
+    fn mul(self, rhs: &f64) -> Self::Output {
+        Point64(self.0 * *rhs)
+    }
+}
+
 impl MulAssign<f64> for Point64 {
     fn mul_assign(&mut self, rhs: f64) {
         self.0 *= rhs

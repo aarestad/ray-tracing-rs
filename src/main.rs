@@ -1,3 +1,4 @@
+use rand::RngExt;
 use std::sync::Arc;
 use std::sync::mpsc::channel;
 
@@ -5,7 +6,7 @@ use image::{ImageResult, RgbImage};
 use rand::Rng;
 use threadpool::ThreadPool;
 
-use crate::textures::noise::NoiseType::{Marble, Perlin, Turbulence};
+use crate::textures::NoiseType::{Marble, Perlin, Turbulence};
 use crate::util::worlds::World;
 use data::color64::Color64;
 use image::DynamicImage::ImageRgb8;

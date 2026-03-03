@@ -1,7 +1,7 @@
 use crate::data::point64::Point64;
 use crate::data::vector3::rand_range;
 use nalgebra::Vector3;
-use rand::Rng;
+use rand::RngExt;
 
 const POINT_COUNT: usize = 256;
 

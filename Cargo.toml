@@ -7,8 +7,8 @@ description = "Trace some rays"
 default-run = "ray-tracer"
 
 [dependencies]
-rand = "0.9.0"
-rand_distr = "0.5.1"
+rand = "0.10.0"
+rand_distr = "0.6.0"
 image = "0.25.5"
 threadpool = "1.8.1"
 num_cpus = "1.16.0"
