@@ -1,7 +1,10 @@
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
+use crate::data::vector3::Vector;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::materials::Materials;
+use nalgebra::Vector3;
+use std::sync::Arc;
 
 mod axis_aligned_bounding_box;
 pub mod axis_aligned_rect;
@@ -54,8 +57,41 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable: Send + Sync {
-    fn bounding_box(&self, time0: f64, time1: f64) -> Option<AxisAlignedBoundingBox>;
+pub enum AxisAlignment {
+    X,
+    Y,
+    Z,
+}
 
-    fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord>;
+#[derive()]
+pub enum Hittables {
+    AxisAlignedBoundingBox(Point64, Point64),
+    AxisAlignedRect(Materials, (f64, f64), (f64, f64), f64, AxisAlignment),
+    BoundedVolumeHierarchy(Box<Hittables>, Box<Hittables>, AxisAlignedBoundingBox),
+    Cuboid(
+        Point64,
+        Point64,
+        Box<Hittables>, /* should be a HittableVec */
+    ),
+    HittableVec(Vec<Box<Hittables>>),
+    MovingSphere(Point64, Point64, f64, Materials, f64, f64),
+    Rotation(
+        Box<Hittables>,
+        AxisAlignment,
+        (f64, f64),
+        Option<Box<Hittables>>,
+    ),
+    Sphere(Point64, f64, Materials),
+    Translation(Box<Hittables>, Vector3<f64>),
+    Triangle(Point64, Point64, Point64, Vector, Vector, Vector, Materials),
+}
+
+impl Hittables {
+    pub fn bounding_box(&self, time0: f64, time1: f64) -> Option<AxisAlignedBoundingBox> {
+        None
+    }
+
+    pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
+        None
+    }
 }
