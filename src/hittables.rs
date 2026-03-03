@@ -74,6 +74,12 @@ pub enum Hittables {
         Box<Hittables>, /* should be a HittableVec */
     ),
     HittableVec(Vec<Box<Hittables>>),
+    //     pub center0: Point64,
+    //     pub center1: Point64,
+    //     pub radius: f64,
+    //     pub material: Materials,
+    //     pub time0: f64,
+    //     pub time1: f64,
     MovingSphere(Point64, Point64, f64, Materials, f64, f64),
     Rotation(
         Box<Hittables>,

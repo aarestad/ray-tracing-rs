@@ -74,58 +74,54 @@ impl World {
                 if (center - reference_point).0.magnitude() > 0.9 {
                     if choose_mat < 0.1 {
                         // 10% moving Lambertian spheres
-                        hittables.push(Arc::new(MovingSphere {
-                            center0: center,
-                            center1: Point64(center.0 + Vector3::new(0., rng.random(), 0.)),
-                            time0: 0.,
-                            time1: 1.,
-                            radius: 0.2,
-                            material: Materials::Lambertian(Textures::SolidColor(Color64(
+                        hittables.push(Box::from(Hittables::MovingSphere(
+                            center,
+                            Point64(center.0 + Vector3::new(0., rng.random(), 0.)),
+                            0.2,
+                            Materials::Lambertian(Textures::SolidColor(Color64(
                                 random_in_unit_cube().component_mul(&random_in_unit_cube()),
                             ))),
-                        }));
+                            0.,
+                            1.,
+                        )));
                     } else if choose_mat < 0.8 {
                         // 70% stationary Lambertian spheres
-                        hittables.push(Arc::new(Sphere {
+                        hittables.push(Box::from(Hittables::Sphere(
                             center,
-                            radius: 0.2,
-                            material: Materials::Lambertian(Textures::SolidColor(Color64(
+                            0.2,
+                            Materials::Lambertian(Textures::SolidColor(Color64(
                                 random_in_unit_cube().component_mul(&random_in_unit_cube()),
                             ))),
-                        }));
+                        )));
                     } else if choose_mat < 0.95 {
                         // 15% metal spheres
-                        hittables.push(Arc::new(Sphere {
+                        hittables.push(Box::from(Hittables::Sphere(
                             center,
-                            radius: 0.2,
-                            material: Materials::Metal(
+                            0.2,
+                            Materials::Metal(
                                 Color64(rand_range(0.5, 1.)),
                                 rng.random_range(0.0..0.5),
                             ),
-                        }));
+                        )));
                     } else {
                         // 5% glass
-                        hittables.push(Arc::new(Sphere {
-                            center,
-                            radius: 0.2,
-                            material: glass.clone(),
-                        }));
+                        hittables.push(Box::from(Hittables::Sphere(center, 0.2, glass.clone())));
                     }
                 }
             }
         }
 
-        hittables.push(Arc::new(Sphere {
-            center: Point64::new(0.0, 1.0, 0.0),
-            radius: 1.0,
-            material: glass,
-        }));
+        hittables.push(Box::from(Hittables::Sphere(
+            Point64::new(0.0, 1.0, 0.0),
+            1.0,
+            glass,
+        )));
 
-        hittables.push(Arc::new(Sphere {
-            center: Point64::new(-4.0, 1.0, 0.0),
-            radius: 1.0,
-            material: Materials::Lambertian(Textures::SolidColor(Color64::new(0.4, 0.2, 0.1))),
-        }));
+        hittables.push(Box::from(Hittables::Sphere (
+             Point64::new(-4.0, 1.0, 0.0),
+             1.0,
+             Materials::Lambertian(Textures::SolidColor(Color64::new(0.4, 0.2, 0.1))),
+        )));
 
         hittables.push(Arc::new(Sphere {
             center: Point64::new(4.0, 1.0, 0.0),
