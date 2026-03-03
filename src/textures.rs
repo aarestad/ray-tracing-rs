@@ -7,12 +7,14 @@ use std::path::Path;
 
 pub(crate) mod perlin;
 
+#[derive(Clone)]
 pub enum NoiseType {
     Perlin,
     Turbulence,
     Marble,
 }
 
+#[derive(Clone)]
 pub enum Textures {
     Checker(Box<Textures> /* odd */, Box<Textures> /* even */),
     Image(Option<DynamicImage>),

@@ -2,16 +2,15 @@ use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::{HitRecord, Hittable};
-use crate::materials::Material;
+use crate::materials::Materials;
 use nalgebra::Vector3;
 use std::f64::consts::{PI, TAU};
-use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Sphere {
     pub center: Point64,
     pub radius: f64,
-    pub material: Arc<dyn Material>,
+    pub material: Materials,
 }
 
 pub(crate) fn get_sphere_uv(p: Point64) -> (f64, f64) {

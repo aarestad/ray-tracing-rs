@@ -1,9 +1,7 @@
-use std::sync::Arc;
-
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
-use crate::materials::Material;
+use crate::materials::Materials;
 
 mod axis_aligned_bounding_box;
 pub mod axis_aligned_rect;
@@ -25,7 +23,7 @@ pub struct HitRecord {
     pub location: Point64,
     pub normal: Point64,
     pub front_face: bool,
-    pub material: Arc<dyn Material>,
+    pub material: Materials,
 }
 
 impl HitRecord {
@@ -33,7 +31,7 @@ impl HitRecord {
         value: f64,
         ray: &Ray,
         outward_normal: Point64,
-        material: Arc<dyn Material>,
+        material: Materials,
         uv: (f64, f64),
     ) -> HitRecord {
         let front_face = ray.direction.0.dot(&outward_normal.0) < 0.;

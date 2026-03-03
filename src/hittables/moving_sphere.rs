@@ -3,16 +3,15 @@ use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::sphere::get_sphere_uv;
 use crate::hittables::{HitRecord, Hittable};
-use crate::materials::Material;
+use crate::materials::Materials;
 use nalgebra::Vector3;
-use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct MovingSphere {
     pub center0: Point64,
     pub center1: Point64,
     pub radius: f64,
-    pub material: Arc<dyn Material>,
+    pub material: Materials,
     pub time0: f64,
     pub time1: f64,
 }

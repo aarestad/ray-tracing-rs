@@ -12,14 +12,11 @@ use crate::hittables::hittable_vec::HittableVec;
 use crate::hittables::moving_sphere::MovingSphere;
 use crate::hittables::sphere::Sphere;
 use crate::hittables::translation::Translation;
-use crate::materials::dielectric::Dielectric;
-use crate::materials::diffuse_light::DiffuseLight;
-use crate::materials::lambertian::Lambertian;
-use crate::materials::metal::Metal;
 use crate::textures::perlin::PerlinGenerator;
 use nalgebra::Vector3;
 use std::ops::Range;
 use std::sync::Arc;
+use crate::materials::Materials;
 use crate::textures::{NoiseType, Textures};
 
 pub(crate) struct World {
@@ -56,14 +53,14 @@ impl World {
         let mut hittables: Vec<Arc<dyn Hittable>> = vec![Arc::from(Sphere {
             center: Point64::new(0., -1000., 0.),
             radius: 1000.,
-            material: Arc::new(Lambertian {
-                albedo: checker_pattern,
-            }),
+            material: Materials::Lambertian (
+                 checker_pattern,
+            ),
         })];
 
-        let glass = Arc::new(Dielectric {
-            index_of_refraction: 1.5,
-        });
+        let glass = Materials::Dielectric (
+1.5,
+        );
 
         let mut rng = rand::rng();
 
@@ -87,32 +84,32 @@ impl World {
                             time0: 0.,
                             time1: 1.,
                             radius: 0.2,
-                            material: Arc::new(Lambertian {
-                                albedo: Textures::SolidColor(Color64(
+                            material: Materials::Lambertian (
+                                 Textures::SolidColor(Color64(
                                     random_in_unit_cube().component_mul(&random_in_unit_cube()),
                                 )),
-                            }),
+                            ),
                         }));
                     } else if choose_mat < 0.8 {
                         // 70% stationary Lambertian spheres
                         hittables.push(Arc::new(Sphere {
                             center,
                             radius: 0.2,
-                            material: Arc::new(Lambertian {
-                                albedo: Textures::SolidColor(Color64(
+                            material: Materials::Lambertian (
+                                 Textures::SolidColor(Color64(
                                     random_in_unit_cube().component_mul(&random_in_unit_cube()),
                                 )),
-                            }),
+                            ),
                         }));
                     } else if choose_mat < 0.95 {
                         // 15% metal spheres
                         hittables.push(Arc::new(Sphere {
                             center,
                             radius: 0.2,
-                            material: Arc::new(Metal {
-                                albedo: Color64(rand_range(0.5, 1.)),
-                                fuzz: rng.random_range(0.0..0.5),
-                            }),
+                            material: Materials::Metal(
+                                 Color64(rand_range(0.5, 1.)),
+                                 rng.random_range(0.0..0.5),
+                            ),
                         }));
                     } else {
                         // 5% glass
@@ -135,18 +132,18 @@ impl World {
         hittables.push(Arc::new(Sphere {
             center: Point64::new(-4.0, 1.0, 0.0),
             radius: 1.0,
-            material: Arc::new(Lambertian {
-                albedo: Textures::SolidColor(Color64::new(0.4, 0.2, 0.1)),
-            }),
+            material: Materials::Lambertian (
+                 Textures::SolidColor(Color64::new(0.4, 0.2, 0.1)),
+            ),
         }));
 
         hittables.push(Arc::new(Sphere {
             center: Point64::new(4.0, 1.0, 0.0),
             radius: 1.0,
-            material: Arc::new(Metal {
-                albedo: Color64::new(0.7, 0.6, 0.5),
-                fuzz: 0.,
-            }),
+            material: Materials::Metal(
+                 Color64::new(0.7, 0.6, 0.5),
+                 0.,
+            ),
         }));
 
         let hittable = if use_bvh {
@@ -175,12 +172,12 @@ impl World {
     }
 
     pub fn two_spheres() -> World {
-        let material = Arc::from(Lambertian {
-            albedo: Textures::Checker (
+        let material = Materials::Lambertian (
+             Textures::Checker (
                 Box::from(Textures::SolidColor(Color64::new(0.2, 0.3, 0.1))),
                 Box::from(Textures::SolidColor(Color64::new(0.9, 0.9, 0.9))),
                 ),
-        });
+        );
 
         let hittable = Arc::new(HittableVec {
             hittables: vec![
@@ -217,13 +214,13 @@ impl World {
     }
 
     pub fn two_perlin_spheres(noise_type: NoiseType) -> World {
-        let material = Arc::from(Lambertian {
-            albedo: Textures::Noise (
+        let material = Materials::Lambertian (
+             Textures::Noise (
                  PerlinGenerator::new(),
                  4.,
                 noise_type,
             ),
-        });
+        );
 
         let hittable = Arc::new(HittableVec {
             hittables: vec![
@@ -263,9 +260,9 @@ impl World {
         let hittable = Arc::from(Sphere {
             center: Point64::new(0., 0., 0.),
             radius: 2.,
-            material: Arc::new(Lambertian {
-                albedo: Textures::new_image("resources/earthmap.jpg".into()),
-            }),
+            material: Materials::Lambertian (
+                 Textures::new_image("resources/earthmap.jpg".into()),
+            ),
         });
 
         World {
@@ -288,15 +285,15 @@ impl World {
     }
 
     pub fn simple_light() -> World {
-        let material = Arc::from(Lambertian {
-            albedo: Textures::Noise (
+        let material = Materials::Lambertian (
+             Textures::Noise (
                 PerlinGenerator::new(),
                  4.,
                  NoiseType::Marble,
             ),
-        });
+        );
 
-        let light = DiffuseLight::new(Color64::new(4., 4., 4.));
+        let light = Materials::DiffuseLight(Textures::SolidColor(Color64::new(4., 4., 4.)));
 
         let hittable = Arc::new(HittableVec {
             hittables: vec![
@@ -311,7 +308,7 @@ impl World {
                     material,
                 }),
                 Arc::from(AxisAlignedRect {
-                    material: Arc::from(light),
+                    material: light,
                     min: (3., 1.),
                     max: (5., 3.),
                     axis_value: -2.,
@@ -340,38 +337,38 @@ impl World {
     }
 
     pub fn cornell_box() -> World {
-        let red_material = Lambertian {
-            albedo: Textures::SolidColor(Color64::new(0.65, 0.05, 0.05)),
-        };
+        let red_material = Materials::Lambertian (
+             Textures::SolidColor(Color64::new(0.65, 0.05, 0.05)),
+        );
 
-        let gray_material = Arc::from(Lambertian {
-            albedo: Textures::SolidColor(Color64::gray(0.73)),
-        });
+        let gray_material = Materials::Lambertian (
+             Textures::SolidColor(Color64::gray(0.73)),
+        );
 
-        let green_material = Lambertian {
-            albedo: Textures::SolidColor(Color64::new(0.12, 0.45, 0.15)),
-        };
+        let green_material = Materials::Lambertian (
+             Textures::SolidColor(Color64::new(0.12, 0.45, 0.15)),
+        );
 
-        let light_source = DiffuseLight::new(Color64::gray(15.));
+        let light_source = Materials::DiffuseLight(Textures::SolidColor(Color64::gray(15.)));
 
         let hittable = Arc::new(HittableVec {
             hittables: vec![
                 Arc::from(AxisAlignedRect {
-                    material: Arc::from(green_material),
+                    material: green_material,
                     min: (0., 0.),
                     max: (555., 555.),
                     axis_value: 555.,
                     axis_alignment: X,
                 }),
                 Arc::from(AxisAlignedRect {
-                    material: Arc::from(red_material),
+                    material: red_material,
                     min: (0., 0.),
                     max: (555., 555.),
                     axis_value: 0.,
                     axis_alignment: X,
                 }),
                 Arc::from(AxisAlignedRect {
-                    material: Arc::from(light_source),
+                    material: light_source,
                     min: (213., 227.),
                     max: (343., 332.),
                     axis_value: 554.,
@@ -439,9 +436,9 @@ impl World {
     pub fn final_scene() -> World {
         let mut rng = rand::rng();
 
-        let ground = Arc::new(Lambertian {
-            albedo: Textures::SolidColor(Color64::new(0.48, 0.83, 0.53)),
-        });
+        let ground = Materials::Lambertian (
+             Textures::SolidColor(Color64::new(0.48, 0.83, 0.53)),
+        );
 
         // create the floor boxes
         let mut boxes: Vec<Arc<dyn Hittable>> = vec![];
@@ -469,9 +466,9 @@ impl World {
         // create the box of spheres
         let mut box_of_spheres: Vec<Arc<dyn Hittable>> = vec![];
 
-        let white_ish = Arc::new(Lambertian {
-            albedo: Textures::SolidColor(Color64::gray(0.73)),
-        });
+        let white_ish = Materials::Lambertian (
+             Textures::SolidColor(Color64::gray(0.73)),
+        );
 
         let num_of_spheres_in_box = 1000;
 
@@ -504,7 +501,7 @@ impl World {
                     BoundedVolumeHierarchy::create_bvh_arc(&mut boxes, 0., 1.),
                     // light
                     Arc::new(AxisAlignedRect {
-                        material: Arc::new(DiffuseLight::new(Color64::new(7., 7., 7.))),
+                        material: Materials::DiffuseLight(Textures::SolidColor(Color64::new(7., 7., 7.))),
                         min: (123.0, 147.0),
                         max: (423.0, 412.0),
                         axis_value: 554.0,
@@ -515,9 +512,9 @@ impl World {
                         center0: Point64::new(400., 400., 200.),
                         center1: Point64::new(430., 400., 200.),
                         radius: 50.0,
-                        material: Arc::new(Lambertian {
-                            albedo: Textures::SolidColor(Color64::new(0.7, 0.3, 0.1)),
-                        }),
+                        material: Materials::Lambertian (
+                             Textures::SolidColor(Color64::new(0.7, 0.3, 0.1)),
+                        ),
                         time0: 0.0,
                         time1: 1.0,
                     }),
@@ -525,18 +522,18 @@ impl World {
                     Arc::new(Sphere {
                         center: Point64::new(260., 150., 45.),
                         radius: 50.0,
-                        material: Arc::new(Dielectric {
-                            index_of_refraction: 1.5,
-                        }),
+                        material: Materials::Dielectric(
+                            1.5,
+                        ),
                     }),
                     // metal sphere
                     Arc::new(Sphere {
                         center: Point64::new(0., 150., 145.),
                         radius: 50.0,
-                        material: Arc::new(Metal {
-                            albedo: Color64::new(0.8, 0.8, 0.9),
-                            fuzz: 1.0,
-                        }),
+                        material: Materials::Metal(
+                             Color64::new(0.8, 0.8, 0.9),
+                             1.0,
+                        ),
                     }),
                     // TODO blue subsurface reflection sphere
 
@@ -544,23 +541,23 @@ impl World {
                     Arc::new(Sphere {
                         center: Point64::new(400., 200., 400.),
                         radius: 100.,
-                        material: Arc::new(Lambertian {
-                            albedo: Textures::new_image(
+                        material: Materials::Lambertian (
+                             Textures::new_image(
                                 "resources/earthmap.jpg".to_string(),
                             ),
-                        }),
+                        ),
                     }),
                     // Perlin noise sphere
                     Arc::new(Sphere {
                         center: Point64::new(220., 280., 300.),
                         radius: 80.,
-                        material: Arc::new(Lambertian {
-                            albedo: Textures::Noise (
+                        material: Materials::Lambertian (
+                            Textures::Noise (
                                  PerlinGenerator::new(),
                                  0.1,
                                  NoiseType::Perlin,
                             ),
-                        }),
+                        ),
                     }),
                     // rotated/translated box of spheres
                     // TODO rotation

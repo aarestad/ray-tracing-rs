@@ -4,7 +4,7 @@ use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::axis_aligned_rect::{AxisAlignedRect, AxisAlignment};
 use crate::hittables::hittable_vec::HittableVec;
 use crate::hittables::{HitRecord, Hittable};
-use crate::materials::Material;
+use crate::materials::Materials;
 use std::sync::Arc;
 
 pub struct Cuboid {
@@ -14,7 +14,7 @@ pub struct Cuboid {
 }
 
 impl Cuboid {
-    pub fn new(cuboid_min: Point64, cuboid_max: Point64, material: Arc<dyn Material>) -> Self {
+    pub fn new(cuboid_min: Point64, cuboid_max: Point64, material: Materials) -> Self {
         Self {
             cuboid_min,
             cuboid_max,
