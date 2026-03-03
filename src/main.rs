@@ -3,7 +3,6 @@ use std::sync::Arc;
 use std::sync::mpsc::channel;
 
 use image::{ImageResult, RgbImage};
-use rand::Rng;
 use threadpool::ThreadPool;
 
 use crate::textures::NoiseType::{Marble, Perlin, Turbulence};
