@@ -1,6 +1,6 @@
 use crate::data::color64::{BLACK, Color64};
 use crate::data::point64::Point64;
-use crate::hittables::Hittable;
+use crate::hittables::Hittables;
 use std::ops::Add;
 
 pub struct Ray {
@@ -24,13 +24,13 @@ impl Ray {
         self.origin + self.direction * t
     }
 
-    pub fn color_in_world(&self, world: &dyn Hittable, background: &Color64) -> Color64 {
+    pub fn color_in_world(&self, world: &Hittables, background: &Color64) -> Color64 {
         self.color_in_world_recurse(world, background, MAX_DEPTH)
     }
 
     fn color_in_world_recurse(
         &self,
-        world: &dyn Hittable,
+        world: &Hittables,
         background: &Color64,
         depth: i32,
     ) -> Color64 {

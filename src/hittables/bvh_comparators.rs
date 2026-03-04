@@ -1,8 +1,7 @@
-use crate::hittables::Hittable;
+use crate::hittables::Hittables;
 use std::cmp::Ordering;
-use std::sync::Arc;
 
-fn box_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>, axis: usize) -> Ordering {
+fn box_compare(a: &Hittables, b: &Hittables, axis: usize) -> Ordering {
     let box_a = a.bounding_box(0., 0.).expect("bad bounding box");
     let box_b = b.bounding_box(0., 0.).expect("bad bounding box");
 
@@ -14,17 +13,17 @@ fn box_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>, axis: usize) -> Ord
         .expect("got an NaN as a box dimension value")
 }
 
-type BoxComparator = fn(&Arc<dyn Hittable>, &Arc<dyn Hittable>) -> Ordering;
+type BoxComparator = fn(&Hittables, &Hittables) -> Ordering;
 
-fn box_x_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>) -> Ordering {
+fn box_x_compare(a: &Hittables, b: &Hittables) -> Ordering {
     box_compare(a, b, 0)
 }
 
-fn box_y_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>) -> Ordering {
+fn box_y_compare(a: &Hittables, b: &Hittables) -> Ordering {
     box_compare(a, b, 1)
 }
 
-fn box_z_compare(a: &Arc<dyn Hittable>, b: &Arc<dyn Hittable>) -> Ordering {
+fn box_z_compare(a: &Hittables, b: &Hittables) -> Ordering {
     box_compare(a, b, 2)
 }
 
