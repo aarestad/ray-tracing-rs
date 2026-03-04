@@ -9,7 +9,7 @@ pub struct Ray {
     pub exposure_time: f64,
 }
 
-const MAX_DEPTH: i32 = 50;
+const MAX_DEPTH: i32 = 30;
 
 impl Add for Color64 {
     type Output = Self;
