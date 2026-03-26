@@ -19,6 +19,10 @@ nalgebra = "0.34.1"
 approx = "0.5.1"
 #parry3d = "0.18.0"
 
+[profile.release]
+lto = "thin"
+codegen-units = 1
+
 [[bin]]
 name = "ppm_test"
 path = "src/util/ppm.rs"
