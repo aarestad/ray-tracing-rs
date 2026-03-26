@@ -5,4 +5,5 @@
 *.ppm
 /tarpaulin-report.html
 /profiling/
+/cargo-flamegraph.trace/
 .DS_Store
