@@ -13,9 +13,9 @@ pub fn parse_args(input: &[String]) -> Result<ProgramOptions, ArgsError> {
 
     let mut args = Args::new(program_name.as_str(), env!("CARGO_PKG_DESCRIPTION"));
     args.flag(
-        "b",
-        "use_bvh",
-        "Use BoundedVolumeHierarchy instead of HittableVec",
+        "f",
+        "flat",
+        "For world 0, use linear HittableVec instead of BVH (default is BVH)",
     );
     args.flag("h", "help", "Print this help message");
     args.option(
@@ -30,7 +30,7 @@ pub fn parse_args(input: &[String]) -> Result<ProgramOptions, ArgsError> {
     args.parse(input)?;
 
     Ok(ProgramOptions {
-        use_bvh: args.value_of("use_bvh")?,
+        use_bvh: !args.value_of("flat")?,
         world_choice: args.value_of("world_choice")?,
         help: args.value_of("help")?,
         help_str: args.full_usage(),
