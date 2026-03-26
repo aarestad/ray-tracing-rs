@@ -15,12 +15,11 @@ use crate::materials::dielectric::Dielectric;
 use crate::materials::diffuse_light::DiffuseLight;
 use crate::materials::lambertian::Lambertian;
 use crate::materials::metal::Metal;
-use crate::textures::checker::Checker;
 use crate::textures::image::ImageTexture;
 use crate::textures::noise::NoiseType::Marble;
 use crate::textures::noise::{Noise, NoiseType};
 use crate::textures::perlin::PerlinGenerator;
-use crate::textures::solid_color::SolidColor;
+use crate::textures::Texture;
 use nalgebra::Vector3;
 use rand::Rng;
 use std::ops::Range;
@@ -52,9 +51,9 @@ impl World {
     }
 
     pub fn random_world(use_bvh: bool) -> World {
-        let checker_pattern = Checker {
-            odd: SolidColor::arc_from(Color64::new(0.2, 0.3, 0.1)),
-            even: SolidColor::arc_from(Color64::new(0.9, 0.9, 0.9)),
+        let checker_pattern = Texture::Checker {
+            odd: Texture::arc_solid(Color64::new(0.2, 0.3, 0.1)),
+            even: Texture::arc_solid(Color64::new(0.9, 0.9, 0.9)),
         };
 
         let mut hittables: Vec<Arc<dyn Hittable>> = vec![Arc::from(Sphere {
@@ -92,7 +91,7 @@ impl World {
                             time1: 1.,
                             radius: 0.2,
                             material: Arc::new(Lambertian {
-                                albedo: SolidColor::arc_from(Color64(
+                                albedo: Texture::arc_solid(Color64(
                                     random_in_unit_cube().component_mul(&random_in_unit_cube()),
                                 )),
                             }),
@@ -103,7 +102,7 @@ impl World {
                             center,
                             radius: 0.2,
                             material: Arc::new(Lambertian {
-                                albedo: SolidColor::arc_from(Color64(
+                                albedo: Texture::arc_solid(Color64(
                                     random_in_unit_cube().component_mul(&random_in_unit_cube()),
                                 )),
                             }),
@@ -140,7 +139,7 @@ impl World {
             center: Point64::new(-4.0, 1.0, 0.0),
             radius: 1.0,
             material: Arc::new(Lambertian {
-                albedo: SolidColor::arc_from(Color64::new(0.4, 0.2, 0.1)),
+                albedo: Texture::arc_solid(Color64::new(0.4, 0.2, 0.1)),
             }),
         }));
 
@@ -180,9 +179,9 @@ impl World {
 
     pub fn two_spheres() -> World {
         let material = Arc::from(Lambertian {
-            albedo: Arc::from(Checker {
-                odd: SolidColor::arc_from(Color64::new(0.2, 0.3, 0.1)),
-                even: SolidColor::arc_from(Color64::new(0.9, 0.9, 0.9)),
+            albedo: Arc::new(Texture::Checker {
+                odd: Texture::arc_solid(Color64::new(0.2, 0.3, 0.1)),
+                even: Texture::arc_solid(Color64::new(0.9, 0.9, 0.9)),
             }),
         });
 
@@ -222,11 +221,11 @@ impl World {
 
     pub fn two_perlin_spheres(noise_type: NoiseType) -> World {
         let material = Arc::from(Lambertian {
-            albedo: Arc::from(Noise {
+            albedo: Arc::new(Texture::Noise(Noise {
                 noise_gen: PerlinGenerator::new(),
                 scale: 4.,
                 noise_type,
-            }),
+            })),
         });
 
         let hittable = Arc::new(HittableVec {
@@ -268,7 +267,9 @@ impl World {
             center: Point64::new(0., 0., 0.),
             radius: 2.,
             material: Arc::new(Lambertian {
-                albedo: Arc::new(ImageTexture::new("resources/earthmap.jpg".into())),
+                albedo: Arc::new(Texture::Image(ImageTexture::new(
+                    "resources/earthmap.jpg".into(),
+                ))),
             }),
         });
 
@@ -293,11 +294,11 @@ impl World {
 
     pub fn simple_light() -> World {
         let material = Arc::from(Lambertian {
-            albedo: Arc::from(Noise {
+            albedo: Arc::new(Texture::Noise(Noise {
                 noise_gen: PerlinGenerator::new(),
                 scale: 4.,
                 noise_type: Marble,
-            }),
+            })),
         });
 
         let light = DiffuseLight::new(Color64::new(4., 4., 4.));
@@ -345,15 +346,15 @@ impl World {
 
     pub fn cornell_box() -> World {
         let red_material = Lambertian {
-            albedo: SolidColor::arc_from(Color64::new(0.65, 0.05, 0.05)),
+            albedo: Texture::arc_solid(Color64::new(0.65, 0.05, 0.05)),
         };
 
         let gray_material = Arc::from(Lambertian {
-            albedo: SolidColor::arc_from(Color64::gray(0.73)),
+            albedo: Texture::arc_solid(Color64::gray(0.73)),
         });
 
         let green_material = Lambertian {
-            albedo: SolidColor::arc_from(Color64::new(0.12, 0.45, 0.15)),
+            albedo: Texture::arc_solid(Color64::new(0.12, 0.45, 0.15)),
         };
 
         let light_source = DiffuseLight::new(Color64::gray(15.));
@@ -444,7 +445,7 @@ impl World {
         let mut rng = rand::rng();
 
         let ground = Arc::new(Lambertian {
-            albedo: SolidColor::arc_from(Color64::new(0.48, 0.83, 0.53)),
+            albedo: Texture::arc_solid(Color64::new(0.48, 0.83, 0.53)),
         });
 
         // create the floor boxes
@@ -474,7 +475,7 @@ impl World {
         let mut box_of_spheres: Vec<Arc<dyn Hittable>> = vec![];
 
         let white_ish = Arc::new(Lambertian {
-            albedo: SolidColor::arc_from(Color64::gray(0.73)),
+            albedo: Texture::arc_solid(Color64::gray(0.73)),
         });
 
         let num_of_spheres_in_box = 1000;
@@ -520,7 +521,7 @@ impl World {
                         center1: Point64::new(430., 400., 200.),
                         radius: 50.0,
                         material: Arc::new(Lambertian {
-                            albedo: SolidColor::arc_from(Color64::new(0.7, 0.3, 0.1)),
+                            albedo: Texture::arc_solid(Color64::new(0.7, 0.3, 0.1)),
                         }),
                         time0: 0.0,
                         time1: 1.0,
@@ -549,9 +550,9 @@ impl World {
                         center: Point64::new(400., 200., 400.),
                         radius: 100.,
                         material: Arc::new(Lambertian {
-                            albedo: Arc::new(ImageTexture::new(
+                            albedo: Arc::new(Texture::Image(ImageTexture::new(
                                 "resources/earthmap.jpg".to_string(),
-                            )),
+                            ))),
                         }),
                     }),
                     // Perlin noise sphere
@@ -559,11 +560,11 @@ impl World {
                         center: Point64::new(220., 280., 300.),
                         radius: 80.,
                         material: Arc::new(Lambertian {
-                            albedo: Arc::new(Noise {
+                            albedo: Arc::new(Texture::Noise(Noise {
                                 noise_gen: PerlinGenerator::new(),
                                 scale: 0.1,
                                 noise_type: NoiseType::Perlin,
-                            }),
+                            })),
                         }),
                     }),
                     // rotated/translated box of spheres

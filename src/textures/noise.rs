@@ -1,6 +1,5 @@
 use crate::data::color64::Color64;
 use crate::data::point64::Point64;
-use crate::textures::Texture;
 use crate::textures::perlin::PerlinGenerator;
 
 pub enum NoiseType {
@@ -15,8 +14,8 @@ pub struct Noise {
     pub(crate) noise_type: NoiseType,
 }
 
-impl Texture for Noise {
-    fn value(&self, _u: f64, _v: f64, point: &Point64) -> Color64 {
+impl Noise {
+    pub fn value(&self, _u: f64, _v: f64, point: &Point64) -> Color64 {
         let gray_val = match self.noise_type {
             NoiseType::Perlin => 0.5 * (1. + self.noise_gen.noise(&(*point * self.scale))),
             NoiseType::Turbulence => self.noise_gen.turbulence(&(*point * self.scale), 7),

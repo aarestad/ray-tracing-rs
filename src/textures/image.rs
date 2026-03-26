@@ -1,6 +1,5 @@
 use crate::data::color64::Color64;
 use crate::data::point64::Point64;
-use crate::textures::Texture;
 use image::{DynamicImage, GenericImageView, ImageReader};
 use nalgebra::Vector3;
 use std::path::Path;
@@ -31,12 +30,10 @@ impl ImageTexture {
             }
         }
     }
-}
 
-const COLOR_SCALE: f64 = 1. / 255.;
+    pub fn value(&self, u: f64, v: f64, _point: &Point64) -> Color64 {
+        const COLOR_SCALE: f64 = 1. / 255.;
 
-impl Texture for ImageTexture {
-    fn value(&self, u: f64, v: f64, _point: &Point64) -> Color64 {
         // If we have no texture data, then return solid cyan as a debugging aid.
         if self.image.is_none() {
             Color64::new(0., 1., 1.)

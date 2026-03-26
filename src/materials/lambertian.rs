@@ -7,7 +7,7 @@ use crate::textures::Texture;
 use std::sync::Arc;
 
 pub struct Lambertian {
-    pub albedo: Arc<dyn Texture>,
+    pub albedo: Arc<Texture>,
 }
 
 impl Material for Lambertian {
