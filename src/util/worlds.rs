@@ -37,7 +37,7 @@ pub(crate) struct World {
 
 const DEFAULT_LOOK_FROM: Point64 = Point64::new(13., 2., 3.);
 const DEFAULT_LOOK_AT: Point64 = Point64::new(0., 0., 0.);
-const DEFAULT_SAMPLES_PER_PIXEL: u32 = 200;
+const DEFAULT_SAMPLES_PER_PIXEL: u32 = 100;
 const DEFAULT_VUP: Vector3<f64> = Vector3::new(0., 1., 0.);
 const DEFAULT_IMAGE_WIDTH: u32 = 960;
 const DEFAULT_IMAGE_HEIGHT: u32 = 540;

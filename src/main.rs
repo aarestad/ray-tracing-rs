@@ -37,18 +37,21 @@ fn main() -> ImageResult<()> {
 
     let world_choice = options.world_choice;
 
-    let world = match world_choice {
-        0 => Arc::from(World::random_world(options.use_bvh)),
-        1 => Arc::from(World::two_spheres()),
-        2 => Arc::from(World::two_perlin_spheres(Perlin)),
-        3 => Arc::from(World::two_perlin_spheres(Turbulence)),
-        4 => Arc::from(World::two_perlin_spheres(Marble)),
-        5 => Arc::from(World::earth()),
-        6 => Arc::from(World::simple_light()),
-        7 => Arc::from(World::cornell_box()),
-        8 => Arc::from(World::final_scene()),
+    let mut world = match world_choice {
+        0 => World::random_world(options.use_bvh),
+        1 => World::two_spheres(),
+        2 => World::two_perlin_spheres(Perlin),
+        3 => World::two_perlin_spheres(Turbulence),
+        4 => World::two_perlin_spheres(Marble),
+        5 => World::earth(),
+        6 => World::simple_light(),
+        7 => World::cornell_box(),
+        8 => World::final_scene(),
         _ => panic!("bad world choice: {}", world_choice),
     };
+
+    world.samples_per_pixel = options.samples_per_pixel;
+    let world = Arc::new(world);
 
     let pool = ThreadPool::new(num_cpus::get());
     let (tx, rx) = channel::<(u32, Vec<Color64>)>();
