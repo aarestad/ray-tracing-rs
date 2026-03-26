@@ -14,7 +14,7 @@ pub struct Cuboid {
 }
 
 impl Cuboid {
-    pub fn new(cuboid_min: Point64, cuboid_max: Point64, material: Arc<dyn Material>) -> Self {
+    pub fn new(cuboid_min: Point64, cuboid_max: Point64, material: Arc<Material>) -> Self {
         Self {
             cuboid_min,
             cuboid_max,

@@ -8,6 +8,11 @@ pub mod diffuse_light;
 pub mod lambertian;
 pub mod metal;
 
+use dielectric::Dielectric;
+use diffuse_light::DiffuseLight;
+use lambertian::Lambertian;
+use metal::Metal;
+
 pub struct ScatterRecord {
     #[allow(dead_code)]
     pub hit_record: HitRecord,
@@ -15,10 +20,27 @@ pub struct ScatterRecord {
     pub scattered: Ray,
 }
 
-pub trait Material: Send + Sync {
-    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord>;
+pub enum Material {
+    Lambertian(Lambertian),
+    Dielectric(Dielectric),
+    DiffuseLight(DiffuseLight),
+    Metal(Metal),
+}
 
-    fn emitted(&self, _u: f64, _v: f64, _point: &Point64) -> Color64 {
-        BLACK
+impl Material {
+    pub fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
+        match self {
+            Material::Lambertian(m) => m.scatter(ray_in, hit_record),
+            Material::Dielectric(m) => m.scatter(ray_in, hit_record),
+            Material::DiffuseLight(m) => m.scatter(ray_in, hit_record),
+            Material::Metal(m) => m.scatter(ray_in, hit_record),
+        }
+    }
+
+    pub fn emitted(&self, u: f64, v: f64, point: &Point64) -> Color64 {
+        match self {
+            Material::DiffuseLight(m) => m.emitted(u, v, point),
+            _ => BLACK,
+        }
     }
 }

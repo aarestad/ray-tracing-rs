@@ -15,12 +15,12 @@ pub struct Triangle {
     e1: Vector,
     e2: Vector,
     normal: Vector,
-    pub material: Arc<dyn Material>,
+    pub material: Arc<Material>,
 }
 
 impl Triangle {
     #[allow(dead_code)]
-    pub fn new(p1: Point64, p2: Point64, p3: Point64, material: Arc<dyn Material>) -> Self {
+    pub fn new(p1: Point64, p2: Point64, p3: Point64, material: Arc<Material>) -> Self {
         let e1 = p2.0 - p1.0;
         let e2 = p3.0 - p1.0;
         let normal = e2.cross(&e1).normalize();
@@ -94,6 +94,7 @@ mod test {
         data::{point64::Point64, ray::Ray},
         hittables::Hittable,
         materials::dielectric::Dielectric,
+        materials::Material,
     };
 
     use super::Triangle;
@@ -104,9 +105,9 @@ mod test {
             Point64::new(0., 1., 0.),
             Point64::new(-1., 0., 0.),
             Point64::new(1., 0., 0.),
-            Arc::new(Dielectric {
+            Arc::new(Material::Dielectric(Dielectric {
                 index_of_refraction: 1.0,
-            }),
+            })),
         );
         let r = Ray {
             origin: Point64::new(0., -1., -2.),
@@ -122,9 +123,9 @@ mod test {
             Point64::new(0., 1., 0.),
             Point64::new(-1., 0., 0.),
             Point64::new(1., 0., 0.),
-            Arc::new(Dielectric {
+            Arc::new(Material::Dielectric(Dielectric {
                 index_of_refraction: 1.0,
-            }),
+            })),
         );
 
         let r = Ray {
@@ -142,9 +143,9 @@ mod test {
             Point64::new(0., 1., 0.),
             Point64::new(-1., 0., 0.),
             Point64::new(1., 0., 0.),
-            Arc::new(Dielectric {
+            Arc::new(Material::Dielectric(Dielectric {
                 index_of_refraction: 1.0,
-            }),
+            })),
         );
 
         let r = Ray {

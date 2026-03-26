@@ -3,15 +3,15 @@ use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::data::vector3::{random_in_unit_sphere, reflect};
 use crate::hittables::HitRecord;
-use crate::materials::{Material, ScatterRecord};
+use crate::materials::ScatterRecord;
 
 pub struct Metal {
     pub albedo: Color64,
     pub fuzz: f64,
 }
 
-impl Material for Metal {
-    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
+impl Metal {
+    pub fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<ScatterRecord> {
         let reflected = reflect(&ray_in.direction.0.normalize(), &hit_record.normal.0);
 
         if reflected.dot(&hit_record.normal.0) > 0. {

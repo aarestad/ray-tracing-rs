@@ -11,7 +11,7 @@ use std::sync::Arc;
 pub struct Sphere {
     pub center: Point64,
     pub radius: f64,
-    pub material: Arc<dyn Material>,
+    pub material: Arc<Material>,
 }
 
 pub(crate) fn get_sphere_uv(p: Point64) -> (f64, f64) {

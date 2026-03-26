@@ -12,7 +12,7 @@ pub struct MovingSphere {
     pub center0: Point64,
     pub center1: Point64,
     pub radius: f64,
-    pub material: Arc<dyn Material>,
+    pub material: Arc<Material>,
     pub time0: f64,
     pub time1: f64,
 }

@@ -26,7 +26,7 @@ impl AxisAlignment {
 /// Y -> (x, z)
 /// Z -> (x, y)
 pub struct AxisAlignedRect {
-    pub material: Arc<dyn Material>,
+    pub material: Arc<Material>,
     pub min: (f64, f64),
     pub max: (f64, f64),
     pub axis_value: f64,

@@ -25,7 +25,7 @@ pub struct HitRecord {
     pub location: Point64,
     pub normal: Point64,
     pub front_face: bool,
-    pub material: Arc<dyn Material>,
+    pub material: Arc<Material>,
 }
 
 impl HitRecord {
@@ -33,7 +33,7 @@ impl HitRecord {
         value: f64,
         ray: &Ray,
         outward_normal: Point64,
-        material: Arc<dyn Material>,
+        material: Arc<Material>,
         uv: (f64, f64),
     ) -> HitRecord {
         let front_face = ray.direction.0.dot(&outward_normal.0) < 0.;
