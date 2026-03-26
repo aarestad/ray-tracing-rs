@@ -22,6 +22,7 @@ approx = "0.5.1"
 [profile.release]
 lto = "thin"
 codegen-units = 1
+debug = true
 
 [[bin]]
 name = "ppm_test"
@@ -30,3 +31,7 @@ path = "src/util/ppm.rs"
 [[bin]]
 name = "ray-tracer"
 path = "src/main.rs"
+
+[dev-dependencies]
+criterion = "0.8.2"
+flamegraph = "0.6.11"
