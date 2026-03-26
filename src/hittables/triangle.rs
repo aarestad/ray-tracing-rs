@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use super::{HitRecord, Hittable, axis_aligned_bounding_box::AxisAlignedBoundingBox};
+use super::{HitRecord, axis_aligned_bounding_box::AxisAlignedBoundingBox};
 use crate::{
     data::{point64::Point64, ray::Ray, vector3::Vector},
     materials::Material,
@@ -35,10 +35,8 @@ impl Triangle {
             material: material.clone(),
         }
     }
-}
 
-impl Hittable for Triangle {
-    fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<AxisAlignedBoundingBox> {
+    pub fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<AxisAlignedBoundingBox> {
         let min_x = self.p1.x().min(self.p2.x().min(self.p3.x()));
         let min_y = self.p1.y().min(self.p2.y().min(self.p3.y()));
         let min_z = self.p1.z().min(self.p2.z().min(self.p3.z()));
@@ -53,7 +51,7 @@ impl Hittable for Triangle {
         })
     }
 
-    fn is_hit_by(&self, ray: &Ray, _min_value: f64, _max_value: f64) -> Option<HitRecord> {
+    pub fn is_hit_by(&self, ray: &Ray, _min_value: f64, _max_value: f64) -> Option<HitRecord> {
         let cross_e2 = ray.direction.0.cross(&self.e2);
         let determinant = self.e1.dot(&cross_e2);
 
@@ -92,7 +90,6 @@ mod test {
 
     use crate::{
         data::{point64::Point64, ray::Ray},
-        hittables::Hittable,
         materials::dielectric::Dielectric,
         materials::Material,
     };

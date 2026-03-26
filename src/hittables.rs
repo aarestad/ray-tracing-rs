@@ -17,6 +17,16 @@ pub mod sphere;
 pub mod translation;
 pub mod triangle;
 
+use axis_aligned_rect::AxisAlignedRect;
+use bounded_volume_hierarchy::BoundedVolumeHierarchy;
+use cuboid::Cuboid;
+use hittable_vec::HittableVec;
+use moving_sphere::MovingSphere;
+use rotation::Rotation;
+use sphere::Sphere;
+use translation::Translation;
+use triangle::Triangle;
+
 #[derive(Clone)]
 pub struct HitRecord {
     pub value: f64,
@@ -56,8 +66,45 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable: Send + Sync {
-    fn bounding_box(&self, time0: f64, time1: f64) -> Option<AxisAlignedBoundingBox>;
+#[allow(dead_code)]
+pub enum Hittable {
+    Sphere(Sphere),
+    MovingSphere(MovingSphere),
+    AxisAlignedRect(AxisAlignedRect),
+    Triangle(Triangle),
+    HittableVec(HittableVec),
+    Bvh(BoundedVolumeHierarchy),
+    Translation(Translation),
+    Cuboid(Cuboid),
+    Rotation(Rotation),
+}
 
-    fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord>;
+impl Hittable {
+    pub fn bounding_box(&self, time0: f64, time1: f64) -> Option<AxisAlignedBoundingBox> {
+        match self {
+            Hittable::Sphere(h) => h.bounding_box(time0, time1),
+            Hittable::MovingSphere(h) => h.bounding_box(time0, time1),
+            Hittable::AxisAlignedRect(h) => h.bounding_box(time0, time1),
+            Hittable::Triangle(h) => h.bounding_box(time0, time1),
+            Hittable::HittableVec(h) => h.bounding_box(time0, time1),
+            Hittable::Bvh(h) => h.bounding_box(time0, time1),
+            Hittable::Translation(h) => h.bounding_box(time0, time1),
+            Hittable::Cuboid(h) => h.bounding_box(time0, time1),
+            Hittable::Rotation(h) => h.bounding_box(time0, time1),
+        }
+    }
+
+    pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
+        match self {
+            Hittable::Sphere(h) => h.is_hit_by(ray, min_value, max_value),
+            Hittable::MovingSphere(h) => h.is_hit_by(ray, min_value, max_value),
+            Hittable::AxisAlignedRect(h) => h.is_hit_by(ray, min_value, max_value),
+            Hittable::Triangle(h) => h.is_hit_by(ray, min_value, max_value),
+            Hittable::HittableVec(h) => h.is_hit_by(ray, min_value, max_value),
+            Hittable::Bvh(h) => h.is_hit_by(ray, min_value, max_value),
+            Hittable::Translation(h) => h.is_hit_by(ray, min_value, max_value),
+            Hittable::Cuboid(h) => h.is_hit_by(ray, min_value, max_value),
+            Hittable::Rotation(h) => h.is_hit_by(ray, min_value, max_value),
+        }
+    }
 }

@@ -4,11 +4,11 @@ use crate::hittables::{HitRecord, Hittable};
 use std::sync::Arc;
 
 pub struct HittableVec {
-    pub hittables: Vec<Arc<dyn Hittable>>,
+    pub hittables: Vec<Arc<Hittable>>,
 }
 
-impl Hittable for HittableVec {
-    fn bounding_box(&self, time0: f64, time1: f64) -> Option<AxisAlignedBoundingBox> {
+impl HittableVec {
+    pub fn bounding_box(&self, time0: f64, time1: f64) -> Option<AxisAlignedBoundingBox> {
         if self.hittables.is_empty() {
             return None;
         };
@@ -16,12 +16,12 @@ impl Hittable for HittableVec {
         self.hittables.iter().fold(
             self.hittables[0].bounding_box(time0, time1),
             |acc, hittable| {
-                Some(acc?.surrounding_box_with(&hittable.as_ref().bounding_box(time0, time1)?))
+                Some(acc?.surrounding_box_with(&hittable.bounding_box(time0, time1)?))
             },
         )
     }
 
-    fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
+    pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
         let mut winner: Option<HitRecord> = None;
 
         for hittable in self.hittables.iter() {

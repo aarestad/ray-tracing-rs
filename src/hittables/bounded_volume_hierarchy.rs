@@ -6,17 +6,17 @@ use rand::prelude::IndexedRandom;
 use std::sync::Arc;
 
 pub struct BoundedVolumeHierarchy {
-    left_child: Arc<dyn Hittable>,
-    right_child: Arc<dyn Hittable>,
+    left_child: Arc<Hittable>,
+    right_child: Arc<Hittable>,
     bounding_box: AxisAlignedBoundingBox,
 }
 
-impl Hittable for BoundedVolumeHierarchy {
-    fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<AxisAlignedBoundingBox> {
+impl BoundedVolumeHierarchy {
+    pub fn bounding_box(&self, _time0: f64, _time1: f64) -> Option<AxisAlignedBoundingBox> {
         Some(self.bounding_box)
     }
 
-    fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
+    pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
         if !self.bounding_box.is_hit_by(ray, min_value, max_value) {
             return None;
         }
@@ -31,18 +31,16 @@ impl Hittable for BoundedVolumeHierarchy {
 
         hit_right.or(hit_left)
     }
-}
 
-impl BoundedVolumeHierarchy {
     pub fn create_bvh_arc(
-        objects: &mut [Arc<dyn Hittable>],
+        objects: &mut [Arc<Hittable>],
         time0: f64,
         time1: f64,
-    ) -> Arc<dyn Hittable> {
+    ) -> Arc<Hittable> {
         let comparator = BOX_COMPARATORS.choose(&mut rand::rng()).unwrap();
 
-        let left_child: Arc<dyn Hittable>;
-        let right_child: Arc<dyn Hittable>;
+        let left_child: Arc<Hittable>;
+        let right_child: Arc<Hittable>;
 
         match objects.len() {
             0 => panic!("empty list of hittables passed to BoundedVolumeHierarchy::new"),
@@ -90,10 +88,10 @@ impl BoundedVolumeHierarchy {
             .bounding_box(time0, time1)
             .expect("No bounding box in bvh_node constructor for hittable");
 
-        Arc::from(BoundedVolumeHierarchy {
+        Arc::new(Hittable::Bvh(BoundedVolumeHierarchy {
             left_child,
             right_child,
             bounding_box: box_left.surrounding_box_with(&box_right),
-        })
+        }))
     }
 }

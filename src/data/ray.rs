@@ -24,13 +24,13 @@ impl Ray {
         self.origin + self.direction * t
     }
 
-    pub fn color_in_world(&self, world: &dyn Hittable, background: &Color64) -> Color64 {
+    pub fn color_in_world(&self, world: &Hittable, background: &Color64) -> Color64 {
         self.color_in_world_recurse(world, background, MAX_DEPTH)
     }
 
     fn color_in_world_recurse(
         &self,
-        world: &dyn Hittable,
+        world: &Hittable,
         background: &Color64,
         depth: i32,
     ) -> Color64 {

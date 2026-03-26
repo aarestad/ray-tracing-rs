@@ -1,7 +1,7 @@
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
-use crate::hittables::{HitRecord, Hittable};
+use crate::hittables::HitRecord;
 use crate::materials::Material;
 use std::sync::Arc;
 
@@ -33,8 +33,8 @@ pub struct AxisAlignedRect {
     pub axis_alignment: AxisAlignment,
 }
 
-impl Hittable for AxisAlignedRect {
-    fn bounding_box(&self, _: f64, _: f64) -> Option<AxisAlignedBoundingBox> {
+impl AxisAlignedRect {
+    pub fn bounding_box(&self, _: f64, _: f64) -> Option<AxisAlignedBoundingBox> {
         match self.axis_alignment {
             AxisAlignment::X => Some(AxisAlignedBoundingBox {
                 minimum: Point64::new(self.axis_value - 0.0001, self.min.0, self.min.1),
@@ -51,7 +51,7 @@ impl Hittable for AxisAlignedRect {
         }
     }
 
-    fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
+    pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
         let t = (self.axis_value - ray.origin.0[self.axis_alignment.to_usize()])
             / ray.direction.0[self.axis_alignment.to_usize()];
 

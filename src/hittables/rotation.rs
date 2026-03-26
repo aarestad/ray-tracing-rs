@@ -7,24 +7,24 @@ use crate::hittables::{HitRecord, Hittable};
 use std::sync::Arc;
 
 pub struct Rotation {
-    hittable: Arc<dyn Hittable>,
+    hittable: Arc<Hittable>,
     axis_alignment: AxisAlignment,
     sin_cos_theta: (f64, f64),
     bounding_box: Option<AxisAlignedBoundingBox>,
 }
 
 impl Rotation {
-    pub fn new(_: Box<dyn Hittable>, _: f64) -> Rotation {
+    pub fn new(_: Box<Hittable>, _: f64) -> Rotation {
         todo!()
     }
 }
 
-impl Hittable for Rotation {
-    fn bounding_box(&self, _: f64, _: f64) -> Option<AxisAlignedBoundingBox> {
+impl Rotation {
+    pub fn bounding_box(&self, _: f64, _: f64) -> Option<AxisAlignedBoundingBox> {
         self.bounding_box
     }
 
-    fn is_hit_by(&self, _: &Ray, _: f64, _: f64) -> Option<HitRecord> {
+    pub fn is_hit_by(&self, _: &Ray, _: f64, _: f64) -> Option<HitRecord> {
         todo!()
     }
 }
