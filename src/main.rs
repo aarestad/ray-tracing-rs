@@ -51,14 +51,18 @@ fn main() -> ImageResult<()> {
     };
 
     let pool = ThreadPool::new(num_cpus::get());
-    let (tx, rx) = channel::<(u32, u32, Color64)>();
+    let (tx, rx) = channel::<(u32, Vec<Color64>)>();
 
     (0..world.image_height).for_each(|y| {
-        (0..world.image_width).for_each(|x| {
-            let tx = tx.clone();
-            let world = world.clone();
+        let tx = tx.clone();
+        let world = world.clone();
 
-            pool.execute(move || {
+        pool.execute(move || {
+            let flipped_y = world.image_height - y - 1;
+            let w = world.image_width as usize;
+            let mut row = Vec::with_capacity(w);
+
+            for x in 0..world.image_width {
                 let mut pixel_color = Color64::new(0., 0., 0.);
                 let mut rng = rand::rng();
 
@@ -73,33 +77,35 @@ fn main() -> ImageResult<()> {
                         ray.color_in_world(world.hittable.as_ref(), &world.background_color);
                 }
 
-                tx.send((x, world.image_height - y - 1, pixel_color))
-                    .expect("no receiver");
-            });
+                row.push(pixel_color);
+            }
+
+            tx.send((flipped_y, row)).expect("no receiver");
         });
     });
 
-    let mut pixel_count = 0;
-    let total_pixels = world.total_pixels();
+    drop(tx);
+
     let mut image = RgbImage::new(world.image_width, world.image_height);
+    let mut rows_done = 0u32;
 
-    for pixel in rx.iter() {
-        image.put_pixel(
-            pixel.0,
-            pixel.1,
-            pixel.2.to_image_rgbu8(world.samples_per_pixel),
-        );
-        pixel_count += 1;
-
-        if pixel_count % world.image_width == 0 {
-            println!(
-                "{} / {} scanlines done",
-                pixel_count / world.image_width,
-                world.image_height
+    for (flipped_y, row) in rx.iter() {
+        for (x, pixel_color) in row.iter().enumerate() {
+            image.put_pixel(
+                x as u32,
+                flipped_y,
+                pixel_color.to_image_rgbu8(world.samples_per_pixel),
             );
         }
 
-        if pixel_count == total_pixels {
+        rows_done += 1;
+        println!(
+            "{} / {} scanlines done",
+            rows_done,
+            world.image_height
+        );
+
+        if rows_done * world.image_width == world.total_pixels() {
             break;
         }
     }
