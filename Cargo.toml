@@ -17,6 +17,7 @@ getopts = "0.2.21"
 array-init = "2.1.0"
 nalgebra = "0.34.1"
 approx = "0.5.1"
+tobj = "4.0"
 #parry3d = "0.18.0"
 
 [profile.release]

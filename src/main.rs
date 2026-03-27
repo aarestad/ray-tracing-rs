@@ -47,6 +47,7 @@ fn main() -> ImageResult<()> {
         6 => World::simple_light(),
         7 => World::cornell_box(),
         8 => World::final_scene(),
+        9 => World::utah_teapots(),
         _ => panic!("bad world choice: {}", world_choice),
     };
 

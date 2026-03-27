@@ -21,9 +21,11 @@ use crate::textures::image::ImageTexture;
 use crate::textures::noise::NoiseType::Marble;
 use crate::textures::noise::{Noise, NoiseType};
 use crate::textures::perlin::PerlinGenerator;
+use crate::util::obj::{load_obj_triangles, obj_mesh_axis_bounds};
 use nalgebra::Vector3;
 use rand::Rng;
 use std::ops::Range;
+use std::path::Path;
 use std::sync::Arc;
 
 pub(crate) struct World {
@@ -583,6 +585,114 @@ impl World {
                 ];
                 BoundedVolumeHierarchy::create_bvh_arc(&mut scene, 0., 1.)
             },
+        }
+    }
+
+    /// Utah teapot mesh loaded from `resources/teapot.obj` — several instances with different materials.
+    pub fn utah_teapots() -> World {
+        let teapot_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/teapot.obj");
+        let mini_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/minicooper.obj");
+
+        let teapot_scale = 0.38_f64;
+        let teapot_bounds = obj_mesh_axis_bounds(&teapot_path)
+            .unwrap_or_else(|e| panic!("failed to read bounds for {}: {e}", teapot_path.display()));
+        // Place mesh so its lowest vertex lies on the ground (y ≈ 0), plus a small lift so the
+        // large ground sphere does not clip the base at off-center x positions.
+        const GROUND_LIFT: f64 = 0.04;
+        let sit_teapot = -teapot_bounds.y_min * teapot_scale + GROUND_LIFT;
+        let teapot_height_world = teapot_bounds.height() * teapot_scale;
+
+        let mini_bounds = obj_mesh_axis_bounds(&mini_path)
+            .unwrap_or_else(|e| panic!("failed to read bounds for {}: {e}", mini_path.display()));
+        let car_scale = teapot_height_world / mini_bounds.height();
+        let sit_car = -mini_bounds.y_min * car_scale + GROUND_LIFT;
+        let car_z = -0.5 * (mini_bounds.z_min + mini_bounds.z_max) * car_scale;
+
+        let checker = Arc::new(Material::Lambertian(Lambertian {
+            albedo: Arc::new(Texture::Checker {
+                odd: Texture::arc_solid(Color64::new(0.15, 0.25, 0.12)),
+                even: Texture::arc_solid(Color64::new(0.85, 0.85, 0.88)),
+            }),
+        }));
+        let copper = Arc::new(Material::Metal(Metal {
+            albedo: Color64::new(0.95, 0.64, 0.54),
+            fuzz: 0.15,
+        }));
+        let noise = Arc::new(Material::Lambertian(Lambertian {
+            albedo: Arc::new(Texture::Noise(Box::new(Noise {
+                noise_gen: PerlinGenerator::new(),
+                scale: 2.5,
+                noise_type: NoiseType::Turbulence,
+            }))),
+        }));
+        let earth = Arc::new(Material::Lambertian(Lambertian {
+            albedo: Arc::new(Texture::Image(ImageTexture::new(
+                "resources/earthmap.jpg".into(),
+            ))),
+        }));
+        let glass = Arc::new(Material::Dielectric(Dielectric {
+            index_of_refraction: 1.5,
+        }));
+        let silver = Arc::new(Material::Metal(Metal {
+            albedo: Color64::new(0.92, 0.93, 0.96),
+            fuzz: 0.04,
+        }));
+
+        let mut hittables: Vec<Arc<Hittable>> = vec![Arc::new(Hittable::Sphere(Sphere {
+            center: Point64::new(0., -1000., 0.),
+            radius: 1000.,
+            material: Arc::new(Material::Lambertian(Lambertian {
+                albedo: Texture::arc_solid(Color64::new(0.45, 0.45, 0.48)),
+            })),
+        }))];
+
+        // Five teapots and one Mini Cooper; spacing 3 on each side of x = 0 (car in the middle).
+        let teapot_xs_materials: [(f64, Arc<Material>); 5] = [
+            (-9.0, checker.clone()),
+            (-6.0, copper.clone()),
+            (-3.0, noise.clone()),
+            (3.0, earth.clone()),
+            (6.0, glass.clone()),
+        ];
+
+        for (x, mat) in teapot_xs_materials {
+            let tris = load_obj_triangles(
+                &teapot_path,
+                mat,
+                teapot_scale,
+                Vector3::new(x, sit_teapot, 0.0),
+            )
+            .unwrap_or_else(|e| panic!("failed to load {}: {e}", teapot_path.display()));
+            hittables.extend(tris);
+        }
+
+        let car_tris = load_obj_triangles(
+            &mini_path,
+            silver,
+            car_scale,
+            Vector3::new(0.0, sit_car, car_z),
+        )
+        .unwrap_or_else(|e| panic!("failed to load {}: {e}", mini_path.display()));
+        hittables.extend(car_tris);
+
+        let hittable = BoundedVolumeHierarchy::create_bvh_arc(&mut hittables, 0., 1.);
+
+        World {
+            image_width: DEFAULT_IMAGE_WIDTH,
+            image_height: DEFAULT_IMAGE_HEIGHT,
+            samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            background_color: LIGHT_BLUE,
+            camera: Camera::new(
+                Point64::new(0., 3.2, 17.5),
+                Point64::new(0., 0.9, 0.),
+                DEFAULT_VUP,
+                40.,
+                DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64,
+                DEFAULT_APERTURE,
+                DEFAULT_FOCUS_DISTANCE,
+                DEFAULT_EXPOSURE_TIME,
+            ),
+            hittable,
         }
     }
 }

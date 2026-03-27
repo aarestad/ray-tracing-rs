@@ -1,4 +1,5 @@
 pub mod args;
+pub mod obj;
 mod ppm;
 pub mod worlds;
 
