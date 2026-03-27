@@ -4,8 +4,9 @@ use crate::data::point64::Point64;
 use crate::data::vector3::{rand_range, random_in_unit_cube};
 use crate::hittables::Hittable;
 use crate::hittables::axis_aligned_rect::AxisAlignedRect;
-use crate::hittables::axis_aligned_rect::AxisAlignment::{X, Y, Z};
+use crate::hittables::axis_aligned_rect::AxisAlignment::{self, X, Y, Z};
 use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
+use crate::hittables::rotation::Rotation;
 use crate::hittables::cuboid::Cuboid;
 use crate::hittables::hittable_vec::HittableVec;
 use crate::hittables::moving_sphere::MovingSphere;
@@ -647,33 +648,49 @@ impl World {
         }))];
 
         // Five teapots and one Mini Cooper; spacing 3 on each side of x = 0 (car in the middle).
-        let teapot_xs_materials: [(f64, Arc<Material>); 5] = [
-            (-9.0, checker.clone()),
-            (-6.0, copper.clone()),
-            (-3.0, noise.clone()),
-            (3.0, earth.clone()),
-            (6.0, glass.clone()),
+        // Each teapot is built at the origin (grounded), rotated, then translated along x.
+        let teapot_placements: [(f64, Arc<Material>, AxisAlignment, f64); 5] = [
+            (-9.0, checker.clone(), X, 18_f64.to_radians()),
+            (-6.0, copper.clone(), Y, 35_f64.to_radians()),
+            (-3.0, noise.clone(), Z, 15_f64.to_radians()),
+            (3.0, earth.clone(), Y, (-25_f64).to_radians()),
+            (6.0, glass.clone(), Z, (-42_f64).to_radians()),
         ];
 
-        for (x, mat) in teapot_xs_materials {
-            let tris = load_obj_triangles(
+        for (x, mat, axis, angle) in teapot_placements {
+            let mut tris = load_obj_triangles(
                 &teapot_path,
                 mat,
                 teapot_scale,
-                Vector3::new(x, sit_teapot, 0.0),
+                Vector3::new(0., sit_teapot, 0.0),
             )
             .unwrap_or_else(|e| panic!("failed to load {}: {e}", teapot_path.display()));
-            hittables.extend(tris);
+            let bvh = BoundedVolumeHierarchy::create_bvh_arc(&mut tris, 0., 1.);
+            let rotated = Arc::new(Hittable::Rotation(Rotation::new(
+                bvh, axis, angle, 0., 1.,
+            )));
+            hittables.push(Arc::new(Hittable::Translation(Translation {
+                hittable: rotated,
+                offset: Vector3::new(x, 0., 0.),
+            })));
         }
 
-        let car_tris = load_obj_triangles(
+        // Car: wheels on ground; rotate +90° about Z so the long axis faces the viewer's right (+X).
+        let mut car_tris = load_obj_triangles(
             &mini_path,
             silver,
             car_scale,
             Vector3::new(0.0, sit_car, car_z),
         )
         .unwrap_or_else(|e| panic!("failed to load {}: {e}", mini_path.display()));
-        hittables.extend(car_tris);
+        let car_bvh = BoundedVolumeHierarchy::create_bvh_arc(&mut car_tris, 0., 1.);
+        hittables.push(Arc::new(Hittable::Rotation(Rotation::new(
+            car_bvh,
+            Z,
+            std::f64::consts::FRAC_PI_2,
+            0.,
+            1.,
+        ))));
 
         let hittable = BoundedVolumeHierarchy::create_bvh_arc(&mut hittables, 0., 1.);
 
