@@ -35,11 +35,7 @@ impl ImageTexture {
         const COLOR_SCALE: f64 = 1. / 255.;
 
         // If we have no texture data, then return solid cyan as a debugging aid.
-        if self.image.is_none() {
-            Color64::new(0., 1., 1.)
-        } else {
-            let image = self.image.as_ref().unwrap();
-
+        if let Some(image) = &self.image {
             // Clamp input texture coordinates to [0,1] x [1,0]
             let u = u.clamp(0., 1.);
             let v = 1.0 - v.clamp(0., 1.); // Flip V to image coordinates
@@ -53,6 +49,8 @@ impl ImageTexture {
             let pixel = image.get_pixel(i, j).0;
 
             Color64(Vector3::new(pixel[0] as f64, pixel[1] as f64, pixel[2] as f64) * COLOR_SCALE)
+        } else {
+            Color64::new(0., 1., 1.)
         }
     }
 }

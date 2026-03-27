@@ -20,7 +20,7 @@ pub enum Texture {
         odd: Arc<Texture>,
         even: Arc<Texture>,
     },
-    Noise(Noise),
+    Noise(Box<Noise>),
     Image(ImageTexture),
 }
 

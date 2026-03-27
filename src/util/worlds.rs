@@ -222,11 +222,11 @@ impl World {
 
     pub fn two_perlin_spheres(noise_type: NoiseType) -> World {
         let material = Arc::new(Material::Lambertian(Lambertian {
-            albedo: Arc::new(Texture::Noise(Noise {
+            albedo: Arc::new(Texture::Noise(Box::new(Noise {
                 noise_gen: PerlinGenerator::new(),
                 scale: 4.,
                 noise_type,
-            })),
+            }))),
         }));
 
         let hittable = Arc::new(Hittable::HittableVec(HittableVec {
@@ -295,11 +295,11 @@ impl World {
 
     pub fn simple_light() -> World {
         let material = Arc::new(Material::Lambertian(Lambertian {
-            albedo: Arc::new(Texture::Noise(Noise {
+            albedo: Arc::new(Texture::Noise(Box::new(Noise {
                 noise_gen: PerlinGenerator::new(),
                 scale: 4.,
                 noise_type: Marble,
-            })),
+            }))),
         }));
 
         let light = DiffuseLight::new(Color64::new(4., 4., 4.));
@@ -563,11 +563,11 @@ impl World {
                         center: Point64::new(220., 280., 300.),
                         radius: 80.,
                         material: Arc::new(Material::Lambertian(Lambertian {
-                            albedo: Arc::new(Texture::Noise(Noise {
+                            albedo: Arc::new(Texture::Noise(Box::new(Noise {
                                 noise_gen: PerlinGenerator::new(),
                                 scale: 0.1,
                                 noise_type: NoiseType::Perlin,
-                            })),
+                            }))),
                         })),
                     })),
                     // rotated/translated box of spheres
