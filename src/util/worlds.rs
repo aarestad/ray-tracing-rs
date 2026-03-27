@@ -504,8 +504,8 @@ impl World {
                 DEFAULT_FOCUS_DISTANCE,
                 DEFAULT_EXPOSURE_TIME,
             ),
-            hittable: Arc::new(Hittable::HittableVec(HittableVec {
-                hittables: vec![
+            hittable: {
+                let mut scene: Vec<Arc<Hittable>> = vec![
                     // floor
                     BoundedVolumeHierarchy::create_bvh_arc(&mut boxes, 0., 1.),
                     // light
@@ -578,8 +578,9 @@ impl World {
                         ),
                         offset: Vector3::new(-100., 270., 395.),
                     })),
-                ],
-            })),
+                ];
+                BoundedVolumeHierarchy::create_bvh_arc(&mut scene, 0., 1.)
+            },
         }
     }
 }

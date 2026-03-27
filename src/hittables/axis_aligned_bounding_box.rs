@@ -10,17 +10,29 @@ pub struct AxisAlignedBoundingBox {
 
 impl AxisAlignedBoundingBox {
     pub fn is_hit_by(&self, ray: &Ray, t_min: f64, t_max: f64) -> bool {
-        (0..3).all(|idx| {
+        self.hit_interval(ray, t_min, t_max).is_some()
+    }
+
+    /// Ray segment `[t_min, t_max]` clipped to this box. Returns `[t_enter, t_exit]` along the ray.
+    pub fn hit_interval(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<(f64, f64)> {
+        let mut t0 = t_min;
+        let mut t1 = t_max;
+        for idx in 0..3 {
             let inv_direction = 1. / ray.direction.0[idx];
-            let mut t0 = (self.minimum.0[idx] - ray.origin.0[idx]) * inv_direction;
-            let mut t1 = (self.maximum.0[idx] - ray.origin.0[idx]) * inv_direction;
+            let mut ta = (self.minimum.0[idx] - ray.origin.0[idx]) * inv_direction;
+            let mut tb = (self.maximum.0[idx] - ray.origin.0[idx]) * inv_direction;
 
             if inv_direction < 0. {
-                mem::swap(&mut t0, &mut t1);
+                mem::swap(&mut ta, &mut tb);
             }
 
-            t0.max(t_min) < t1.min(t_max)
-        })
+            t0 = t0.max(ta);
+            t1 = t1.min(tb);
+            if t0 >= t1 {
+                return None;
+            }
+        }
+        Some((t0, t1))
     }
 
     pub fn surrounding_box_with(self, other: &AxisAlignedBoundingBox) -> AxisAlignedBoundingBox {

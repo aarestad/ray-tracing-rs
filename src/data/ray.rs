@@ -1,6 +1,7 @@
 use crate::data::color64::{BLACK, Color64};
 use crate::data::point64::Point64;
 use crate::hittables::Hittable;
+use rand::Rng;
 use std::ops::Add;
 
 pub struct Ray {
@@ -10,6 +11,8 @@ pub struct Ray {
 }
 
 const MAX_DEPTH: i32 = 50;
+/// After this many bounces, use Russian roulette to terminate diffuse paths.
+const RR_MIN_BOUNCES: i32 = 3;
 
 impl Add for Color64 {
     type Output = Self;
@@ -24,8 +27,13 @@ impl Ray {
         self.origin + self.direction * t
     }
 
-    pub fn color_in_world(&self, world: &Hittable, background: &Color64) -> Color64 {
-        self.color_in_world_recurse(world, background, MAX_DEPTH)
+    pub fn color_in_world(
+        &self,
+        world: &Hittable,
+        background: &Color64,
+        rng: &mut impl Rng,
+    ) -> Color64 {
+        self.color_in_world_recurse(world, background, MAX_DEPTH, rng)
     }
 
     fn color_in_world_recurse(
@@ -33,6 +41,7 @@ impl Ray {
         world: &Hittable,
         background: &Color64,
         depth: i32,
+        rng: &mut impl Rng,
     ) -> Color64 {
         if depth < 1 {
             return BLACK;
@@ -48,14 +57,22 @@ impl Ray {
                         .emitted(hit_record.u, hit_record.v, &hit_record.location);
                 match hit_record.material.scatter(self, &hit_record) {
                     Some(scatter_record) => {
+                        let bounce = MAX_DEPTH - depth;
+                        let mut att = scatter_record.attenuation;
+                        if bounce >= RR_MIN_BOUNCES {
+                            let p = att.r().max(att.g()).max(att.b()).clamp(0.001, 1.0);
+                            if rng.random::<f64>() > p {
+                                return emitted;
+                            }
+                            att = Color64(att.0 / p);
+                        }
                         emitted
-                            + scatter_record.attenuation.component_mul(
-                                &scatter_record.scattered.color_in_world_recurse(
-                                    world,
-                                    background,
-                                    depth - 1,
-                                ),
-                            )
+                            + att.component_mul(&scatter_record.scattered.color_in_world_recurse(
+                                world,
+                                background,
+                                depth - 1,
+                                rng,
+                            ))
                     }
 
                     None => emitted,
