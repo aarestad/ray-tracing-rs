@@ -1,4 +1,4 @@
-use crate::camera::Camera;
+use crate::camera::{Camera, CameraRecipe};
 use crate::data::color64::{BLACK, Color64, LIGHT_BLUE};
 use crate::data::point64::Point64;
 use crate::data::vector3::{rand_range, random_in_unit_cube};
@@ -35,6 +35,12 @@ pub(crate) struct World {
     pub samples_per_pixel: u32,
     pub background_color: Color64,
     pub camera: Camera,
+    pub camera_target: Point64,
+    pub camera_v_up: Vector3<f64>,
+    pub camera_vfov_deg: f64,
+    pub camera_aperture: f64,
+    pub camera_focus_distance: f64,
+    pub camera_exposure_time: Range<f64>,
     pub hittable: Arc<Hittable>,
 }
 
@@ -162,21 +168,30 @@ impl World {
             Arc::new(Hittable::HittableVec(HittableVec { hittables }))
         };
 
+        let aspect = DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64;
+        let recipe = CameraRecipe::new(
+            DEFAULT_LOOK_FROM,
+            DEFAULT_LOOK_AT,
+            DEFAULT_VUP,
+            20.0,
+            aspect,
+            0.1,
+            DEFAULT_FOCUS_DISTANCE,
+            DEFAULT_EXPOSURE_TIME,
+        );
+
         World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
             background_color: LIGHT_BLUE,
-            camera: Camera::new(
-                DEFAULT_LOOK_FROM,
-                DEFAULT_LOOK_AT,
-                DEFAULT_VUP,
-                20.0,
-                DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64,
-                0.1,
-                DEFAULT_FOCUS_DISTANCE,
-                DEFAULT_EXPOSURE_TIME,
-            ),
+            camera: recipe.camera,
+            camera_target: recipe.look_at,
+            camera_v_up: recipe.v_up,
+            camera_vfov_deg: recipe.vfov_deg,
+            camera_aperture: recipe.aperture,
+            camera_focus_distance: recipe.focus_distance,
+            camera_exposure_time: recipe.exposure_time,
             hittable,
         }
     }
@@ -204,21 +219,30 @@ impl World {
             ],
         }));
 
+        let aspect = DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64;
+        let recipe = CameraRecipe::new(
+            DEFAULT_LOOK_FROM,
+            DEFAULT_LOOK_AT,
+            DEFAULT_VUP,
+            20.0,
+            aspect,
+            0.0,
+            DEFAULT_FOCUS_DISTANCE,
+            DEFAULT_EXPOSURE_TIME,
+        );
+
         World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
             background_color: LIGHT_BLUE,
-            camera: Camera::new(
-                DEFAULT_LOOK_FROM,
-                DEFAULT_LOOK_AT,
-                DEFAULT_VUP,
-                20.0,
-                DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64,
-                0.0,
-                DEFAULT_FOCUS_DISTANCE,
-                DEFAULT_EXPOSURE_TIME,
-            ),
+            camera: recipe.camera,
+            camera_target: recipe.look_at,
+            camera_v_up: recipe.v_up,
+            camera_vfov_deg: recipe.vfov_deg,
+            camera_aperture: recipe.aperture,
+            camera_focus_distance: recipe.focus_distance,
+            camera_exposure_time: recipe.exposure_time,
             hittable,
         }
     }
@@ -247,21 +271,30 @@ impl World {
             ],
         }));
 
+        let aspect = DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64;
+        let recipe = CameraRecipe::new(
+            DEFAULT_LOOK_FROM,
+            DEFAULT_LOOK_AT,
+            DEFAULT_VUP,
+            20.0,
+            aspect,
+            DEFAULT_APERTURE,
+            DEFAULT_FOCUS_DISTANCE,
+            DEFAULT_EXPOSURE_TIME,
+        );
+
         World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
             background_color: LIGHT_BLUE,
-            camera: Camera::new(
-                DEFAULT_LOOK_FROM,
-                DEFAULT_LOOK_AT,
-                DEFAULT_VUP,
-                20.0,
-                DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64,
-                DEFAULT_APERTURE,
-                DEFAULT_FOCUS_DISTANCE,
-                DEFAULT_EXPOSURE_TIME,
-            ),
+            camera: recipe.camera,
+            camera_target: recipe.look_at,
+            camera_v_up: recipe.v_up,
+            camera_vfov_deg: recipe.vfov_deg,
+            camera_aperture: recipe.aperture,
+            camera_focus_distance: recipe.focus_distance,
+            camera_exposure_time: recipe.exposure_time,
             hittable,
         }
     }
@@ -277,21 +310,30 @@ impl World {
             })),
         }));
 
+        let aspect = DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64;
+        let recipe = CameraRecipe::new(
+            DEFAULT_LOOK_FROM,
+            DEFAULT_LOOK_AT,
+            DEFAULT_VUP,
+            20.0,
+            aspect,
+            DEFAULT_APERTURE,
+            DEFAULT_FOCUS_DISTANCE,
+            DEFAULT_EXPOSURE_TIME,
+        );
+
         World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
             background_color: LIGHT_BLUE,
-            camera: Camera::new(
-                DEFAULT_LOOK_FROM,
-                DEFAULT_LOOK_AT,
-                DEFAULT_VUP,
-                20.0,
-                DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64,
-                DEFAULT_APERTURE,
-                DEFAULT_FOCUS_DISTANCE,
-                DEFAULT_EXPOSURE_TIME,
-            ),
+            camera: recipe.camera,
+            camera_target: recipe.look_at,
+            camera_v_up: recipe.v_up,
+            camera_vfov_deg: recipe.vfov_deg,
+            camera_aperture: recipe.aperture,
+            camera_focus_distance: recipe.focus_distance,
+            camera_exposure_time: recipe.exposure_time,
             hittable,
         }
     }
@@ -329,21 +371,30 @@ impl World {
             ],
         }));
 
+        let aspect = DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64;
+        let recipe = CameraRecipe::new(
+            Point64::new(26., 3., 6.),
+            Point64::new(0., 2., 0.),
+            DEFAULT_VUP,
+            20.0,
+            aspect,
+            DEFAULT_APERTURE,
+            DEFAULT_FOCUS_DISTANCE,
+            DEFAULT_EXPOSURE_TIME,
+        );
+
         World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: 400,
             background_color: BLACK,
-            camera: Camera::new(
-                Point64::new(26., 3., 6.),
-                Point64::new(0., 2., 0.),
-                DEFAULT_VUP,
-                20.0,
-                DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64,
-                DEFAULT_APERTURE,
-                DEFAULT_FOCUS_DISTANCE,
-                DEFAULT_EXPOSURE_TIME,
-            ),
+            camera: recipe.camera,
+            camera_target: recipe.look_at,
+            camera_v_up: recipe.v_up,
+            camera_vfov_deg: recipe.vfov_deg,
+            camera_aperture: recipe.aperture,
+            camera_focus_distance: recipe.focus_distance,
+            camera_exposure_time: recipe.exposure_time,
             hittable,
         }
     }
@@ -426,21 +477,29 @@ impl World {
             ],
         }));
 
+        let recipe = CameraRecipe::new(
+            Point64::new(278., 278., -800.),
+            Point64::new(278., 278., 0.),
+            DEFAULT_VUP,
+            DEFAULT_VFOV_DEG,
+            1.,
+            DEFAULT_APERTURE,
+            DEFAULT_FOCUS_DISTANCE,
+            DEFAULT_EXPOSURE_TIME,
+        );
+
         World {
             image_width: 600,
             image_height: 600,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
             background_color: BLACK,
-            camera: Camera::new(
-                Point64::new(278., 278., -800.),
-                Point64::new(278., 278., 0.),
-                DEFAULT_VUP,
-                DEFAULT_VFOV_DEG,
-                1.,
-                DEFAULT_APERTURE,
-                DEFAULT_FOCUS_DISTANCE,
-                DEFAULT_EXPOSURE_TIME,
-            ),
+            camera: recipe.camera,
+            camera_target: recipe.look_at,
+            camera_v_up: recipe.v_up,
+            camera_vfov_deg: recipe.vfov_deg,
+            camera_aperture: recipe.aperture,
+            camera_focus_distance: recipe.focus_distance,
+            camera_exposure_time: recipe.exposure_time,
             hittable,
         }
     }
@@ -492,21 +551,29 @@ impl World {
             })));
         });
 
+        let recipe = CameraRecipe::new(
+            Point64::new(478., 278., -600.),
+            Point64::new(278., 278., 0.),
+            DEFAULT_VUP,
+            DEFAULT_VFOV_DEG,
+            1.,
+            DEFAULT_APERTURE,
+            DEFAULT_FOCUS_DISTANCE,
+            DEFAULT_EXPOSURE_TIME,
+        );
+
         World {
             image_width: 800,
             image_height: 800,
             samples_per_pixel: 100,
             background_color: BLACK,
-            camera: Camera::new(
-                Point64::new(478., 278., -600.),
-                Point64::new(278., 278., 0.),
-                DEFAULT_VUP,
-                DEFAULT_VFOV_DEG,
-                1.,
-                DEFAULT_APERTURE,
-                DEFAULT_FOCUS_DISTANCE,
-                DEFAULT_EXPOSURE_TIME,
-            ),
+            camera: recipe.camera,
+            camera_target: recipe.look_at,
+            camera_v_up: recipe.v_up,
+            camera_vfov_deg: recipe.vfov_deg,
+            camera_aperture: recipe.aperture,
+            camera_focus_distance: recipe.focus_distance,
+            camera_exposure_time: recipe.exposure_time,
             hittable: {
                 let mut scene: Vec<Arc<Hittable>> = vec![
                     // floor
@@ -694,21 +761,30 @@ impl World {
 
         let hittable = BoundedVolumeHierarchy::create_bvh_arc(&mut hittables, 0., 1.);
 
+        let aspect = DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64;
+        let recipe = CameraRecipe::new(
+            Point64::new(0., 3.2, 17.5),
+            Point64::new(0., 0.9, 0.),
+            DEFAULT_VUP,
+            40.,
+            aspect,
+            DEFAULT_APERTURE,
+            DEFAULT_FOCUS_DISTANCE,
+            DEFAULT_EXPOSURE_TIME,
+        );
+
         World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
             background_color: LIGHT_BLUE,
-            camera: Camera::new(
-                Point64::new(0., 3.2, 17.5),
-                Point64::new(0., 0.9, 0.),
-                DEFAULT_VUP,
-                40.,
-                DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64,
-                DEFAULT_APERTURE,
-                DEFAULT_FOCUS_DISTANCE,
-                DEFAULT_EXPOSURE_TIME,
-            ),
+            camera: recipe.camera,
+            camera_target: recipe.look_at,
+            camera_v_up: recipe.v_up,
+            camera_vfov_deg: recipe.vfov_deg,
+            camera_aperture: recipe.aperture,
+            camera_focus_distance: recipe.focus_distance,
+            camera_exposure_time: recipe.exposure_time,
             hittable,
         }
     }

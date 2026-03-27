@@ -7,6 +7,51 @@ use nalgebra::Vector3;
 use rand::Rng;
 use std::ops::Range;
 
+/// Camera plus the parameters needed to rebuild it after orbit / roll changes (interactive view).
+#[derive(Clone)]
+pub struct CameraRecipe {
+    pub camera: Camera,
+    pub look_at: Point64,
+    pub v_up: Vector3<f64>,
+    pub vfov_deg: f64,
+    pub aperture: f64,
+    pub focus_distance: f64,
+    pub exposure_time: Range<f64>,
+}
+
+impl CameraRecipe {
+    pub fn new(
+        look_from: Point64,
+        look_at: Point64,
+        v_up: Vector3<f64>,
+        vfov_deg: f64,
+        aspect_ratio: f64,
+        aperture: f64,
+        focus_distance: f64,
+        exposure_time: Range<f64>,
+    ) -> Self {
+        Self {
+            camera: Camera::new(
+                look_from,
+                look_at,
+                v_up,
+                vfov_deg,
+                aspect_ratio,
+                aperture,
+                focus_distance,
+                exposure_time.clone(),
+            ),
+            look_at,
+            v_up,
+            vfov_deg,
+            aperture,
+            focus_distance,
+            exposure_time,
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct Camera {
     origin: Point64,
     lower_left_corner: Point64,
@@ -48,6 +93,10 @@ impl Camera {
             lens_radius: aperture / 2.,
             exposure_time,
         }
+    }
+
+    pub fn origin(&self) -> Point64 {
+        self.origin
     }
 
     pub fn get_ray(&self, s: f64, t: f64) -> Ray {

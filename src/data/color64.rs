@@ -1,11 +1,18 @@
 use image::Rgb;
 use nalgebra::Vector3;
+use std::ops::AddAssign;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Color64(pub Vector3<f64>);
 
 pub const LIGHT_BLUE: Color64 = Color64::new(0.7, 0.8, 1.);
 pub const BLACK: Color64 = Color64::new(0., 0., 0.);
+
+impl AddAssign for Color64 {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
+    }
+}
 
 impl Color64 {
     pub const fn new(r: f64, g: f64, b: f64) -> Self {
@@ -49,5 +56,11 @@ impl Color64 {
         let scaled_blue = (255. * b.clamp(0., 1.)) as u8;
 
         Rgb([scaled_red, scaled_green, scaled_blue])
+    }
+
+    /// Packed 0x00RRGGBB for minifb / framebuffer display.
+    pub fn to_minifb_rgb(self, samples_per_pixel: u32) -> u32 {
+        let Rgb([r, g, b]) = self.to_image_rgbu8(samples_per_pixel);
+        ((r as u32) << 16) | ((g as u32) << 8) | (b as u32)
     }
 }

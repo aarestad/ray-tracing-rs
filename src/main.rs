@@ -10,7 +10,6 @@ use crate::util::worlds::World;
 use data::color64::Color64;
 use image::DynamicImage::ImageRgb8;
 use std::env;
-use std::ops::AddAssign;
 use util::args::parse_args;
 
 mod camera;
@@ -19,12 +18,6 @@ mod hittables;
 mod materials;
 mod textures;
 mod util;
-
-impl AddAssign for Color64 {
-    fn add_assign(&mut self, rhs: Self) {
-        self.0 += rhs.0;
-    }
-}
 
 fn main() -> ImageResult<()> {
     let args: Vec<String> = env::args().collect();
@@ -53,6 +46,14 @@ fn main() -> ImageResult<()> {
 
     world.samples_per_pixel = options.samples_per_pixel;
     let world = Arc::new(world);
+
+    if options.interactive {
+        if let Err(e) = util::interactive::run_interactive(world) {
+            eprintln!("interactive mode failed: {e}");
+            std::process::exit(1);
+        }
+        return Ok(());
+    }
 
     let pool = ThreadPool::new(num_cpus::get());
     let (tx, rx) = channel::<(u32, Vec<Color64>)>();

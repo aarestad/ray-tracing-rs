@@ -5,6 +5,7 @@ pub struct ProgramOptions {
     pub use_bvh: bool,
     pub world_choice: u8,
     pub samples_per_pixel: u32,
+    pub interactive: bool,
     pub help: bool,
     pub help_str: String,
 }
@@ -19,6 +20,11 @@ pub fn parse_args(input: &[String]) -> Result<ProgramOptions, ArgsError> {
         "For world 0, use linear HittableVec instead of BVH (default is BVH)",
     );
     args.flag("h", "help", "Print this help message");
+    args.flag(
+        "i",
+        "interactive",
+        "Open an interactive window: LMB orbit, RMB roll, wheel zoom; progressive render updates live",
+    );
     args.option(
         "w",
         "world_choice",
@@ -44,6 +50,7 @@ pub fn parse_args(input: &[String]) -> Result<ProgramOptions, ArgsError> {
         use_bvh: !args.value_of("flat")?,
         world_choice: args.value_of("world_choice")?,
         samples_per_pixel,
+        interactive: args.value_of("interactive")?,
         help: args.value_of("help")?,
         help_str: args.full_usage(),
     })
