@@ -90,8 +90,8 @@ mod test {
 
     use crate::{
         data::{point64::Point64, ray::Ray},
-        materials::dielectric::Dielectric,
         materials::Material,
+        materials::dielectric::Dielectric,
     };
 
     use super::Triangle;

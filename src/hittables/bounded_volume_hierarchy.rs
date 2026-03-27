@@ -49,11 +49,7 @@ impl BoundedVolumeHierarchy {
         }
     }
 
-    pub fn create_bvh_arc(
-        objects: &mut [Arc<Hittable>],
-        time0: f64,
-        time1: f64,
-    ) -> Arc<Hittable> {
+    pub fn create_bvh_arc(objects: &mut [Arc<Hittable>], time0: f64, time1: f64) -> Arc<Hittable> {
         let comparator = BOX_COMPARATORS.choose(&mut rand::rng()).unwrap();
 
         let left_child: Arc<Hittable>;

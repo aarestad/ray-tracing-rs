@@ -1,7 +1,7 @@
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
-use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::HitRecord;
+use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::materials::Material;
 use std::sync::Arc;
 

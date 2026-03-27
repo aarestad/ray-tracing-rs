@@ -1,8 +1,8 @@
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
+use crate::hittables::HitRecord;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::sphere::get_sphere_uv;
-use crate::hittables::HitRecord;
 use crate::materials::Material;
 use nalgebra::Vector3;
 use std::sync::Arc;

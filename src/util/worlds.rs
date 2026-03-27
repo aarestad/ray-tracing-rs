@@ -16,11 +16,11 @@ use crate::materials::dielectric::Dielectric;
 use crate::materials::diffuse_light::DiffuseLight;
 use crate::materials::lambertian::Lambertian;
 use crate::materials::metal::Metal;
+use crate::textures::Texture;
 use crate::textures::image::ImageTexture;
 use crate::textures::noise::NoiseType::Marble;
 use crate::textures::noise::{Noise, NoiseType};
 use crate::textures::perlin::PerlinGenerator;
-use crate::textures::Texture;
 use nalgebra::Vector3;
 use rand::Rng;
 use std::ops::Range;
@@ -510,7 +510,9 @@ impl World {
                     BoundedVolumeHierarchy::create_bvh_arc(&mut boxes, 0., 1.),
                     // light
                     Arc::new(Hittable::AxisAlignedRect(AxisAlignedRect {
-                        material: Arc::new(Material::DiffuseLight(DiffuseLight::new(Color64::new(7., 7., 7.)))),
+                        material: Arc::new(Material::DiffuseLight(DiffuseLight::new(
+                            Color64::new(7., 7., 7.),
+                        ))),
                         min: (123.0, 147.0),
                         max: (423.0, 412.0),
                         axis_value: 554.0,

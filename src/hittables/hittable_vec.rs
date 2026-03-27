@@ -15,9 +15,7 @@ impl HittableVec {
 
         self.hittables.iter().fold(
             self.hittables[0].bounding_box(time0, time1),
-            |acc, hittable| {
-                Some(acc?.surrounding_box_with(&hittable.bounding_box(time0, time1)?))
-            },
+            |acc, hittable| Some(acc?.surrounding_box_with(&hittable.bounding_box(time0, time1)?)),
         )
     }
 

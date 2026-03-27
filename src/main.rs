@@ -76,8 +76,11 @@ fn main() -> ImageResult<()> {
                     let v = (y as f64 + rands[1]) / (world.image_height - 1) as f64;
                     let ray = world.camera.get_ray(u, v);
 
-                    pixel_color +=
-                        ray.color_in_world(world.hittable.as_ref(), &world.background_color, &mut rng);
+                    pixel_color += ray.color_in_world(
+                        world.hittable.as_ref(),
+                        &world.background_color,
+                        &mut rng,
+                    );
                 }
 
                 row.push(pixel_color);
@@ -102,11 +105,7 @@ fn main() -> ImageResult<()> {
         }
 
         rows_done += 1;
-        println!(
-            "{} / {} scanlines done",
-            rows_done,
-            world.image_height
-        );
+        println!("{} / {} scanlines done", rows_done, world.image_height);
 
         if rows_done * world.image_width == world.total_pixels() {
             break;
