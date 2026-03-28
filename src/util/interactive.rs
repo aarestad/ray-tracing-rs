@@ -1,7 +1,7 @@
 use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use minifb::{Key, MouseButton, MouseMode, Window, WindowOptions};
 use nalgebra::{Rotation3, Unit};
@@ -110,7 +110,7 @@ fn render_pass(
                 let du = world.image_width.saturating_sub(1).max(1) as f64;
                 let dv = world.image_height.saturating_sub(1).max(1) as f64;
                 let u = (x as f64 + rng.random::<f64>()) / du;
-                let v = (flipped_y as f64 + rng.random::<f64>()) / dv;
+                let v = (y as f64 + rng.random::<f64>()) / dv;
                 let ray = camera.get_ray(u, v);
                 let c = ray.color_in_world(
                     world.hittable.as_ref(),
@@ -238,8 +238,21 @@ pub fn run_interactive(world: Arc<World>) -> Result<(), String> {
 
     let mut last_left: Option<(f32, f32)> = None;
     let mut last_right: Option<(f32, f32)> = None;
+    let mut last_frame = Instant::now();
+    let mut fps_ema: f64 = 0.0;
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
+        let now = Instant::now();
+        let dt = now.duration_since(last_frame).as_secs_f64();
+        last_frame = now;
+        if dt > 0.0 {
+            let instant_fps = 1.0 / dt;
+            fps_ema = if fps_ema == 0.0 {
+                instant_fps
+            } else {
+                0.1 * instant_fps + 0.9 * fps_ema
+            };
+        }
         let pos = window.get_mouse_pos(MouseMode::Clamp);
 
         if let Some((mx, my)) = pos {
@@ -288,6 +301,12 @@ pub fn run_interactive(world: Arc<World>) -> Result<(), String> {
                 shared.generation.fetch_add(1, Ordering::AcqRel);
             }
         }
+
+        let samples = shared.samples.load(Ordering::Acquire);
+        window.set_title(&format!(
+            "ray-tracer  {:.1} FPS  {} spp  (LMB orbit, RMB roll, wheel zoom)",
+            fps_ema, samples
+        ));
 
         if let Ok(guard) = shared.display.try_lock() {
             let _ = window.update_with_buffer(&guard, w, h);
