@@ -15,7 +15,7 @@ cargo run -- -w <0-8> -b   # Render scene (world 0-8), -b enables BVH
 
 ## Architecture
 
-This is a ray tracer implementing the [Ray Tracing in One Weekend](https://raytracing.github.io/) series in Rust.
+This is a ray tracer implementing the [Ray Tracing in One Weekend](https://raytracing.github.io/) series in Rust. The books are located locally in the `books` directory for reference. The reference implementation is in C++, but we have translated the book's code into Rust.
 
 ### Enum Dispatch Design
 
