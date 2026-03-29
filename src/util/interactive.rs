@@ -76,10 +76,13 @@ impl OrbitState {
 struct SharedRender {
     orbit: Mutex<OrbitState>,
     generation: Arc<AtomicU64>,
-    accum: Mutex<Vec<Color64>>,
     samples: AtomicU32,
     display: Mutex<Vec<u32>>,
 }
+
+/// Rows bundled per thread-pool task. More rows → fewer spawns and Arc clones;
+/// fewer rows → finer-grained generation abort. 4 is a good default.
+const ROWS_PER_TASK: u32 = 4;
 
 fn render_pass(
     pool: &ThreadPool,
@@ -92,8 +95,12 @@ fn render_pass(
     let (tx, rx) = channel::<(u32, Vec<Color64>)>();
     let h = world.image_height;
     let w = world.image_width as usize;
+    let du = world.image_width.saturating_sub(1).max(1) as f64;
+    let dv = world.image_height.saturating_sub(1).max(1) as f64;
 
-    for y in 0..h {
+    let mut y = 0u32;
+    while y < h {
+        let y_end = (y + ROWS_PER_TASK).min(h);
         let tx = tx.clone();
         let world = world.clone();
         let camera = camera.clone();
@@ -102,26 +109,25 @@ fn render_pass(
             if generation.load(Ordering::Acquire) != view_gen {
                 return;
             }
-            let flipped_y = world.image_height - y - 1;
-            let mut row = Vec::with_capacity(w);
             let mut rng = rand::rng();
-
-            for x in 0..world.image_width {
-                let du = world.image_width.saturating_sub(1).max(1) as f64;
-                let dv = world.image_height.saturating_sub(1).max(1) as f64;
-                let u = (x as f64 + rng.random::<f64>()) / du;
-                let v = (y as f64 + rng.random::<f64>()) / dv;
-                let ray = camera.get_ray(u, v);
-                let c = ray.color_in_world(
-                    world.hittable.as_ref(),
-                    &world.background_color,
-                    &mut rng,
-                );
-                row.push(c);
+            for row_y in y..y_end {
+                let flipped_y = world.image_height - row_y - 1;
+                let mut row = Vec::with_capacity(w);
+                for x in 0..world.image_width {
+                    let u = (x as f64 + rng.random::<f64>()) / du;
+                    let v = (row_y as f64 + rng.random::<f64>()) / dv;
+                    let ray = camera.get_ray(u, v);
+                    let c = ray.color_in_world(
+                        world.hittable.as_ref(),
+                        &world.background_color,
+                        &mut rng,
+                    );
+                    row.push(c);
+                }
+                let _ = tx.send((flipped_y, row));
             }
-
-            let _ = tx.send((flipped_y, row));
         });
+        y = y_end;
     }
 
     drop(tx);
@@ -151,25 +157,19 @@ fn render_thread(world: Arc<World>, shared: Arc<SharedRender>) {
     let w = world.image_width as usize;
     let h = world.image_height as usize;
     let len = w * h;
+    // Local accumulation buffer — no mutex needed since only this thread writes it.
+    let mut accum = vec![Color64::new(0., 0., 0.); len];
 
     loop {
         let view_gen = shared.generation.load(Ordering::Acquire);
-        {
-            let mut acc = shared.accum.lock().unwrap();
-            if acc.len() != len {
-                acc.resize(len, Color64::new(0., 0., 0.));
-            } else {
-                acc.fill(Color64::new(0., 0., 0.));
-            }
-            shared.samples.store(0, Ordering::Release);
-        }
+        accum.fill(Color64::new(0., 0., 0.));
+        shared.samples.store(0, Ordering::Release);
 
         let mut local_samples = 0u32;
         let spp_cap = world.samples_per_pixel.max(1);
 
         loop {
-            let g = shared.generation.load(Ordering::Acquire);
-            if g != view_gen {
+            if shared.generation.load(Ordering::Acquire) != view_gen {
                 break;
             }
 
@@ -181,25 +181,13 @@ fn render_thread(world: Arc<World>, shared: Arc<SharedRender>) {
             let orbit = shared.orbit.lock().unwrap().clone();
             let camera = orbit.to_camera(world.as_ref());
 
-            let mut accum = shared.accum.lock().unwrap();
-            if !render_pass(
-                &pool,
-                &world,
-                &camera,
-                accum.as_mut_slice(),
-                view_gen,
-                &shared.generation,
-            ) {
-                drop(accum);
+            if !render_pass(&pool, &world, &camera, &mut accum, view_gen, &shared.generation) {
                 break;
             }
             local_samples += 1;
             shared.samples.store(local_samples, Ordering::Release);
 
-            let mut display = shared.display.lock().unwrap();
-            tonemap_to_display(&accum, local_samples, &mut display);
-            drop(accum);
-            drop(display);
+            tonemap_to_display(&accum, local_samples, &mut shared.display.lock().unwrap());
         }
     }
 }
@@ -216,7 +204,6 @@ pub fn run_interactive(world: Arc<World>) -> Result<(), String> {
     let shared = Arc::new(SharedRender {
         orbit: Mutex::new(orbit),
         generation: Arc::new(AtomicU64::new(0)),
-        accum: Mutex::new(vec![Color64::new(0., 0., 0.); len]),
         samples: AtomicU32::new(0),
         display: Mutex::new(vec![0u32; len]),
     });
@@ -308,13 +295,12 @@ pub fn run_interactive(world: Arc<World>) -> Result<(), String> {
             fps_ema, samples
         ));
 
-        if let Ok(guard) = shared.display.try_lock() {
-            let _ = window.update_with_buffer(&guard, w, h);
-        } else {
-            let _ = window.update();
-        }
+        // Clone the buffer under a brief lock, then release before calling
+        // update_with_buffer — which sleeps internally for up to 33 ms due to
+        // limit_update_rate and would otherwise starve the render thread's try_lock.
+        let frame: Vec<u32> = shared.display.lock().unwrap().clone();
+        let _ = window.update_with_buffer(&frame, w, h);
 
-        std::thread::sleep(Duration::from_millis(8));
     }
 
     Ok(())
