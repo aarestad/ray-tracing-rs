@@ -83,24 +83,30 @@ struct SharedRender {
 /// Rows bundled per thread-pool task. More rows → fewer spawns and Arc clones;
 /// fewer rows → finer-grained generation abort. 4 is a good default.
 const ROWS_PER_TASK: u32 = 4;
+/// Render at 1/RENDER_SCALE resolution in each dimension, then upscale to fill
+/// the display. 2 = quarter the pixel count = ~4× faster first frame.
+const RENDER_SCALE: u32 = 2;
+/// Max ray bounce depth for interactive rendering. Lower = faster per ray.
+const INTERACTIVE_MAX_DEPTH: i32 = 8;
 
 fn render_pass(
     pool: &ThreadPool,
     world: &Arc<World>,
     camera: &Camera,
     accum: &mut [Color64],
+    render_w: u32,
+    render_h: u32,
     view_gen: u64,
     generation: &Arc<AtomicU64>,
 ) -> bool {
     let (tx, rx) = channel::<(u32, Vec<Color64>)>();
-    let h = world.image_height;
-    let w = world.image_width as usize;
-    let du = world.image_width.saturating_sub(1).max(1) as f64;
-    let dv = world.image_height.saturating_sub(1).max(1) as f64;
+    let rw = render_w as usize;
+    let du = render_w.saturating_sub(1).max(1) as f64;
+    let dv = render_h.saturating_sub(1).max(1) as f64;
 
     let mut y = 0u32;
-    while y < h {
-        let y_end = (y + ROWS_PER_TASK).min(h);
+    while y < render_h {
+        let y_end = (y + ROWS_PER_TASK).min(render_h);
         let tx = tx.clone();
         let world = world.clone();
         let camera = camera.clone();
@@ -111,15 +117,16 @@ fn render_pass(
             }
             let mut rng = rand::rng();
             for row_y in y..y_end {
-                let flipped_y = world.image_height - row_y - 1;
-                let mut row = Vec::with_capacity(w);
-                for x in 0..world.image_width {
+                let flipped_y = render_h - row_y - 1;
+                let mut row = Vec::with_capacity(rw);
+                for x in 0..render_w {
                     let u = (x as f64 + rng.random::<f64>()) / du;
                     let v = (row_y as f64 + rng.random::<f64>()) / dv;
                     let ray = camera.get_ray(u, v);
                     let c = ray.color_in_world(
                         &world.hittable,
                         &world.background_color,
+                        INTERACTIVE_MAX_DEPTH,
                         &mut rng,
                     );
                     row.push(c);
@@ -136,7 +143,7 @@ fn render_pass(
         if generation.load(Ordering::Acquire) != view_gen {
             return false;
         }
-        let base = flipped_y as usize * w;
+        let base = flipped_y as usize * rw;
         for (x, c) in row.into_iter().enumerate() {
             accum[base + x] += c;
         }
@@ -145,20 +152,40 @@ fn render_pass(
     generation.load(Ordering::Acquire) == view_gen
 }
 
-fn tonemap_to_display(accum: &[Color64], samples: u32, out: &mut [u32]) {
+/// Tonemap the render-resolution accum buffer into the full-resolution display
+/// buffer, upscaling each render pixel to a RENDER_SCALE×RENDER_SCALE block.
+fn tonemap_to_display(
+    accum: &[Color64],
+    samples: u32,
+    out: &mut [u32],
+    render_w: usize,
+    render_h: usize,
+    display_w: usize,
+) {
     let s = samples.max(1);
-    for (i, px) in accum.iter().enumerate() {
-        out[i] = px.to_minifb_rgb(s);
+    let scale = RENDER_SCALE as usize;
+    for ry in 0..render_h {
+        for rx in 0..render_w {
+            let color = accum[ry * render_w + rx].to_minifb_rgb(s);
+            for dy in 0..scale {
+                for dx in 0..scale {
+                    let px = rx * scale + dx;
+                    let py = ry * scale + dy;
+                    out[py * display_w + px] = color;
+                }
+            }
+        }
     }
 }
 
 fn render_thread(world: Arc<World>, shared: Arc<SharedRender>) {
     let pool = ThreadPool::new(num_cpus::get());
-    let w = world.image_width as usize;
-    let h = world.image_height as usize;
-    let len = w * h;
-    // Local accumulation buffer — no mutex needed since only this thread writes it.
-    let mut accum = vec![Color64::new(0., 0., 0.); len];
+    let display_w = world.image_width as usize;
+    let render_w = (world.image_width / RENDER_SCALE) as usize;
+    let render_h = (world.image_height / RENDER_SCALE) as usize;
+    let render_len = render_w * render_h;
+    // Local accumulation buffer at render resolution — no mutex needed.
+    let mut accum = vec![Color64::new(0., 0., 0.); render_len];
 
     loop {
         let view_gen = shared.generation.load(Ordering::Acquire);
@@ -181,13 +208,29 @@ fn render_thread(world: Arc<World>, shared: Arc<SharedRender>) {
             let orbit = shared.orbit.lock().unwrap().clone();
             let camera = orbit.to_camera(world.as_ref());
 
-            if !render_pass(&pool, &world, &camera, &mut accum, view_gen, &shared.generation) {
+            if !render_pass(
+                &pool,
+                &world,
+                &camera,
+                &mut accum,
+                render_w as u32,
+                render_h as u32,
+                view_gen,
+                &shared.generation,
+            ) {
                 break;
             }
             local_samples += 1;
             shared.samples.store(local_samples, Ordering::Release);
 
-            tonemap_to_display(&accum, local_samples, &mut shared.display.lock().unwrap());
+            tonemap_to_display(
+                &accum,
+                local_samples,
+                &mut shared.display.lock().unwrap(),
+                render_w,
+                render_h,
+                display_w,
+            );
         }
     }
 }

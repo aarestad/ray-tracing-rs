@@ -81,6 +81,7 @@ fn main() -> ImageResult<()> {
                     pixel_color += ray.color_in_world(
                         &world.hittable,
                         &world.background_color,
+                        50,
                         &mut rng,
                     );
                 }

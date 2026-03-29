@@ -10,7 +10,7 @@ pub struct Ray {
     pub exposure_time: f64,
 }
 
-const MAX_DEPTH: i32 = 50;
+pub const MAX_DEPTH: i32 = 50;
 /// After this many bounces, use Russian roulette to terminate diffuse paths.
 const RR_MIN_BOUNCES: i32 = 3;
 
@@ -31,15 +31,17 @@ impl Ray {
         &self,
         world: &Hittable,
         background: &Color64,
+        max_depth: i32,
         rng: &mut impl Rng,
     ) -> Color64 {
-        self.color_in_world_recurse(world, background, MAX_DEPTH, rng)
+        self.color_in_world_recurse(world, background, max_depth, max_depth, rng)
     }
 
     fn color_in_world_recurse(
         &self,
         world: &Hittable,
         background: &Color64,
+        max_depth: i32,
         depth: i32,
         rng: &mut impl Rng,
     ) -> Color64 {
@@ -57,7 +59,7 @@ impl Ray {
                         .emitted(hit_record.u, hit_record.v, &hit_record.location);
                 match hit_record.material.scatter(self, &hit_record) {
                     Some(scatter_record) => {
-                        let bounce = MAX_DEPTH - depth;
+                        let bounce = max_depth - depth;
                         let mut att = scatter_record.attenuation;
                         if bounce >= RR_MIN_BOUNCES {
                             let p = att.r().max(att.g()).max(att.b()).clamp(0.001, 1.0);
@@ -70,6 +72,7 @@ impl Ray {
                             + att.component_mul(&scatter_record.scattered.color_in_world_recurse(
                                 world,
                                 background,
+                                max_depth,
                                 depth - 1,
                                 rng,
                             ))
