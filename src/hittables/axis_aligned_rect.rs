@@ -3,8 +3,8 @@ use crate::data::ray::Ray;
 use crate::hittables::HitRecord;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::materials::Material;
-use std::sync::Arc;
 
+#[derive(Clone)]
 pub enum AxisAlignment {
     X,
     Y,
@@ -25,8 +25,9 @@ impl AxisAlignment {
 /// X -> (y, z)
 /// Y -> (x, z)
 /// Z -> (x, y)
+#[derive(Clone)]
 pub struct AxisAlignedRect {
-    pub material: Arc<Material>,
+    pub material: Material,
     pub min: (f64, f64),
     pub max: (f64, f64),
     pub axis_value: f64,

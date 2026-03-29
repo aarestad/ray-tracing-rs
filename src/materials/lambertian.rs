@@ -4,10 +4,10 @@ use crate::data::vector3::{near_zero, random_in_unit_sphere};
 use crate::hittables::HitRecord;
 use crate::materials::ScatterRecord;
 use crate::textures::Texture;
-use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct Lambertian {
-    pub albedo: Arc<Texture>,
+    pub albedo: Texture,
 }
 
 impl Lambertian {

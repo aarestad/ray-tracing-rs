@@ -2,12 +2,14 @@ use crate::data::color64::Color64;
 use crate::data::point64::Point64;
 use crate::textures::perlin::PerlinGenerator;
 
+#[derive(Clone)]
 pub enum NoiseType {
     Perlin,
     Turbulence,
     Marble,
 }
 
+#[derive(Clone)]
 pub struct Noise {
     pub(crate) noise_gen: PerlinGenerator,
     pub(crate) scale: f64,

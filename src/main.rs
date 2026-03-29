@@ -79,7 +79,7 @@ fn main() -> ImageResult<()> {
                     let ray = world.camera.get_ray(u, v);
 
                     pixel_color += ray.color_in_world(
-                        world.hittable.as_ref(),
+                        &world.hittable,
                         &world.background_color,
                         &mut rng,
                     );

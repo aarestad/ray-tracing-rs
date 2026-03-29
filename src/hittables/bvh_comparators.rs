@@ -1,8 +1,7 @@
 use crate::hittables::Hittable;
 use std::cmp::Ordering;
-use std::sync::Arc;
 
-fn box_compare(a: &Arc<Hittable>, b: &Arc<Hittable>, axis: usize) -> Ordering {
+fn box_compare(a: &Hittable, b: &Hittable, axis: usize) -> Ordering {
     let box_a = a.bounding_box(0., 0.).expect("bad bounding box");
     let box_b = b.bounding_box(0., 0.).expect("bad bounding box");
 
@@ -14,17 +13,17 @@ fn box_compare(a: &Arc<Hittable>, b: &Arc<Hittable>, axis: usize) -> Ordering {
         .expect("got an NaN as a box dimension value")
 }
 
-type BoxComparator = fn(&Arc<Hittable>, &Arc<Hittable>) -> Ordering;
+type BoxComparator = fn(&Hittable, &Hittable) -> Ordering;
 
-fn box_x_compare(a: &Arc<Hittable>, b: &Arc<Hittable>) -> Ordering {
+fn box_x_compare(a: &Hittable, b: &Hittable) -> Ordering {
     box_compare(a, b, 0)
 }
 
-fn box_y_compare(a: &Arc<Hittable>, b: &Arc<Hittable>) -> Ordering {
+fn box_y_compare(a: &Hittable, b: &Hittable) -> Ordering {
     box_compare(a, b, 1)
 }
 
-fn box_z_compare(a: &Arc<Hittable>, b: &Arc<Hittable>) -> Ordering {
+fn box_z_compare(a: &Hittable, b: &Hittable) -> Ordering {
     box_compare(a, b, 2)
 }
 

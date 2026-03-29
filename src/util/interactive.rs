@@ -118,7 +118,7 @@ fn render_pass(
                     let v = (row_y as f64 + rng.random::<f64>()) / dv;
                     let ray = camera.get_ray(u, v);
                     let c = ray.color_in_world(
-                        world.hittable.as_ref(),
+                        &world.hittable,
                         &world.background_color,
                         &mut rng,
                     );

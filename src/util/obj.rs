@@ -1,7 +1,6 @@
 //! Load Wavefront OBJ meshes as [`Hittable::Triangle`] lists (via `tobj`).
 
 use std::path::Path;
-use std::sync::Arc;
 
 use nalgebra::Vector3;
 
@@ -86,10 +85,10 @@ pub fn obj_mesh_y_bounds(path: &Path) -> Result<(f64, f64), String> {
 /// Triangulate faces and build one [`Triangle`] per face, with uniform scale and translation.
 pub fn load_obj_triangles(
     path: &Path,
-    material: Arc<Material>,
+    material: Material,
     scale: f64,
     offset: Vector3<f64>,
-) -> Result<Vec<Arc<Hittable>>, String> {
+) -> Result<Vec<Hittable>, String> {
     let (models, _materials) = tobj::load_obj(
         path,
         &tobj::LoadOptions {
@@ -123,9 +122,9 @@ pub fn load_obj_triangles(
             let p2 = transform_vertex(pos, i1, scale, offset);
             let p3 = transform_vertex(pos, i2, scale, offset);
 
-            out.push(Arc::new(Hittable::Triangle(Triangle::new(
+            out.push(Hittable::Triangle(Triangle::new(
                 p1, p2, p3, material.clone(),
-            ))));
+            )));
         }
     }
 

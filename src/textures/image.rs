@@ -4,6 +4,7 @@ use image::{DynamicImage, GenericImageView, ImageReader};
 use nalgebra::Vector3;
 use std::path::Path;
 
+#[derive(Clone)]
 pub struct ImageTexture {
     image: Option<DynamicImage>,
 }

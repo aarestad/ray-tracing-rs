@@ -3,10 +3,10 @@ use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::{HitRecord, Hittable};
 use nalgebra::Vector3;
-use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct Translation {
-    pub hittable: Arc<Hittable>,
+    pub hittable: Box<Hittable>,
     pub offset: Vector3<f64>,
 }
 
@@ -38,7 +38,7 @@ impl Translation {
                 hr.value,
                 &moved_ray,
                 hr.normal,
-                hr.material.clone(),
+                hr.material,
                 (hr.u, hr.v),
             )),
             None => None,

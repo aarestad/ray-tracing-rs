@@ -3,11 +3,11 @@ use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::bvh_comparators::BOX_COMPARATORS;
 use crate::hittables::{HitRecord, Hittable};
 use rand::prelude::IndexedRandom;
-use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct BoundedVolumeHierarchy {
-    left_child: Arc<Hittable>,
-    right_child: Arc<Hittable>,
+    left_child: Box<Hittable>,
+    right_child: Box<Hittable>,
     left_bounds: AxisAlignedBoundingBox,
     right_bounds: AxisAlignedBoundingBox,
     bounding_box: AxisAlignedBoundingBox,
@@ -21,10 +21,6 @@ impl BoundedVolumeHierarchy {
     pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
         if !self.bounding_box.is_hit_by(ray, min_value, max_value) {
             return None;
-        }
-
-        if Arc::ptr_eq(&self.left_child, &self.right_child) {
-            return self.left_child.is_hit_by(ray, min_value, max_value);
         }
 
         let hit_left_box = self.left_bounds.hit_interval(ray, min_value, max_value);
@@ -49,48 +45,46 @@ impl BoundedVolumeHierarchy {
         }
     }
 
-    pub fn create_bvh_arc(objects: &mut [Arc<Hittable>], time0: f64, time1: f64) -> Arc<Hittable> {
+    pub fn create_bvh(objects: &mut [Hittable], time0: f64, time1: f64) -> Hittable {
         let comparator = BOX_COMPARATORS.choose(&mut rand::rng()).unwrap();
 
-        let left_child: Arc<Hittable>;
-        let right_child: Arc<Hittable>;
+        let left_child: Box<Hittable>;
+        let right_child: Box<Hittable>;
 
         match objects.len() {
             0 => panic!("empty list of hittables passed to BoundedVolumeHierarchy::new"),
             1 => {
-                left_child = objects[0].clone();
-                right_child = objects[0].clone();
+                left_child = Box::new(objects[0].clone());
+                right_child = Box::new(objects[0].clone());
             }
             2 => {
-                let o1 = &objects[0].clone();
-                let o2 = &objects[1].clone();
+                let o1 = &objects[0];
+                let o2 = &objects[1];
 
                 match comparator(o1, o2) {
                     std::cmp::Ordering::Less => {
-                        left_child = objects[0].clone();
-                        right_child = objects[1].clone();
+                        left_child = Box::new(objects[0].clone());
+                        right_child = Box::new(objects[1].clone());
                     }
                     _ => {
-                        left_child = objects[1].clone();
-                        right_child = objects[0].clone();
+                        left_child = Box::new(objects[1].clone());
+                        right_child = Box::new(objects[0].clone());
                     }
                 }
             }
             _ => {
                 objects.sort_by(comparator);
                 let mid = objects.len() / 2;
-                left_child = BoundedVolumeHierarchy::create_bvh_arc(
+                left_child = Box::new(BoundedVolumeHierarchy::create_bvh(
                     &mut objects[0..mid].to_vec(),
                     time0,
                     time1,
-                )
-                .clone();
-                right_child = BoundedVolumeHierarchy::create_bvh_arc(
+                ));
+                right_child = Box::new(BoundedVolumeHierarchy::create_bvh(
                     &mut objects[mid..].to_vec(),
                     time0,
                     time1,
-                )
-                .clone();
+                ));
             }
         }
 
@@ -101,12 +95,12 @@ impl BoundedVolumeHierarchy {
             .bounding_box(time0, time1)
             .expect("No bounding box in bvh_node constructor for hittable");
 
-        Arc::new(Hittable::Bvh(BoundedVolumeHierarchy {
+        Hittable::Bvh(BoundedVolumeHierarchy {
             left_child,
             right_child,
             left_bounds: box_left,
             right_bounds: box_right,
             bounding_box: box_left.surrounding_box_with(&box_right),
-        }))
+        })
     }
 }

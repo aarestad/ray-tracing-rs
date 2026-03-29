@@ -20,6 +20,7 @@ pub struct ScatterRecord {
     pub scattered: Ray,
 }
 
+#[derive(Clone)]
 pub enum Material {
     Lambertian(Lambertian),
     Dielectric(Dielectric),

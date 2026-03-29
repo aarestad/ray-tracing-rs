@@ -1,10 +1,10 @@
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::{HitRecord, Hittable};
-use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct HittableVec {
-    pub hittables: Vec<Arc<Hittable>>,
+    pub hittables: Vec<Hittable>,
 }
 
 impl HittableVec {

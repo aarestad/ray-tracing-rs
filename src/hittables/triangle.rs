@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use super::{HitRecord, axis_aligned_bounding_box::AxisAlignedBoundingBox};
 use crate::{
     data::{point64::Point64, ray::Ray, vector3::Vector},
@@ -15,12 +13,12 @@ pub struct Triangle {
     e1: Vector,
     e2: Vector,
     normal: Vector,
-    pub material: Arc<Material>,
+    pub material: Material,
 }
 
 impl Triangle {
     #[allow(dead_code)]
-    pub fn new(p1: Point64, p2: Point64, p3: Point64, material: Arc<Material>) -> Self {
+    pub fn new(p1: Point64, p2: Point64, p3: Point64, material: Material) -> Self {
         let e1 = p2.0 - p1.0;
         let e2 = p3.0 - p1.0;
         let normal = e2.cross(&e1).normalize();
@@ -32,7 +30,7 @@ impl Triangle {
             e1,
             e2,
             normal,
-            material: material.clone(),
+            material,
         }
     }
 
@@ -86,8 +84,6 @@ impl Triangle {
 
 #[cfg(test)]
 mod test {
-    use std::sync::Arc;
-
     use crate::{
         data::{point64::Point64, ray::Ray},
         materials::Material,
@@ -102,9 +98,9 @@ mod test {
             Point64::new(0., 1., 0.),
             Point64::new(-1., 0., 0.),
             Point64::new(1., 0., 0.),
-            Arc::new(Material::Dielectric(Dielectric {
+            Material::Dielectric(Dielectric {
                 index_of_refraction: 1.0,
-            })),
+            }),
         );
         let r = Ray {
             origin: Point64::new(0., -1., -2.),
@@ -120,9 +116,9 @@ mod test {
             Point64::new(0., 1., 0.),
             Point64::new(-1., 0., 0.),
             Point64::new(1., 0., 0.),
-            Arc::new(Material::Dielectric(Dielectric {
+            Material::Dielectric(Dielectric {
                 index_of_refraction: 1.0,
-            })),
+            }),
         );
 
         let r = Ray {
@@ -140,9 +136,9 @@ mod test {
             Point64::new(0., 1., 0.),
             Point64::new(-1., 0., 0.),
             Point64::new(1., 0., 0.),
-            Arc::new(Material::Dielectric(Dielectric {
+            Material::Dielectric(Dielectric {
                 index_of_refraction: 1.0,
-            })),
+            }),
         );
 
         let r = Ray {

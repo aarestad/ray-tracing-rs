@@ -5,8 +5,8 @@ use crate::hittables::axis_aligned_rect::{AxisAlignedRect, AxisAlignment};
 use crate::hittables::hittable_vec::HittableVec;
 use crate::hittables::{HitRecord, Hittable};
 use crate::materials::Material;
-use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct Cuboid {
     cuboid_min: Point64,
     cuboid_max: Point64,
@@ -14,54 +14,54 @@ pub struct Cuboid {
 }
 
 impl Cuboid {
-    pub fn new(cuboid_min: Point64, cuboid_max: Point64, material: Arc<Material>) -> Self {
+    pub fn new(cuboid_min: Point64, cuboid_max: Point64, material: Material) -> Self {
         Self {
             cuboid_min,
             cuboid_max,
             sides: HittableVec {
                 hittables: vec![
-                    Arc::new(Hittable::AxisAlignedRect(AxisAlignedRect {
+                    Hittable::AxisAlignedRect(AxisAlignedRect {
                         material: material.clone(),
                         min: (cuboid_min.y(), cuboid_min.z()),
                         max: (cuboid_max.y(), cuboid_max.z()),
                         axis_value: cuboid_max.x(),
                         axis_alignment: AxisAlignment::X,
-                    })),
-                    Arc::new(Hittable::AxisAlignedRect(AxisAlignedRect {
+                    }),
+                    Hittable::AxisAlignedRect(AxisAlignedRect {
                         material: material.clone(),
                         min: (cuboid_min.y(), cuboid_min.z()),
                         max: (cuboid_max.y(), cuboid_max.z()),
                         axis_value: cuboid_min.x(),
                         axis_alignment: AxisAlignment::X,
-                    })),
-                    Arc::new(Hittable::AxisAlignedRect(AxisAlignedRect {
+                    }),
+                    Hittable::AxisAlignedRect(AxisAlignedRect {
                         material: material.clone(),
                         min: (cuboid_min.x(), cuboid_min.z()),
                         max: (cuboid_max.x(), cuboid_max.z()),
                         axis_value: cuboid_max.y(),
                         axis_alignment: AxisAlignment::Y,
-                    })),
-                    Arc::new(Hittable::AxisAlignedRect(AxisAlignedRect {
+                    }),
+                    Hittable::AxisAlignedRect(AxisAlignedRect {
                         material: material.clone(),
                         min: (cuboid_min.x(), cuboid_min.z()),
                         max: (cuboid_max.x(), cuboid_max.z()),
                         axis_value: cuboid_min.y(),
                         axis_alignment: AxisAlignment::Y,
-                    })),
-                    Arc::new(Hittable::AxisAlignedRect(AxisAlignedRect {
+                    }),
+                    Hittable::AxisAlignedRect(AxisAlignedRect {
                         material: material.clone(),
                         min: (cuboid_min.x(), cuboid_min.y()),
                         max: (cuboid_max.x(), cuboid_max.y()),
                         axis_value: cuboid_max.z(),
                         axis_alignment: AxisAlignment::Z,
-                    })),
-                    Arc::new(Hittable::AxisAlignedRect(AxisAlignedRect {
+                    }),
+                    Hittable::AxisAlignedRect(AxisAlignedRect {
                         material,
                         min: (cuboid_min.x(), cuboid_min.y()),
                         max: (cuboid_max.x(), cuboid_max.y()),
                         axis_value: cuboid_min.z(),
                         axis_alignment: AxisAlignment::Z,
-                    })),
+                    }),
                 ],
             },
         }

@@ -5,6 +5,7 @@ use rand::Rng;
 
 const POINT_COUNT: usize = 256;
 
+#[derive(Clone)]
 pub(crate) struct PerlinGenerator {
     pub random_vecs: [Vector3<f64>; POINT_COUNT],
     pub perm_x: [usize; POINT_COUNT],

@@ -5,13 +5,12 @@ use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::materials::Material;
 use nalgebra::Vector3;
 use std::f64::consts::{PI, TAU};
-use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Sphere {
     pub center: Point64,
     pub radius: f64,
-    pub material: Arc<Material>,
+    pub material: Material,
 }
 
 pub(crate) fn get_sphere_uv(p: Point64) -> (f64, f64) {

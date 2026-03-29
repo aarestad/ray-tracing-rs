@@ -4,11 +4,11 @@ use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::axis_aligned_rect::AxisAlignment;
 use crate::hittables::{HitRecord, Hittable};
 use nalgebra::{Rotation3, Vector3};
-use std::sync::Arc;
 
 /// Rotates child geometry about an axis through the origin (right-handed, angle in radians).
+#[derive(Clone)]
 pub struct Rotation {
-    hittable: Arc<Hittable>,
+    hittable: Box<Hittable>,
     rot: Rotation3<f64>,
     inv_rot: Rotation3<f64>,
     bounding_box: Option<AxisAlignedBoundingBox>,
@@ -16,7 +16,7 @@ pub struct Rotation {
 
 impl Rotation {
     pub fn new(
-        hittable: Arc<Hittable>,
+        hittable: Box<Hittable>,
         axis_alignment: AxisAlignment,
         angle_radians: f64,
         time0: f64,
@@ -61,7 +61,7 @@ impl Rotation {
             hr.value,
             ray,
             Point64(world_normal),
-            hr.material.clone(),
+            hr.material,
             (hr.u, hr.v),
         ))
     }

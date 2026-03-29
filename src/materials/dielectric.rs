@@ -13,6 +13,7 @@ fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
     r0 + (1. - r0) * (1. - cosine).powi(5)
 }
 
+#[derive(Clone)]
 pub struct Dielectric {
     pub index_of_refraction: f64,
 }

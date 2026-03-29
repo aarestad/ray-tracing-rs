@@ -4,16 +4,16 @@ use crate::data::ray::Ray;
 use crate::hittables::HitRecord;
 use crate::materials::ScatterRecord;
 use crate::textures::Texture;
-use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct DiffuseLight {
-    emitter: Arc<Texture>,
+    emitter: Texture,
 }
 
 impl DiffuseLight {
     pub fn new(color: Color64) -> Self {
         Self {
-            emitter: Texture::arc_solid(color),
+            emitter: Texture::solid(color),
         }
     }
 

@@ -5,6 +5,7 @@ use crate::data::vector3::{random_in_unit_sphere, reflect};
 use crate::hittables::HitRecord;
 use crate::materials::ScatterRecord;
 
+#[derive(Clone)]
 pub struct Metal {
     pub albedo: Color64,
     pub fuzz: f64,

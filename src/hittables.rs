@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
@@ -35,7 +33,7 @@ pub struct HitRecord {
     pub location: Point64,
     pub normal: Point64,
     pub front_face: bool,
-    pub material: Arc<Material>,
+    pub material: Material,
 }
 
 impl HitRecord {
@@ -43,7 +41,7 @@ impl HitRecord {
         value: f64,
         ray: &Ray,
         outward_normal: Point64,
-        material: Arc<Material>,
+        material: Material,
         uv: (f64, f64),
     ) -> HitRecord {
         let front_face = ray.direction.0.dot(&outward_normal.0) < 0.;
@@ -67,6 +65,7 @@ impl HitRecord {
 }
 
 #[allow(dead_code)]
+#[derive(Clone)]
 pub enum Hittable {
     Sphere(Sphere),
     MovingSphere(MovingSphere),
