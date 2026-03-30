@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use minifb::{Key, MouseButton, MouseMode, Window, WindowOptions};
-use nalgebra::{Rotation3, Unit};
+use nalgebra::{Rotation3, Unit, Vector3};
 use rand::Rng;
 use threadpool::ThreadPool;
 
@@ -24,10 +24,11 @@ const MAX_ORBIT_DISTANCE: f64 = 5_000.0;
 const GROUND_MARGIN: f64 = 0.1;
 
 /// Returns the minimum allowed pitch so the camera stays above `world.ground_y`.
-fn pitch_floor(world: &World, distance: f64) -> f64 {
+fn pitch_floor(world: &World, orbit: &OrbitState) -> f64 {
     match world.ground_y {
         Some(gy) => {
-            let ratio = (gy + GROUND_MARGIN - world.camera_target.y()) / distance;
+            let target_y = orbit.effective_target(world).y();
+            let ratio = (gy + GROUND_MARGIN - target_y) / orbit.distance;
             ratio.clamp(-1.0, 1.0).asin()
         }
         None => -PITCH_LIMIT,
@@ -41,6 +42,8 @@ struct OrbitState {
     pitch: f64,
     roll: f64,
     distance: f64,
+    /// Pan displacement from `world.camera_target` in world space.
+    target_offset: Vector3<f64>,
 }
 
 impl OrbitState {
@@ -56,7 +59,12 @@ impl OrbitState {
             pitch,
             roll: 0.,
             distance: d,
+            target_offset: Vector3::zeros(),
         }
+    }
+
+    fn effective_target(&self, world: &World) -> Point64 {
+        world.camera_target + Point64(self.target_offset)
     }
 
     fn look_from(&self, target: Point64) -> Point64 {
@@ -68,7 +76,7 @@ impl OrbitState {
     }
 
     fn to_camera(&self, world: &World) -> Camera {
-        let look_at = world.camera_target;
+        let look_at = self.effective_target(world);
         let look_from = self.look_from(look_at);
         let forward = Unit::new_normalize((look_at - look_from).0);
         let rolled_vup = Rotation3::from_axis_angle(&forward, self.roll) * world.camera_v_up;
@@ -269,7 +277,7 @@ pub fn run_interactive(world: Arc<World>) -> Result<(), String> {
     std::thread::spawn(move || render_thread(world_render, shared_render));
 
     let mut window = Window::new(
-        "ray-tracer (LMB orbit, RMB roll, wheel zoom)",
+        "ray-tracer (LMB orbit, MMB pan, RMB roll, wheel zoom)",
         w,
         h,
         WindowOptions::default(),
@@ -281,6 +289,7 @@ pub fn run_interactive(world: Arc<World>) -> Result<(), String> {
 
     let mut last_left: Option<(f32, f32)> = None;
     let mut last_right: Option<(f32, f32)> = None;
+    let mut last_middle: Option<(f32, f32)> = None;
     let mut last_frame = Instant::now();
     let mut fps_ema: f64 = 0.0;
 
@@ -310,7 +319,7 @@ pub fn run_interactive(world: Arc<World>) -> Result<(), String> {
                         let mut o = shared.orbit.lock().unwrap();
                         o.yaw += dx * DRAG_SENS;
                         o.pitch -= dy * DRAG_SENS;
-                        o.pitch = o.pitch.clamp(pitch_floor(&world, o.distance), PITCH_LIMIT);
+                        o.pitch = o.pitch.clamp(pitch_floor(&world, &o), PITCH_LIMIT);
                         shared.generation.fetch_add(1, Ordering::AcqRel);
                     }
                 }
@@ -333,6 +342,45 @@ pub fn run_interactive(world: Arc<World>) -> Result<(), String> {
             } else {
                 last_right = None;
             }
+
+            let middle = window.get_mouse_down(MouseButton::Middle);
+            if middle {
+                if let Some((lx, ly)) = last_middle {
+                    let dx = (mx - lx) as f64;
+                    let dy = (my - ly) as f64;
+                    if dx != 0. || dy != 0. {
+                        let mut o = shared.orbit.lock().unwrap();
+                        // Compute world-space right (u) and up (v) axes for the current view.
+                        let look_at = o.effective_target(&world);
+                        let look_from = o.look_from(look_at);
+                        let w = (look_from - look_at).0.normalize();
+                        let forward = Unit::new_normalize(-w);
+                        let rolled_vup =
+                            Rotation3::from_axis_angle(&forward, o.roll) * world.camera_v_up;
+                        let right_vec = rolled_vup.cross(&w).normalize();
+                        let up_vec = w.cross(&right_vec).normalize();
+                        // Scale: world units per pixel at the target plane.
+                        let pan_scale = 2.0
+                            * o.distance
+                            * (world.camera_vfov_deg.to_radians() / 2.0).tan()
+                            / world.image_height as f64;
+                        o.target_offset += -dx * pan_scale * right_vec + dy * pan_scale * up_vec;
+                        // Keep the effective target above the ground plane.
+                        if let Some(gy) = world.ground_y {
+                            let target_y =
+                                world.camera_target.y() + o.target_offset.y;
+                            if target_y < gy {
+                                o.target_offset.y += gy - target_y;
+                            }
+                        }
+                        o.pitch = o.pitch.clamp(pitch_floor(&world, &o), PITCH_LIMIT);
+                        shared.generation.fetch_add(1, Ordering::AcqRel);
+                    }
+                }
+                last_middle = Some((mx, my));
+            } else {
+                last_middle = None;
+            }
         }
 
         if let Some((_sx, sy)) = window.get_scroll_wheel() {
@@ -341,14 +389,14 @@ pub fn run_interactive(world: Arc<World>) -> Result<(), String> {
                 let mut o = shared.orbit.lock().unwrap();
                 o.distance *= (-sy * ZOOM_WHEEL_EXP).exp();
                 o.distance = o.distance.clamp(MIN_ORBIT_DISTANCE, MAX_ORBIT_DISTANCE);
-                o.pitch = o.pitch.clamp(pitch_floor(&world, o.distance), PITCH_LIMIT);
+                o.pitch = o.pitch.clamp(pitch_floor(&world, &o), PITCH_LIMIT);
                 shared.generation.fetch_add(1, Ordering::AcqRel);
             }
         }
 
         let samples = shared.samples.load(Ordering::Acquire);
         window.set_title(&format!(
-            "ray-tracer  {:.1} FPS  {} spp  (LMB orbit, RMB roll, wheel zoom)",
+            "ray-tracer  {:.1} FPS  {} spp  (LMB orbit, MMB pan, RMB roll, wheel zoom)",
             fps_ema, samples
         ));
 
