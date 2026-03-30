@@ -41,6 +41,9 @@ pub(crate) struct World {
     pub camera_focus_distance: f64,
     pub camera_exposure_time: Range<f64>,
     pub hittable: Hittable,
+    /// Y coordinate of the ground plane, if any. The interactive camera will not
+    /// allow the viewpoint to drop below this level.
+    pub ground_y: Option<f64>,
 }
 
 const DEFAULT_LOOK_FROM: Point64 = Point64::new(13., 2., 3.);
@@ -192,6 +195,7 @@ impl World {
             camera_focus_distance: recipe.focus_distance,
             camera_exposure_time: recipe.exposure_time,
             hittable,
+            ground_y: Some(0.0),
         }
     }
 
@@ -243,6 +247,7 @@ impl World {
             camera_focus_distance: recipe.focus_distance,
             camera_exposure_time: recipe.exposure_time,
             hittable,
+            ground_y: Some(0.0),
         }
     }
 
@@ -295,6 +300,7 @@ impl World {
             camera_focus_distance: recipe.focus_distance,
             camera_exposure_time: recipe.exposure_time,
             hittable,
+            ground_y: Some(0.0),
         }
     }
 
@@ -334,6 +340,7 @@ impl World {
             camera_focus_distance: recipe.focus_distance,
             camera_exposure_time: recipe.exposure_time,
             hittable,
+            ground_y: None,
         }
     }
 
@@ -395,6 +402,7 @@ impl World {
             camera_focus_distance: recipe.focus_distance,
             camera_exposure_time: recipe.exposure_time,
             hittable,
+            ground_y: Some(0.0),
         }
     }
 
@@ -500,6 +508,7 @@ impl World {
             camera_focus_distance: recipe.focus_distance,
             camera_exposure_time: recipe.exposure_time,
             hittable,
+            ground_y: None,
         }
     }
 
@@ -573,6 +582,7 @@ impl World {
             camera_aperture: recipe.aperture,
             camera_focus_distance: recipe.focus_distance,
             camera_exposure_time: recipe.exposure_time,
+            ground_y: Some(0.0),
             hittable: {
                 let mut scene: Vec<Hittable> = vec![
                     // floor
@@ -785,6 +795,7 @@ impl World {
             camera_focus_distance: recipe.focus_distance,
             camera_exposure_time: recipe.exposure_time,
             hittable,
+            ground_y: Some(0.0),
         }
     }
 }

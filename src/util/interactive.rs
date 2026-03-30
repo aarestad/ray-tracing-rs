@@ -20,6 +20,19 @@ const ROLL_SENS: f64 = 0.004;
 const ZOOM_WHEEL_EXP: f64 = 0.11;
 const MIN_ORBIT_DISTANCE: f64 = 0.08;
 const MAX_ORBIT_DISTANCE: f64 = 5_000.0;
+/// Keep the camera this many units above the ground plane.
+const GROUND_MARGIN: f64 = 0.1;
+
+/// Returns the minimum allowed pitch so the camera stays above `world.ground_y`.
+fn pitch_floor(world: &World, distance: f64) -> f64 {
+    match world.ground_y {
+        Some(gy) => {
+            let ratio = (gy + GROUND_MARGIN - world.camera_target.y()) / distance;
+            ratio.clamp(-1.0, 1.0).asin()
+        }
+        None => -PITCH_LIMIT,
+    }
+}
 
 /// Orbit the camera around `world.camera_target`; roll twists around the view axis.
 #[derive(Clone)]
@@ -297,7 +310,7 @@ pub fn run_interactive(world: Arc<World>) -> Result<(), String> {
                         let mut o = shared.orbit.lock().unwrap();
                         o.yaw += dx * DRAG_SENS;
                         o.pitch -= dy * DRAG_SENS;
-                        o.pitch = o.pitch.clamp(-PITCH_LIMIT, PITCH_LIMIT);
+                        o.pitch = o.pitch.clamp(pitch_floor(&world, o.distance), PITCH_LIMIT);
                         shared.generation.fetch_add(1, Ordering::AcqRel);
                     }
                 }
@@ -328,6 +341,7 @@ pub fn run_interactive(world: Arc<World>) -> Result<(), String> {
                 let mut o = shared.orbit.lock().unwrap();
                 o.distance *= (-sy * ZOOM_WHEEL_EXP).exp();
                 o.distance = o.distance.clamp(MIN_ORBIT_DISTANCE, MAX_ORBIT_DISTANCE);
+                o.pitch = o.pitch.clamp(pitch_floor(&world, o.distance), PITCH_LIMIT);
                 shared.generation.fetch_add(1, Ordering::AcqRel);
             }
         }
