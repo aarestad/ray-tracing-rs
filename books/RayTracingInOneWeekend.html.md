@@ -1943,7 +1943,7 @@ And here's the much reduced main:
     [Listing [main-with-new-camera]: <kbd>[main.cc]</kbd> The new main, using the new camera]
 
 </div>
-
+<div class='together'>
 Running this newly refactored program should give us the same rendered image as before.
 
 

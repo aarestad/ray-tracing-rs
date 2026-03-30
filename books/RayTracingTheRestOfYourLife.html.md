@@ -3158,7 +3158,7 @@ quite as easy as one might expect. Generating the random direction for a mixture
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 </div>
-
+<div class='together'>
 But solving for the PDF value of $\operatorname{pMixture}$ is slightly more subtle. We can't just
 
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
