@@ -82,7 +82,7 @@ struct SharedRender {
 
 /// Rows bundled per thread-pool task. More rows → fewer spawns and Arc clones;
 /// fewer rows → finer-grained generation abort. 4 is a good default.
-const ROWS_PER_TASK: u32 = 4;
+const ROWS_PER_TASK: u32 = 8;
 /// Render at 1/RENDER_SCALE resolution in each dimension, then upscale to fill
 /// the display. 2 = quarter the pixel count = ~4× faster first frame.
 const RENDER_SCALE: u32 = 2;
@@ -264,7 +264,7 @@ pub fn run_interactive(world: Arc<World>) -> Result<(), String> {
     .map_err(|e| e.to_string())?;
 
     #[allow(deprecated)]
-    window.limit_update_rate(Some(Duration::from_millis(33)));
+    window.limit_update_rate(Some(Duration::from_millis(16)));
 
     let mut last_left: Option<(f32, f32)> = None;
     let mut last_right: Option<(f32, f32)> = None;

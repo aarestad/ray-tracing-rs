@@ -10,7 +10,6 @@ pub struct Ray {
     pub exposure_time: f64,
 }
 
-pub const MAX_DEPTH: i32 = 50;
 /// After this many bounces, use Russian roulette to terminate diffuse paths.
 const RR_MIN_BOUNCES: i32 = 3;
 
