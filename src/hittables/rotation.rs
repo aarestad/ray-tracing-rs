@@ -1,9 +1,15 @@
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
-use crate::hittables::axis_aligned_rect::AxisAlignment;
 use crate::hittables::{HitRecord, Hittable};
 use nalgebra::{Rotation3, Vector3};
+
+#[derive(Clone)]
+pub enum AxisAlignment {
+    X,
+    Y,
+    Z,
+}
 
 /// Rotates child geometry about an axis through the origin (right-handed, angle in radians).
 #[derive(Clone)]

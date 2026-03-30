@@ -3,9 +3,9 @@ use crate::data::color64::{BLACK, Color64, LIGHT_BLUE};
 use crate::data::point64::Point64;
 use crate::data::vector3::{rand_range, random_in_unit_cube};
 use crate::hittables::Hittable;
-use crate::hittables::axis_aligned_rect::AxisAlignedRect;
-use crate::hittables::axis_aligned_rect::AxisAlignment::{self, X, Y, Z};
+use crate::hittables::rotation::AxisAlignment::{self, X, Y, Z};
 use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
+use crate::hittables::quad::Quad;
 use crate::hittables::rotation::Rotation;
 use crate::hittables::cuboid::Cuboid;
 use crate::hittables::hittable_vec::HittableVec;
@@ -367,13 +367,12 @@ impl World {
                     radius: 2.,
                     material,
                 }),
-                Hittable::AxisAlignedRect(AxisAlignedRect {
-                    material: Material::DiffuseLight(light),
-                    min: (3., 1.),
-                    max: (5., 3.),
-                    axis_value: -2.,
-                    axis_alignment: Z,
-                }),
+                Hittable::Quad(Quad::new(
+                    Point64::new(3., 1., -2.),
+                    Point64::new(2., 0., 0.),
+                    Point64::new(0., 2., 0.),
+                    Material::DiffuseLight(light),
+                )),
             ],
         });
 
@@ -423,48 +422,48 @@ impl World {
 
         let hittable = Hittable::HittableVec(HittableVec {
             hittables: vec![
-                Hittable::AxisAlignedRect(AxisAlignedRect {
-                    material: Material::Lambertian(green_material),
-                    min: (0., 0.),
-                    max: (555., 555.),
-                    axis_value: 555.,
-                    axis_alignment: X,
-                }),
-                Hittable::AxisAlignedRect(AxisAlignedRect {
-                    material: Material::Lambertian(red_material),
-                    min: (0., 0.),
-                    max: (555., 555.),
-                    axis_value: 0.,
-                    axis_alignment: X,
-                }),
-                Hittable::AxisAlignedRect(AxisAlignedRect {
-                    material: Material::DiffuseLight(light_source),
-                    min: (213., 227.),
-                    max: (343., 332.),
-                    axis_value: 554.,
-                    axis_alignment: Y,
-                }),
-                Hittable::AxisAlignedRect(AxisAlignedRect {
-                    material: gray_material.clone(),
-                    min: (0., 0.),
-                    max: (555., 555.),
-                    axis_value: 0.,
-                    axis_alignment: Y,
-                }),
-                Hittable::AxisAlignedRect(AxisAlignedRect {
-                    material: gray_material.clone(),
-                    min: (0., 0.),
-                    max: (555., 555.),
-                    axis_value: 555.,
-                    axis_alignment: Y,
-                }),
-                Hittable::AxisAlignedRect(AxisAlignedRect {
-                    material: gray_material.clone(),
-                    min: (0., 0.),
-                    max: (555., 555.),
-                    axis_value: 555.,
-                    axis_alignment: Z,
-                }),
+                // X+ wall (green), at x=555: Q=(555,0,0), u=(0,555,0), v=(0,0,555)
+                Hittable::Quad(Quad::new(
+                    Point64::new(555., 0., 0.),
+                    Point64::new(0., 555., 0.),
+                    Point64::new(0., 0., 555.),
+                    Material::Lambertian(green_material),
+                )),
+                // X- wall (red), at x=0: Q=(0,0,0), u=(0,555,0), v=(0,0,555)
+                Hittable::Quad(Quad::new(
+                    Point64::new(0., 0., 0.),
+                    Point64::new(0., 555., 0.),
+                    Point64::new(0., 0., 555.),
+                    Material::Lambertian(red_material),
+                )),
+                // Y+ light, at y=554: Q=(213,554,227), u=(130,0,0), v=(0,0,105)
+                Hittable::Quad(Quad::new(
+                    Point64::new(213., 554., 227.),
+                    Point64::new(130., 0., 0.),
+                    Point64::new(0., 0., 105.),
+                    Material::DiffuseLight(light_source),
+                )),
+                // Y- floor, at y=0: Q=(0,0,0), u=(555,0,0), v=(0,0,555)
+                Hittable::Quad(Quad::new(
+                    Point64::new(0., 0., 0.),
+                    Point64::new(555., 0., 0.),
+                    Point64::new(0., 0., 555.),
+                    gray_material.clone(),
+                )),
+                // Y+ ceiling, at y=555: Q=(0,555,0), u=(555,0,0), v=(0,0,555)
+                Hittable::Quad(Quad::new(
+                    Point64::new(0., 555., 0.),
+                    Point64::new(555., 0., 0.),
+                    Point64::new(0., 0., 555.),
+                    gray_material.clone(),
+                )),
+                // Z+ back wall, at z=555: Q=(0,0,555), u=(555,0,0), v=(0,555,0)
+                Hittable::Quad(Quad::new(
+                    Point64::new(0., 0., 555.),
+                    Point64::new(555., 0., 0.),
+                    Point64::new(0., 555., 0.),
+                    gray_material.clone(),
+                )),
                 Hittable::Translation(Translation {
                     hittable: Box::new(Hittable::Cuboid(Cuboid::new(
                         Point64::new(0., 0., 0.),
@@ -588,15 +587,13 @@ impl World {
                     // floor
                     BoundedVolumeHierarchy::create_bvh(&mut boxes, 0., 1.),
                     // light
-                    Hittable::AxisAlignedRect(AxisAlignedRect {
-                        material: Material::DiffuseLight(DiffuseLight::new(
-                            Color64::new(7., 7., 7.),
-                        )),
-                        min: (123.0, 147.0),
-                        max: (423.0, 412.0),
-                        axis_value: 554.0,
-                        axis_alignment: Y,
-                    }),
+                    // Y+ light, at y=554: Q=(123,554,147), u=(300,0,0), v=(0,0,265)
+                    Hittable::Quad(Quad::new(
+                        Point64::new(123., 554., 147.),
+                        Point64::new(300., 0., 0.),
+                        Point64::new(0., 0., 265.),
+                        Material::DiffuseLight(DiffuseLight::new(Color64::new(7., 7., 7.))),
+                    )),
                     // moving sphere
                     Hittable::MovingSphere(MovingSphere {
                         center0: Point64::new(400., 400., 200.),

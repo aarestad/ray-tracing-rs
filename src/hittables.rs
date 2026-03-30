@@ -4,7 +4,6 @@ use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::materials::Material;
 
 mod axis_aligned_bounding_box;
-pub mod axis_aligned_rect;
 pub mod bounded_volume_hierarchy;
 mod bvh_comparators;
 pub mod cuboid;
@@ -12,10 +11,11 @@ pub mod hittable_vec;
 pub mod moving_sphere;
 pub mod rotation;
 pub mod sphere;
+pub mod quad;
 pub mod translation;
 pub mod triangle;
 
-use axis_aligned_rect::AxisAlignedRect;
+use quad::Quad;
 use bounded_volume_hierarchy::BoundedVolumeHierarchy;
 use cuboid::Cuboid;
 use hittable_vec::HittableVec;
@@ -69,7 +69,7 @@ impl HitRecord {
 pub enum Hittable {
     Sphere(Sphere),
     MovingSphere(MovingSphere),
-    AxisAlignedRect(AxisAlignedRect),
+    Quad(Quad),
     Triangle(Triangle),
     HittableVec(HittableVec),
     Bvh(BoundedVolumeHierarchy),
@@ -83,7 +83,7 @@ impl Hittable {
         match self {
             Hittable::Sphere(h) => h.bounding_box(time0, time1),
             Hittable::MovingSphere(h) => h.bounding_box(time0, time1),
-            Hittable::AxisAlignedRect(h) => h.bounding_box(time0, time1),
+            Hittable::Quad(h) => h.bounding_box(time0, time1),
             Hittable::Triangle(h) => h.bounding_box(time0, time1),
             Hittable::HittableVec(h) => h.bounding_box(time0, time1),
             Hittable::Bvh(h) => h.bounding_box(time0, time1),
@@ -97,7 +97,7 @@ impl Hittable {
         match self {
             Hittable::Sphere(h) => h.is_hit_by(ray, min_value, max_value),
             Hittable::MovingSphere(h) => h.is_hit_by(ray, min_value, max_value),
-            Hittable::AxisAlignedRect(h) => h.is_hit_by(ray, min_value, max_value),
+            Hittable::Quad(h) => h.is_hit_by(ray, min_value, max_value),
             Hittable::Triangle(h) => h.is_hit_by(ray, min_value, max_value),
             Hittable::HittableVec(h) => h.is_hit_by(ray, min_value, max_value),
             Hittable::Bvh(h) => h.is_hit_by(ray, min_value, max_value),

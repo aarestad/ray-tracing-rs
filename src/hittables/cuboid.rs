@@ -1,8 +1,8 @@
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
-use crate::hittables::axis_aligned_rect::{AxisAlignedRect, AxisAlignment};
 use crate::hittables::hittable_vec::HittableVec;
+use crate::hittables::quad::Quad;
 use crate::hittables::{HitRecord, Hittable};
 use crate::materials::Material;
 
@@ -14,54 +14,28 @@ pub struct Cuboid {
 }
 
 impl Cuboid {
-    pub fn new(cuboid_min: Point64, cuboid_max: Point64, material: Material) -> Self {
+    pub fn new(p0: Point64, p1: Point64, material: Material) -> Self {
+        let dx = Point64::new(p1.x() - p0.x(), 0., 0.);
+        let dy = Point64::new(0., p1.y() - p0.y(), 0.);
+        let dz = Point64::new(0., 0., p1.z() - p0.z());
+
         Self {
-            cuboid_min,
-            cuboid_max,
+            cuboid_min: p0,
+            cuboid_max: p1,
             sides: HittableVec {
                 hittables: vec![
-                    Hittable::AxisAlignedRect(AxisAlignedRect {
-                        material: material.clone(),
-                        min: (cuboid_min.y(), cuboid_min.z()),
-                        max: (cuboid_max.y(), cuboid_max.z()),
-                        axis_value: cuboid_max.x(),
-                        axis_alignment: AxisAlignment::X,
-                    }),
-                    Hittable::AxisAlignedRect(AxisAlignedRect {
-                        material: material.clone(),
-                        min: (cuboid_min.y(), cuboid_min.z()),
-                        max: (cuboid_max.y(), cuboid_max.z()),
-                        axis_value: cuboid_min.x(),
-                        axis_alignment: AxisAlignment::X,
-                    }),
-                    Hittable::AxisAlignedRect(AxisAlignedRect {
-                        material: material.clone(),
-                        min: (cuboid_min.x(), cuboid_min.z()),
-                        max: (cuboid_max.x(), cuboid_max.z()),
-                        axis_value: cuboid_max.y(),
-                        axis_alignment: AxisAlignment::Y,
-                    }),
-                    Hittable::AxisAlignedRect(AxisAlignedRect {
-                        material: material.clone(),
-                        min: (cuboid_min.x(), cuboid_min.z()),
-                        max: (cuboid_max.x(), cuboid_max.z()),
-                        axis_value: cuboid_min.y(),
-                        axis_alignment: AxisAlignment::Y,
-                    }),
-                    Hittable::AxisAlignedRect(AxisAlignedRect {
-                        material: material.clone(),
-                        min: (cuboid_min.x(), cuboid_min.y()),
-                        max: (cuboid_max.x(), cuboid_max.y()),
-                        axis_value: cuboid_max.z(),
-                        axis_alignment: AxisAlignment::Z,
-                    }),
-                    Hittable::AxisAlignedRect(AxisAlignedRect {
-                        material,
-                        min: (cuboid_min.x(), cuboid_min.y()),
-                        max: (cuboid_max.x(), cuboid_max.y()),
-                        axis_value: cuboid_min.z(),
-                        axis_alignment: AxisAlignment::Z,
-                    }),
+                    // X+ face
+                    Hittable::Quad(Quad::new(Point64::new(p1.x(), p0.y(), p0.z()), dy, dz, material.clone())),
+                    // X- face
+                    Hittable::Quad(Quad::new(p0, dy, dz, material.clone())),
+                    // Y+ face
+                    Hittable::Quad(Quad::new(Point64::new(p0.x(), p1.y(), p0.z()), dx, dz, material.clone())),
+                    // Y- face
+                    Hittable::Quad(Quad::new(p0, dx, dz, material.clone())),
+                    // Z+ face
+                    Hittable::Quad(Quad::new(Point64::new(p0.x(), p0.y(), p1.z()), dx, dy, material.clone())),
+                    // Z- face
+                    Hittable::Quad(Quad::new(p0, dx, dy, material)),
                 ],
             },
         }

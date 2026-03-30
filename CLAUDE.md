@@ -20,7 +20,7 @@ This is a ray tracer implementing the [Ray Tracing in One Weekend](https://raytr
 ### Enum Dispatch Design
 
 All polymorphic types use **enums instead of trait objects** for performance. There are three core enums:
-- `Hittable` (`hittables/hittables.rs`) — wraps Sphere, MovingSphere, BVH, AxisAlignedRect, Cuboid, Triangle, Translation, Rotation, HittableVec
+- `Hittable` (`hittables.rs`) — wraps Sphere, MovingSphere, Quad, Cuboid, Triangle, Translation, Rotation, HittableVec, BVH
 - `Material` (`materials/materials.rs`) — wraps Lambertian, Metal, Dielectric, DiffuseLight
 - `Texture` (`textures/textures.rs`) — wraps SolidColor, Checker, Noise, Image
 
@@ -32,8 +32,8 @@ When adding a new hittable/material/texture, add a variant to the relevant enum 
 
 ### Key Types
 
-- `Point64` (`data/point64.rs`) — wraps `nalgebra::Point3<f64>`, used for positions
-- `Vector3` (`data/vector3.rs`) — wraps `nalgebra::Vector3<f64>`, used for directions
+- `Point64` (`data/point64.rs`) — wraps `nalgebra::Vector3<f64>`, used for both positions and direction vectors
+- `Vector3` (`data/vector3.rs`) — utility functions over `nalgebra::Vector3<f64>`
 - `Color64` (`data/color64.rs`) — RGB color (f64 components)
 - `Ray` (`data/ray.rs`) — origin + direction, contains the recursive `color_in_world()` method
 
