@@ -28,15 +28,14 @@ impl ObjAxisBounds {
     }
 }
 
-pub fn obj_mesh_axis_bounds(path: &Path) -> Result<ObjAxisBounds, String> {
+pub fn obj_mesh_axis_bounds(path: &Path) -> anyhow::Result<ObjAxisBounds> {
     let (models, _materials) = tobj::load_obj(
         path,
         &tobj::LoadOptions {
             triangulate: true,
             ..Default::default()
         },
-    )
-    .map_err(|e| e.to_string())?;
+    )?;
 
     let mut x_min = f64::INFINITY;
     let mut x_max = f64::NEG_INFINITY;
@@ -62,7 +61,7 @@ pub fn obj_mesh_axis_bounds(path: &Path) -> Result<ObjAxisBounds, String> {
     }
 
     if !y_min.is_finite() {
-        return Err(format!("no vertices in {}", path.display()));
+        anyhow::bail!("no vertices in {}", path.display());
     }
 
     Ok(ObjAxisBounds {
@@ -77,7 +76,7 @@ pub fn obj_mesh_axis_bounds(path: &Path) -> Result<ObjAxisBounds, String> {
 
 /// Minimum and maximum **Y** among all vertex positions in the OBJ (model space).
 #[allow(dead_code)]
-pub fn obj_mesh_y_bounds(path: &Path) -> Result<(f64, f64), String> {
+pub fn obj_mesh_y_bounds(path: &Path) -> anyhow::Result<(f64, f64)> {
     let b = obj_mesh_axis_bounds(path)?;
     Ok((b.y_min, b.y_max))
 }
@@ -88,15 +87,14 @@ pub fn load_obj_triangles(
     material: Material,
     scale: f64,
     offset: Vector3<f64>,
-) -> Result<Vec<Hittable>, String> {
+) -> anyhow::Result<Vec<Hittable>> {
     let (models, _materials) = tobj::load_obj(
         path,
         &tobj::LoadOptions {
             triangulate: true,
             ..Default::default()
         },
-    )
-    .map_err(|e| e.to_string())?;
+    )?;
 
     let mut out = Vec::new();
 
@@ -129,7 +127,7 @@ pub fn load_obj_triangles(
     }
 
     if out.is_empty() {
-        return Err(format!("no triangles in OBJ: {}", path.display()));
+        anyhow::bail!("no triangles in OBJ: {}", path.display());
     }
 
     Ok(out)

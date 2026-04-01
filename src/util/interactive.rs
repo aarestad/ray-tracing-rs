@@ -259,7 +259,7 @@ fn render_thread(world: Arc<World>, shared: Arc<SharedRender>) {
 /// Opens a window, runs progressive path tracing with the current `samples_per_pixel` as the
 /// target count per pixel (restarts accumulation when the view changes).  
 /// **LMB drag:** yaw / pitch. **RMB drag:** roll. **Mouse wheel:** zoom (orbit distance). **Esc:** close.
-pub fn run_interactive(world: Arc<World>) -> Result<(), String> {
+pub fn run_interactive(world: Arc<World>) -> anyhow::Result<()> {
     let w = world.image_width as usize;
     let h = world.image_height as usize;
     let len = w * h;
@@ -282,7 +282,7 @@ pub fn run_interactive(world: Arc<World>) -> Result<(), String> {
         h,
         WindowOptions::default(),
     )
-    .map_err(|e| e.to_string())?;
+    ?;
 
     #[allow(deprecated)]
     window.limit_update_rate(Some(Duration::from_millis(16)));

@@ -1,7 +1,8 @@
 use std::sync::Arc;
 use std::sync::mpsc::channel;
 
-use image::{ImageResult, RgbImage};
+use anyhow::Context;
+use image::RgbImage;
 use rand::Rng;
 use threadpool::ThreadPool;
 
@@ -19,9 +20,9 @@ mod materials;
 mod textures;
 mod util;
 
-fn main() -> ImageResult<()> {
+fn main() -> anyhow::Result<()> {
     let args: Vec<String> = env::args().collect();
-    let options = parse_args(&args).expect("bad args!");
+    let options = parse_args(&args)?;
 
     if options.help {
         println!("{}", options.help_str);
@@ -41,17 +42,15 @@ fn main() -> ImageResult<()> {
         7 => World::cornell_box(),
         8 => World::final_scene(),
         9 => World::utah_teapots(),
-        _ => panic!("bad world choice: {}", world_choice),
+        _ => anyhow::bail!("bad world choice: {}", world_choice),
     };
 
     world.samples_per_pixel = options.samples_per_pixel;
     let world = Arc::new(world);
 
     if options.interactive {
-        if let Err(e) = util::interactive::run_interactive(world) {
-            eprintln!("interactive mode failed: {e}");
-            std::process::exit(1);
-        }
+        util::interactive::run_interactive(world)
+            .context("interactive mode failed")?;
         return Ok(());
     }
 

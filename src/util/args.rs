@@ -1,4 +1,4 @@
-use args::{Args, ArgsError};
+use args::Args;
 use getopts::Occur;
 
 pub struct ProgramOptions {
@@ -10,7 +10,7 @@ pub struct ProgramOptions {
     pub help_str: String,
 }
 
-pub fn parse_args(input: &[String]) -> Result<ProgramOptions, ArgsError> {
+pub fn parse_args(input: &[String]) -> anyhow::Result<ProgramOptions> {
     let program_name: String = format!("{} v{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
 
     let mut args = Args::new(program_name.as_str(), env!("CARGO_PKG_DESCRIPTION"));

@@ -3,7 +3,7 @@ use std::io;
 use std::io::Write;
 
 #[allow(dead_code)]
-pub fn image_to_ppm(image: &RgbImage, file: &mut dyn Write) -> io::Result<()> {
+pub fn image_to_ppm(image: &RgbImage, file: &mut dyn Write) -> anyhow::Result<()> {
     file.write_all("P3\n".as_bytes())?;
     file.write_all(format!("{} {}\n255\n", image.width(), image.height()).as_bytes())?;
 
@@ -16,7 +16,7 @@ pub fn image_to_ppm(image: &RgbImage, file: &mut dyn Write) -> io::Result<()> {
 }
 
 #[allow(dead_code)]
-pub fn main() -> io::Result<()> {
+pub fn main() -> anyhow::Result<()> {
     let image_width = 256;
     let image_height = 256;
 
