@@ -65,6 +65,7 @@ fn main() -> anyhow::Result<()> {
     .expect("standalone render should not be cancelled");
 
     let mut image = RgbImage::new(world.image_width, world.image_height);
+
     for (flipped_y, row) in &rows {
         for (x, pixel_color) in row.iter().enumerate() {
             image.put_pixel(
@@ -73,7 +74,6 @@ fn main() -> anyhow::Result<()> {
                 pixel_color.to_image_rgbu8(world.samples_per_pixel),
             );
         }
-        println!("{} / {} scanlines done", image.height() - flipped_y, world.image_height);
     }
 
     ImageRgb8(image).save("output.png")?;

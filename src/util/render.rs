@@ -101,13 +101,14 @@ pub fn render_frame(
     drop(tx);
 
     let mut rows = Vec::with_capacity(render_h as usize);
-    for item in rx.iter() {
+    for (idx, row) in rx.iter().enumerate() {
         if let Some((ref generation, expected)) = cancel
             && generation.load(Ordering::Acquire) != expected
         {
             return None;
         }
-        rows.push(item);
+        rows.push(row);
+        println!("{} / {} scanlines done", idx,  world.image_height);
     }
 
     if cancel.is_none_or(|(generation, expected)| generation.load(Ordering::Acquire) == expected) {
