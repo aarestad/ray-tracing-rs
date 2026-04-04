@@ -2,7 +2,7 @@ use crate::camera::{Camera, CameraRecipe};
 use crate::data::color64::{BLACK, Color64, LIGHT_BLUE};
 use crate::data::point64::Point64;
 use crate::data::vector3::{rand_range, random_in_unit_cube};
-use crate::hittables::Hittable;
+use crate::hittables::{ConstantMedium, Hittable};
 use crate::hittables::rotation::AxisAlignment::{self, X, Y, Z};
 use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
 use crate::hittables::quad::Quad;
@@ -12,7 +12,7 @@ use crate::hittables::hittable_vec::HittableVec;
 use crate::hittables::moving_sphere::MovingSphere;
 use crate::hittables::sphere::Sphere;
 use crate::hittables::translation::Translation;
-use crate::materials::Material;
+use crate::materials::{Isotropic, Material};
 use crate::materials::dielectric::Dielectric;
 use crate::materials::diffuse_light::DiffuseLight;
 use crate::materials::lambertian::Lambertian;
@@ -622,7 +622,42 @@ impl World {
                             fuzz: 1.0,
                         }),
                     }),
-                    // TODO blue subsurface reflection sphere
+                    // blue subsurface reflection sphere (dielectric boundary + constant medium fill)
+                    {
+                        let boundary = Hittable::Sphere(Sphere {
+                            center: Point64::new(360., 150., 145.),
+                            radius: 70.0,
+                            material: Material::Dielectric(Dielectric {
+                                index_of_refraction: 1.5,
+                            }),
+                        });
+                        Hittable::HittableVec(HittableVec {
+                            hittables: vec![
+                                boundary.clone(),
+                                Hittable::ConstantMedium(ConstantMedium::new(
+                                    Box::new(boundary),
+                                    0.2,
+                                    Material::Isotropic(Isotropic {
+                                        albedo: Texture::solid(Color64::new(0.2, 0.4, 0.9)),
+                                    }),
+                                )),
+                            ],
+                        })
+                    },
+                    // atmosphere fog (large dielectric sphere enclosing scene)
+                    Hittable::ConstantMedium(ConstantMedium::new(
+                        Box::new(Hittable::Sphere(Sphere {
+                            center: Point64::new(0., 0., 0.),
+                            radius: 5000.0,
+                            material: Material::Dielectric(Dielectric {
+                                index_of_refraction: 1.5,
+                            }),
+                        })),
+                        0.0001,
+                        Material::Isotropic(Isotropic {
+                            albedo: Texture::solid(Color64::gray(1.0)),
+                        }),
+                    )),
 
                     // earth
                     Hittable::Sphere(Sphere {
@@ -659,6 +694,142 @@ impl World {
                 ];
                 BoundedVolumeHierarchy::create_bvh(&mut scene, 0., 1.)
             },
+        }
+    }
+
+    pub fn cornell_smoke() -> World {
+        let red_material = Lambertian {
+            albedo: Texture::solid(Color64::new(0.65, 0.05, 0.05)),
+        };
+
+        let gray_material = Material::Lambertian(Lambertian {
+            albedo: Texture::solid(Color64::gray(0.73)),
+        });
+
+        let green_material = Lambertian {
+            albedo: Texture::solid(Color64::new(0.12, 0.45, 0.15)),
+        };
+
+        let light_source = DiffuseLight::new(Color64::gray(7.));
+
+        let tall_box = Hittable::Translation(Translation {
+            hittable: Box::new(Hittable::Rotation(Rotation::new(
+                Box::new(Hittable::Cuboid(Cuboid::new(
+                    Point64::new(0., 0., 0.),
+                    Point64::new(165., 330., 165.),
+                    gray_material.clone(),
+                ))),
+                Y,
+                15_f64.to_radians(),
+                0.,
+                1.,
+            ))),
+            offset: Vector3::new(265., 0., 295.),
+        });
+
+        let short_box = Hittable::Translation(Translation {
+            hittable: Box::new(Hittable::Rotation(Rotation::new(
+                Box::new(Hittable::Cuboid(Cuboid::new(
+                    Point64::new(0., 0., 0.),
+                    Point64::new(165., 165., 165.),
+                    gray_material.clone(),
+                ))),
+                Y,
+                (-18_f64).to_radians(),
+                0.,
+                1.,
+            ))),
+            offset: Vector3::new(130., 0., 65.),
+        });
+
+        let hittable = Hittable::HittableVec(HittableVec {
+            hittables: vec![
+                // X+ wall (green)
+                Hittable::Quad(Quad::new(
+                    Point64::new(555., 0., 0.),
+                    Point64::new(0., 555., 0.),
+                    Point64::new(0., 0., 555.),
+                    Material::Lambertian(green_material),
+                )),
+                // X- wall (red)
+                Hittable::Quad(Quad::new(
+                    Point64::new(0., 0., 0.),
+                    Point64::new(0., 555., 0.),
+                    Point64::new(0., 0., 555.),
+                    Material::Lambertian(red_material),
+                )),
+                // Y+ light
+                Hittable::Quad(Quad::new(
+                    Point64::new(113., 554., 127.),
+                    Point64::new(330., 0., 0.),
+                    Point64::new(0., 0., 305.),
+                    Material::DiffuseLight(light_source),
+                )),
+                // Y- floor
+                Hittable::Quad(Quad::new(
+                    Point64::new(0., 0., 0.),
+                    Point64::new(555., 0., 0.),
+                    Point64::new(0., 0., 555.),
+                    gray_material.clone(),
+                )),
+                // Y+ ceiling
+                Hittable::Quad(Quad::new(
+                    Point64::new(0., 555., 0.),
+                    Point64::new(555., 0., 0.),
+                    Point64::new(0., 0., 555.),
+                    gray_material.clone(),
+                )),
+                // Z+ back wall
+                Hittable::Quad(Quad::new(
+                    Point64::new(0., 0., 555.),
+                    Point64::new(555., 0., 0.),
+                    Point64::new(0., 555., 0.),
+                    gray_material,
+                )),
+                // dark smoke (tall box)
+                Hittable::ConstantMedium(ConstantMedium::new(
+                    Box::new(tall_box),
+                    0.01,
+                    Material::Isotropic(Isotropic {
+                        albedo: Texture::solid(Color64::new(0., 0., 0.)),
+                    }),
+                )),
+                // white mist (short box)
+                Hittable::ConstantMedium(ConstantMedium::new(
+                    Box::new(short_box),
+                    0.01,
+                    Material::Isotropic(Isotropic {
+                        albedo: Texture::solid(Color64::gray(1.)),
+                    }),
+                )),
+            ],
+        });
+
+        let recipe = CameraRecipe::new(
+            Point64::new(278., 278., -800.),
+            Point64::new(278., 278., 0.),
+            DEFAULT_VUP,
+            DEFAULT_VFOV_DEG,
+            1.,
+            DEFAULT_APERTURE,
+            DEFAULT_FOCUS_DISTANCE,
+            DEFAULT_EXPOSURE_TIME,
+        );
+
+        World {
+            image_width: 600,
+            image_height: 600,
+            samples_per_pixel: 200,
+            background_color: BLACK,
+            camera: recipe.camera,
+            camera_target: recipe.look_at,
+            camera_v_up: recipe.v_up,
+            camera_vfov_deg: recipe.vfov_deg,
+            camera_aperture: recipe.aperture,
+            camera_focus_distance: recipe.focus_distance,
+            camera_exposure_time: recipe.exposure_time,
+            hittable,
+            ground_y: None,
         }
     }
 

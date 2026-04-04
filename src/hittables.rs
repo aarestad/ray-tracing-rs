@@ -6,6 +6,7 @@ use crate::materials::Material;
 mod axis_aligned_bounding_box;
 pub mod bounded_volume_hierarchy;
 mod bvh_comparators;
+pub mod constant_medium;
 pub mod cuboid;
 pub mod hittable_vec;
 pub mod moving_sphere;
@@ -17,6 +18,7 @@ pub mod triangle;
 
 use quad::Quad;
 use bounded_volume_hierarchy::BoundedVolumeHierarchy;
+pub use constant_medium::ConstantMedium;
 use cuboid::Cuboid;
 use hittable_vec::HittableVec;
 use moving_sphere::MovingSphere;
@@ -76,6 +78,7 @@ pub enum Hittable {
     Translation(Translation),
     Cuboid(Cuboid),
     Rotation(Rotation),
+    ConstantMedium(ConstantMedium),
 }
 
 impl Hittable {
@@ -90,6 +93,7 @@ impl Hittable {
             Hittable::Translation(h) => h.bounding_box(time0, time1),
             Hittable::Cuboid(h) => h.bounding_box(time0, time1),
             Hittable::Rotation(h) => h.bounding_box(time0, time1),
+            Hittable::ConstantMedium(h) => h.bounding_box(time0, time1),
         }
     }
 
@@ -104,6 +108,7 @@ impl Hittable {
             Hittable::Translation(h) => h.is_hit_by(ray, min_value, max_value),
             Hittable::Cuboid(h) => h.is_hit_by(ray, min_value, max_value),
             Hittable::Rotation(h) => h.is_hit_by(ray, min_value, max_value),
+            Hittable::ConstantMedium(h) => h.is_hit_by(ray, min_value, max_value),
         }
     }
 }
