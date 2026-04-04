@@ -1,16 +1,14 @@
 use std::sync::atomic::{AtomicU32, AtomicU64, Ordering};
-use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use minifb::{Key, MouseButton, MouseMode, Window, WindowOptions};
 use nalgebra::{Rotation3, Unit, Vector3};
-use rand::Rng;
-use threadpool::ThreadPool;
 
 use crate::camera::Camera;
 use crate::data::color64::Color64;
 use crate::data::point64::Point64;
+use crate::util::render::render_frame;
 use crate::util::worlds::World;
 
 const PITCH_LIMIT: f64 = 1.553;
@@ -110,68 +108,6 @@ const RENDER_SCALE: u32 = 2;
 /// Max ray bounce depth for interactive rendering. Lower = faster per ray.
 const INTERACTIVE_MAX_DEPTH: i32 = 8;
 
-fn render_pass(
-    pool: &ThreadPool,
-    world: &Arc<World>,
-    camera: &Camera,
-    accum: &mut [Color64],
-    render_w: u32,
-    render_h: u32,
-    view_gen: u64,
-    generation: &Arc<AtomicU64>,
-) -> bool {
-    let (tx, rx) = channel::<(u32, Vec<Color64>)>();
-    let rw = render_w as usize;
-    let du = render_w.saturating_sub(1).max(1) as f64;
-    let dv = render_h.saturating_sub(1).max(1) as f64;
-
-    let mut y = 0u32;
-    while y < render_h {
-        let y_end = (y + ROWS_PER_TASK).min(render_h);
-        let tx = tx.clone();
-        let world = world.clone();
-        let camera = camera.clone();
-        let generation = Arc::clone(generation);
-        pool.execute(move || {
-            if generation.load(Ordering::Acquire) != view_gen {
-                return;
-            }
-            let mut rng = rand::rng();
-            for row_y in y..y_end {
-                let flipped_y = render_h - row_y - 1;
-                let mut row = Vec::with_capacity(rw);
-                for x in 0..render_w {
-                    let u = (x as f64 + rng.random::<f64>()) / du;
-                    let v = (row_y as f64 + rng.random::<f64>()) / dv;
-                    let ray = camera.get_ray(u, v);
-                    let c = ray.color_in_world(
-                        &world.hittable,
-                        &world.background_color,
-                        INTERACTIVE_MAX_DEPTH,
-                        &mut rng,
-                    );
-                    row.push(c);
-                }
-                let _ = tx.send((flipped_y, row));
-            }
-        });
-        y = y_end;
-    }
-
-    drop(tx);
-
-    for (flipped_y, row) in rx.iter() {
-        if generation.load(Ordering::Acquire) != view_gen {
-            return false;
-        }
-        let base = flipped_y as usize * rw;
-        for (x, c) in row.into_iter().enumerate() {
-            accum[base + x] += c;
-        }
-    }
-
-    generation.load(Ordering::Acquire) == view_gen
-}
 
 /// Tonemap the render-resolution accum buffer into the full-resolution display
 /// buffer, upscaling each render pixel to a RENDER_SCALE×RENDER_SCALE block.
@@ -200,11 +136,10 @@ fn tonemap_to_display(
 }
 
 fn render_thread(world: Arc<World>, shared: Arc<SharedRender>) {
-    let pool = ThreadPool::new(num_cpus::get());
     let display_w = world.image_width as usize;
-    let render_w = (world.image_width / RENDER_SCALE) as usize;
-    let render_h = (world.image_height / RENDER_SCALE) as usize;
-    let render_len = render_w * render_h;
+    let render_w = world.image_width / RENDER_SCALE;
+    let render_h = world.image_height / RENDER_SCALE;
+    let render_len = (render_w * render_h) as usize;
     // Local accumulation buffer at render resolution — no mutex needed.
     let mut accum = vec![Color64::new(0., 0., 0.); render_len];
 
@@ -228,30 +163,29 @@ fn render_thread(world: Arc<World>, shared: Arc<SharedRender>) {
 
             let orbit = shared.orbit.lock().unwrap().clone();
             let camera = orbit.to_camera(world.as_ref());
+            let cancel = Some((shared.generation.clone(), view_gen));
 
-            if !render_pass(
-                &pool,
-                &world,
-                &camera,
-                &mut accum,
-                render_w as u32,
-                render_h as u32,
-                view_gen,
-                &shared.generation,
-            ) {
-                break;
+            match render_frame(camera, world.clone(), render_w, render_h, INTERACTIVE_MAX_DEPTH, ROWS_PER_TASK, 1, cancel) {
+                None => break,
+                Some(rows) => {
+                    for (flipped_y, row) in rows {
+                        let base = flipped_y as usize * render_w as usize;
+                        for (x, c) in row.into_iter().enumerate() {
+                            accum[base + x] += c;
+                        }
+                    }
+                    local_samples += 1;
+                    shared.samples.store(local_samples, Ordering::Release);
+                    tonemap_to_display(
+                        &accum,
+                        local_samples,
+                        &mut shared.display.lock().unwrap(),
+                        render_w as usize,
+                        render_h as usize,
+                        display_w,
+                    );
+                }
             }
-            local_samples += 1;
-            shared.samples.store(local_samples, Ordering::Release);
-
-            tonemap_to_display(
-                &accum,
-                local_samples,
-                &mut shared.display.lock().unwrap(),
-                render_w,
-                render_h,
-                display_w,
-            );
         }
     }
 }

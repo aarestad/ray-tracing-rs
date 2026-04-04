@@ -1,17 +1,14 @@
 use std::sync::Arc;
-use std::sync::mpsc::channel;
 
 use anyhow::Context;
 use image::RgbImage;
-use rand::Rng;
-use threadpool::ThreadPool;
 
 use crate::textures::noise::NoiseType::{Marble, Perlin, Turbulence};
 use crate::util::worlds::World;
-use data::color64::Color64;
 use image::DynamicImage::ImageRgb8;
 use std::env;
 use util::args::parse_args;
+use util::render::render_frame;
 
 mod camera;
 mod data;
@@ -54,64 +51,28 @@ fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    let pool = ThreadPool::new(num_cpus::get());
-    let (tx, rx) = channel::<(u32, Vec<Color64>)>();
-
-    (0..world.image_height).for_each(|y| {
-        let tx = tx.clone();
-        let world = world.clone();
-
-        pool.execute(move || {
-            let flipped_y = world.image_height - y - 1;
-            let w = world.image_width as usize;
-            let mut row = Vec::with_capacity(w);
-
-            for x in 0..world.image_width {
-                let mut pixel_color = Color64::new(0., 0., 0.);
-                let mut rng = rand::rng();
-
-                for _ in 0..world.samples_per_pixel {
-                    let rands: [f64; 2] = rng.random();
-
-                    let u = (x as f64 + rands[0]) / (world.image_width - 1) as f64;
-                    let v = (y as f64 + rands[1]) / (world.image_height - 1) as f64;
-                    let ray = world.camera.get_ray(u, v);
-
-                    pixel_color += ray.color_in_world(
-                        &world.hittable,
-                        &world.background_color,
-                        50,
-                        &mut rng,
-                    );
-                }
-
-                row.push(pixel_color);
-            }
-
-            tx.send((flipped_y, row)).expect("no receiver");
-        });
-    });
-
-    drop(tx);
+    let rows = render_frame(
+        world.camera.clone(),
+        world.clone(),
+        world.image_width,
+        world.image_height,
+        50,
+        1,
+        world.samples_per_pixel,
+        None,
+    )
+    .expect("standalone render should not be cancelled");
 
     let mut image = RgbImage::new(world.image_width, world.image_height);
-    let mut rows_done = 0u32;
-
-    for (flipped_y, row) in rx.iter() {
+    for (flipped_y, row) in &rows {
         for (x, pixel_color) in row.iter().enumerate() {
             image.put_pixel(
                 x as u32,
-                flipped_y,
+                *flipped_y,
                 pixel_color.to_image_rgbu8(world.samples_per_pixel),
             );
         }
-
-        rows_done += 1;
-        println!("{} / {} scanlines done", rows_done, world.image_height);
-
-        if rows_done * world.image_width == world.total_pixels() {
-            break;
-        }
+        println!("{} / {} scanlines done", image.height() - flipped_y, world.image_height);
     }
 
     ImageRgb8(image).save("output.png")?;
