@@ -1,6 +1,6 @@
+use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::mpsc::channel;
-use std::sync::Arc;
 
 use rand::Rng;
 use threadpool::ThreadPool;
@@ -108,7 +108,7 @@ pub fn render_frame(
             return None;
         }
         rows.push(row);
-        println!("{} / {} scanlines done", idx,  world.image_height);
+        println!("{} / {} scanlines done", idx, world.image_height);
     }
 
     if cancel.is_none_or(|(generation, expected)| generation.load(Ordering::Acquire) == expected) {

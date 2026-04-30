@@ -25,15 +25,30 @@ impl Cuboid {
             sides: HittableVec {
                 hittables: vec![
                     // X+ face
-                    Hittable::Quad(Quad::new(Point64::new(p1.x(), p0.y(), p0.z()), dy, dz, material.clone())),
+                    Hittable::Quad(Quad::new(
+                        Point64::new(p1.x(), p0.y(), p0.z()),
+                        dy,
+                        dz,
+                        material.clone(),
+                    )),
                     // X- face
                     Hittable::Quad(Quad::new(p0, dy, dz, material.clone())),
                     // Y+ face
-                    Hittable::Quad(Quad::new(Point64::new(p0.x(), p1.y(), p0.z()), dx, dz, material.clone())),
+                    Hittable::Quad(Quad::new(
+                        Point64::new(p0.x(), p1.y(), p0.z()),
+                        dx,
+                        dz,
+                        material.clone(),
+                    )),
                     // Y- face
                     Hittable::Quad(Quad::new(p0, dx, dz, material.clone())),
                     // Z+ face
-                    Hittable::Quad(Quad::new(Point64::new(p0.x(), p0.y(), p1.z()), dx, dy, material.clone())),
+                    Hittable::Quad(Quad::new(
+                        Point64::new(p0.x(), p0.y(), p1.z()),
+                        dx,
+                        dy,
+                        material.clone(),
+                    )),
                     // Z- face
                     Hittable::Quad(Quad::new(p0, dx, dy, material)),
                 ],

@@ -59,7 +59,7 @@ impl ConstantMedium {
             v: 0.0,
             location,
             normal: Point64::new(1.0, 0.0, 0.0), // arbitrary
-            front_face: true,                      // arbitrary
+            front_face: true,                    // arbitrary
             material: self.phase_function.clone(),
         })
     }

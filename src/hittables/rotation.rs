@@ -77,11 +77,7 @@ fn rotate_aabb(bb: &AxisAlignedBoundingBox, rot: &Rotation3<f64>) -> AxisAligned
     let mi = bb.minimum.0;
     let ma = bb.maximum.0;
     let mut out_min = Vector3::new(f64::INFINITY, f64::INFINITY, f64::INFINITY);
-    let mut out_max = Vector3::new(
-        f64::NEG_INFINITY,
-        f64::NEG_INFINITY,
-        f64::NEG_INFINITY,
-    );
+    let mut out_max = Vector3::new(f64::NEG_INFINITY, f64::NEG_INFINITY, f64::NEG_INFINITY);
 
     for i in 0..8_u8 {
         let p = Vector3::new(

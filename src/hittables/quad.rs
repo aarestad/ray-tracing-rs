@@ -31,7 +31,15 @@ impl Quad {
         let normal = Point64(n.normalize());
         let plane_d = normal.0.dot(&q.0);
         let w = Point64(n / n.dot(&n));
-        Self { q, u, v, material, w, normal, plane_d }
+        Self {
+            q,
+            u,
+            v,
+            material,
+            w,
+            normal,
+            plane_d,
+        }
     }
 
     pub fn bounding_box(&self, _: f64, _: f64) -> Option<AxisAlignedBoundingBox> {
