@@ -44,6 +44,8 @@ fn main() -> anyhow::Result<()> {
         12 => World::normals_scene(),
         13 => World::book1_materials(),
         14 => World::book1_final(options.use_bvh),
+        15 => World::quads(),
+        16 => World::planar_shapes(),
         _ => anyhow::bail!("bad world choice: {}", world_choice),
     };
 
@@ -60,7 +62,7 @@ fn main() -> anyhow::Result<()> {
         world.clone(),
         world.image_width,
         world.image_height,
-        50,
+        world.max_depth,
         1,
         world.samples_per_pixel,
         None,

@@ -44,10 +44,13 @@ impl Triangle {
         let max_y = self.p1.y().max(self.p2.y().max(self.p3.y()));
         let max_z = self.p1.z().max(self.p2.z().max(self.p3.z()));
 
-        Some(AxisAlignedBoundingBox {
-            minimum: Point64::new(min_x, min_y, min_z),
-            maximum: Point64::new(max_x, max_y, max_z),
-        })
+        Some(
+            AxisAlignedBoundingBox {
+                minimum: Point64::new(min_x, min_y, min_z),
+                maximum: Point64::new(max_x, max_y, max_z),
+            }
+            .padded(),
+        )
     }
 
     pub fn is_hit_by(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {

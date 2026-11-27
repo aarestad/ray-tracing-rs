@@ -171,4 +171,22 @@ mod test {
         // Both roots excluded.
         assert!(s.is_hit_by(&r, Interval::new(0.001, 0.4)).is_none());
     }
+
+    #[test]
+    fn sphere_uv_matches_book_examples() {
+        // Book 2, section 4.4.
+        let cases = [
+            ((1., 0., 0.), (0.50, 0.50)),
+            ((-1., 0., 0.), (0.00, 0.50)),
+            ((0., 1., 0.), (0.50, 1.00)),
+            ((0., -1., 0.), (0.50, 0.00)),
+            ((0., 0., 1.), (0.25, 0.50)),
+            ((0., 0., -1.), (0.75, 0.50)),
+        ];
+        for ((x, y, z), (u, v)) in cases {
+            let (gu, gv) = get_sphere_uv(Point64::new(x, y, z));
+            assert_abs_diff_eq!(gu, u, epsilon = 1e-12);
+            assert_abs_diff_eq!(gv, v, epsilon = 1e-12);
+        }
+    }
 }

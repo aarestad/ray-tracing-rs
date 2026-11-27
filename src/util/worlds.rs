@@ -33,6 +33,8 @@ pub(crate) struct World {
     pub image_width: u32,
     pub image_height: u32,
     pub samples_per_pixel: u32,
+    /// Maximum ray bounce depth (the book's `cam.max_depth`).
+    pub max_depth: i32,
     pub background: Background,
     pub camera: Camera,
     pub camera_target: Point64,
@@ -50,6 +52,7 @@ pub(crate) struct World {
 const DEFAULT_LOOK_FROM: Point64 = Point64::new(13., 2., 3.);
 const DEFAULT_LOOK_AT: Point64 = Point64::new(0., 0., 0.);
 const DEFAULT_SAMPLES_PER_PIXEL: u32 = 100;
+const DEFAULT_MAX_DEPTH: i32 = 50;
 const DEFAULT_VUP: Vector3<f64> = Vector3::new(0., 1., 0.);
 const DEFAULT_IMAGE_WIDTH: u32 = 960;
 const DEFAULT_IMAGE_HEIGHT: u32 = 540;
@@ -64,10 +67,11 @@ impl World {
     }
 
     pub fn random_world(use_bvh: bool) -> World {
-        let checker_pattern = Texture::Checker {
-            odd: Box::new(Texture::solid(Color64::new(0.2, 0.3, 0.1))),
-            even: Box::new(Texture::solid(Color64::new(0.9, 0.9, 0.9))),
-        };
+        let checker_pattern = Texture::checker(
+            0.32,
+            Color64::new(0.2, 0.3, 0.1),
+            Color64::new(0.9, 0.9, 0.9),
+        );
 
         let mut hittables: Vec<Hittable> = vec![Hittable::Sphere(Sphere {
             center: Point64::new(0., -1000., 0.),
@@ -119,7 +123,7 @@ impl World {
             DEFAULT_VUP,
             20.0,
             aspect,
-            0.1,
+            aperture_from_defocus_angle(0.6, DEFAULT_FOCUS_DISTANCE),
             DEFAULT_FOCUS_DISTANCE,
             DEFAULT_EXPOSURE_TIME,
         );
@@ -128,6 +132,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -143,10 +148,11 @@ impl World {
 
     pub fn two_spheres() -> World {
         let material = Material::Lambertian(Lambertian {
-            albedo: Texture::Checker {
-                odd: Box::new(Texture::solid(Color64::new(0.2, 0.3, 0.1))),
-                even: Box::new(Texture::solid(Color64::new(0.9, 0.9, 0.9))),
-            },
+            albedo: Texture::checker(
+                0.32,
+                Color64::new(0.2, 0.3, 0.1),
+                Color64::new(0.9, 0.9, 0.9),
+            ),
         });
 
         let hittable = Hittable::HittableVec(HittableVec {
@@ -180,6 +186,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -233,6 +240,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -257,7 +265,7 @@ impl World {
 
         let aspect = DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64;
         let recipe = CameraRecipe::new(
-            DEFAULT_LOOK_FROM,
+            Point64::new(0., 0., 12.),
             DEFAULT_LOOK_AT,
             DEFAULT_VUP,
             20.0,
@@ -271,6 +279,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -307,6 +316,11 @@ impl World {
                     radius: 2.,
                     material,
                 }),
+                Hittable::Sphere(Sphere {
+                    center: Point64::new(0., 7., 0.),
+                    radius: 2.,
+                    material: Material::DiffuseLight(light.clone()),
+                }),
                 Hittable::Quad(Quad::new(
                     Point64::new(3., 1., -2.),
                     Point64::new(2., 0., 0.),
@@ -332,6 +346,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: 400,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(BLACK),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -404,19 +419,32 @@ impl World {
                     Point64::new(0., 555., 0.),
                     gray_material.clone(),
                 )),
+                // Book 2, section 8.2: boxes rotated about y, then translated.
                 Hittable::Translation(Translation {
-                    hittable: Box::new(Hittable::Cuboid(Cuboid::new(
-                        Point64::new(0., 0., 0.),
-                        Point64::new(165., 330., 165.),
-                        gray_material.clone(),
+                    hittable: Box::new(Hittable::Rotation(Rotation::new(
+                        Box::new(Hittable::Cuboid(Cuboid::new(
+                            Point64::new(0., 0., 0.),
+                            Point64::new(165., 330., 165.),
+                            gray_material.clone(),
+                        ))),
+                        Y,
+                        15_f64.to_radians(),
+                        0.,
+                        1.,
                     ))),
                     offset: Vector3::new(265., 0., 295.),
                 }),
                 Hittable::Translation(Translation {
-                    hittable: Box::new(Hittable::Cuboid(Cuboid::new(
-                        Point64::new(0., 0., 0.),
-                        Point64::new(165., 165., 165.),
-                        gray_material,
+                    hittable: Box::new(Hittable::Rotation(Rotation::new(
+                        Box::new(Hittable::Cuboid(Cuboid::new(
+                            Point64::new(0., 0., 0.),
+                            Point64::new(165., 165., 165.),
+                            gray_material,
+                        ))),
+                        Y,
+                        (-18_f64).to_radians(),
+                        0.,
+                        1.,
                     ))),
                     offset: Vector3::new(130., 0., 65.),
                 }),
@@ -438,6 +466,7 @@ impl World {
             image_width: 600,
             image_height: 600,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(BLACK),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -513,6 +542,7 @@ impl World {
             image_width: 800,
             image_height: 800,
             samples_per_pixel: 100,
+            max_depth: 40,
             background: Background::Solid(BLACK),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -613,21 +643,27 @@ impl World {
                         center: Point64::new(220., 280., 300.),
                         radius: 80.,
                         material: Material::Lambertian(Lambertian {
+                            // Book's `noise_texture(0.2)`: the marble formula at scale 0.2.
                             albedo: Texture::Noise(Box::new(Noise {
                                 noise_gen: PerlinGenerator::new(),
-                                scale: 0.1,
-                                noise_type: NoiseType::Perlin,
+                                scale: 0.2,
+                                noise_type: NoiseType::Marble,
                             })),
                         }),
                     }),
-                    // rotated/translated box of spheres
-                    // TODO rotation
+                    // box of spheres: rotated 15° about y, then translated
                     Hittable::Translation(Translation {
-                        hittable: Box::new(BoundedVolumeHierarchy::create_bvh(
-                            &mut box_of_spheres,
+                        hittable: Box::new(Hittable::Rotation(Rotation::new(
+                            Box::new(BoundedVolumeHierarchy::create_bvh(
+                                &mut box_of_spheres,
+                                0.0,
+                                1.0,
+                            )),
+                            Y,
+                            15_f64.to_radians(),
                             0.0,
                             1.0,
-                        )),
+                        ))),
                         offset: Vector3::new(-100., 270., 395.),
                     }),
                 ];
@@ -759,6 +795,7 @@ impl World {
             image_width: 600,
             image_height: 600,
             samples_per_pixel: 200,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(BLACK),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -800,6 +837,7 @@ impl World {
             image_width,
             image_height,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::SkyGradient,
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -908,6 +946,7 @@ impl World {
             image_width,
             image_height,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::SkyGradient,
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -983,6 +1022,7 @@ impl World {
             image_width,
             image_height,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::SkyGradient,
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -994,6 +1034,138 @@ impl World {
             hittable,
             ground_y: Some(0.0),
         }
+    }
+
+    /// Book 2, section 6: five colored quads facing the camera from different directions.
+    pub fn quads() -> World {
+        let lambertian = |r, g, b| {
+            Material::Lambertian(Lambertian {
+                albedo: Texture::solid(Color64::new(r, g, b)),
+            })
+        };
+        let quad = |q: (f64, f64, f64), u: (f64, f64, f64), v: (f64, f64, f64), m| {
+            Hittable::Quad(Quad::new(
+                Point64::new(q.0, q.1, q.2),
+                Point64::new(u.0, u.1, u.2),
+                Point64::new(v.0, v.1, v.2),
+                m,
+            ))
+        };
+
+        let hittable = Hittable::HittableVec(HittableVec {
+            hittables: vec![
+                quad(
+                    (-3., -2., 5.),
+                    (0., 0., -4.),
+                    (0., 4., 0.),
+                    lambertian(1.0, 0.2, 0.2),
+                ),
+                quad(
+                    (-2., -2., 0.),
+                    (4., 0., 0.),
+                    (0., 4., 0.),
+                    lambertian(0.2, 1.0, 0.2),
+                ),
+                quad(
+                    (3., -2., 1.),
+                    (0., 0., 4.),
+                    (0., 4., 0.),
+                    lambertian(0.2, 0.2, 1.0),
+                ),
+                quad(
+                    (-2., 3., 1.),
+                    (4., 0., 0.),
+                    (0., 0., 4.),
+                    lambertian(1.0, 0.5, 0.0),
+                ),
+                quad(
+                    (-2., -3., 5.),
+                    (4., 0., 0.),
+                    (0., 0., -4.),
+                    lambertian(0.2, 0.8, 0.8),
+                ),
+            ],
+        });
+
+        let recipe = CameraRecipe::new(
+            Point64::new(0., 0., 9.),
+            Point64::new(0., 0., 0.),
+            DEFAULT_VUP,
+            80.,
+            1.,
+            0.,
+            DEFAULT_FOCUS_DISTANCE,
+            DEFAULT_EXPOSURE_TIME,
+        );
+
+        World {
+            image_width: 400,
+            image_height: 400,
+            samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
+            background: Background::Solid(LIGHT_BLUE),
+            camera: recipe.camera,
+            camera_target: recipe.look_at,
+            camera_v_up: recipe.v_up,
+            camera_vfov_deg: recipe.vfov_deg,
+            camera_aperture: recipe.aperture,
+            camera_focus_distance: recipe.focus_distance,
+            camera_exposure_time: recipe.exposure_time,
+            hittable,
+            ground_y: None,
+        }
+    }
+
+    /// Book 2, section 6.7 ("additional 2D primitives"): the quads scene's layout with a
+    /// different planar shape on each panel: triangle (left), disk (back), ellipse (right),
+    /// annulus (top) and parallelogram (bottom).
+    pub fn planar_shapes() -> World {
+        let lambertian = |r, g, b| {
+            Material::Lambertian(Lambertian {
+                albedo: Texture::solid(Color64::new(r, g, b)),
+            })
+        };
+        let p = |x, y, z| Point64::new(x, y, z);
+
+        let hittable = Hittable::HittableVec(HittableVec {
+            hittables: vec![
+                Hittable::Quad(Quad::triangle(
+                    p(-3., -2., 5.),
+                    p(0., 0., -4.),
+                    p(0., 4., 0.),
+                    lambertian(1.0, 0.2, 0.2),
+                )),
+                Hittable::Quad(Quad::disk(
+                    p(0., 0., 0.),
+                    Vector3::new(0., 0., 1.),
+                    2.,
+                    lambertian(0.2, 1.0, 0.2),
+                )),
+                Hittable::Quad(Quad::ellipse(
+                    p(3., 0., 3.),
+                    p(0., 0., 2.),
+                    p(0., 1.2, 0.),
+                    lambertian(0.2, 0.2, 1.0),
+                )),
+                Hittable::Quad(Quad::annulus(
+                    p(0., 3., 3.),
+                    p(2., 0., 0.),
+                    p(0., 0., 2.),
+                    0.5,
+                    lambertian(1.0, 0.5, 0.0),
+                )),
+                Hittable::Quad(Quad::new(
+                    p(-2., -3., 5.),
+                    p(4., 0., 0.),
+                    p(1., 0., -4.),
+                    lambertian(0.2, 0.8, 0.8),
+                )),
+            ],
+        });
+
+        let mut world = World::quads();
+        world.hittable = hittable;
+        world
     }
 
     /// Utah teapot mesh loaded from `resources/teapot.obj` — several instances with different materials.
@@ -1017,10 +1189,11 @@ impl World {
         let car_z = -0.5 * (mini_bounds.z_min + mini_bounds.z_max) * car_scale;
 
         let checker = Material::Lambertian(Lambertian {
-            albedo: Texture::Checker {
-                odd: Box::new(Texture::solid(Color64::new(0.15, 0.25, 0.12))),
-                even: Box::new(Texture::solid(Color64::new(0.85, 0.85, 0.88))),
-            },
+            albedo: Texture::checker(
+                0.32,
+                Color64::new(0.15, 0.25, 0.12),
+                Color64::new(0.85, 0.85, 0.88),
+            ),
         });
         let copper = Material::Metal(Metal {
             albedo: Color64::new(0.95, 0.64, 0.54),
@@ -1113,6 +1286,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -1127,9 +1301,8 @@ impl World {
     }
 }
 
-/// The grid of small random spheres from the book-1 cover scene. With `moving`, 10% of
-/// them are book-2 motion-blurred spheres; without it the mix is the book-1 original
-/// (80% diffuse, 15% metal, 5% glass).
+/// The grid of small random spheres from the book-1 cover scene: 80% diffuse, 15% metal,
+/// 5% glass. With `moving`, the diffuse spheres become book-2 motion-blurred "bouncing" spheres.
 fn add_random_small_spheres(hittables: &mut Vec<Hittable>, glass: &Material, moving: bool) {
     let mut rng = rand::rng();
 
@@ -1145,31 +1318,31 @@ fn add_random_small_spheres(hittables: &mut Vec<Hittable>, glass: &Material, mov
             );
 
             if (center - reference_point).0.magnitude() > 0.9 {
-                if moving && choose_mat < 0.1 {
-                    // 10% moving Lambertian spheres
-                    hittables.push(Hittable::MovingSphere(MovingSphere {
-                        center0: center,
-                        center1: Point64(center.0 + Vector3::new(0., rng.random(), 0.)),
-                        time0: 0.,
-                        time1: 1.,
-                        radius: 0.2,
-                        material: Material::Lambertian(Lambertian {
-                            albedo: Texture::solid(Color64(
-                                random_in_unit_cube().component_mul(&random_in_unit_cube()),
-                            )),
-                        }),
-                    }));
-                } else if choose_mat < 0.8 {
-                    // Stationary Lambertian spheres (70% with `moving`, 80% without)
-                    hittables.push(Hittable::Sphere(Sphere {
-                        center,
-                        radius: 0.2,
-                        material: Material::Lambertian(Lambertian {
-                            albedo: Texture::solid(Color64(
-                                random_in_unit_cube().component_mul(&random_in_unit_cube()),
-                            )),
-                        }),
-                    }));
+                if choose_mat < 0.8 {
+                    let material = Material::Lambertian(Lambertian {
+                        albedo: Texture::solid(Color64(
+                            random_in_unit_cube().component_mul(&random_in_unit_cube()),
+                        )),
+                    });
+                    if moving {
+                        // Book 2, section 2.6: every diffuse sphere bounces up by [0, 0.5).
+                        hittables.push(Hittable::MovingSphere(MovingSphere {
+                            center0: center,
+                            center1: Point64(
+                                center.0 + Vector3::new(0., rng.random_range(0.0..0.5), 0.),
+                            ),
+                            time0: 0.,
+                            time1: 1.,
+                            radius: 0.2,
+                            material,
+                        }));
+                    } else {
+                        hittables.push(Hittable::Sphere(Sphere {
+                            center,
+                            radius: 0.2,
+                            material,
+                        }));
+                    }
                 } else if choose_mat < 0.95 {
                     // 15% metal spheres
                     hittables.push(Hittable::Sphere(Sphere {
