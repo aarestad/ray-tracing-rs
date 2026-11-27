@@ -33,6 +33,8 @@ pub(crate) struct World {
     pub image_width: u32,
     pub image_height: u32,
     pub samples_per_pixel: u32,
+    /// Maximum ray bounce depth (the book's `cam.max_depth`).
+    pub max_depth: i32,
     pub background: Background,
     pub camera: Camera,
     pub camera_target: Point64,
@@ -50,6 +52,7 @@ pub(crate) struct World {
 const DEFAULT_LOOK_FROM: Point64 = Point64::new(13., 2., 3.);
 const DEFAULT_LOOK_AT: Point64 = Point64::new(0., 0., 0.);
 const DEFAULT_SAMPLES_PER_PIXEL: u32 = 100;
+const DEFAULT_MAX_DEPTH: i32 = 50;
 const DEFAULT_VUP: Vector3<f64> = Vector3::new(0., 1., 0.);
 const DEFAULT_IMAGE_WIDTH: u32 = 960;
 const DEFAULT_IMAGE_HEIGHT: u32 = 540;
@@ -129,6 +132,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -182,6 +186,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -235,6 +240,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -273,6 +279,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -339,6 +346,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: 400,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(BLACK),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -458,6 +466,7 @@ impl World {
             image_width: 600,
             image_height: 600,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(BLACK),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -533,6 +542,7 @@ impl World {
             image_width: 800,
             image_height: 800,
             samples_per_pixel: 100,
+            max_depth: 40,
             background: Background::Solid(BLACK),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -633,21 +643,27 @@ impl World {
                         center: Point64::new(220., 280., 300.),
                         radius: 80.,
                         material: Material::Lambertian(Lambertian {
+                            // Book's `noise_texture(0.2)`: the marble formula at scale 0.2.
                             albedo: Texture::Noise(Box::new(Noise {
                                 noise_gen: PerlinGenerator::new(),
-                                scale: 0.1,
-                                noise_type: NoiseType::Perlin,
+                                scale: 0.2,
+                                noise_type: NoiseType::Marble,
                             })),
                         }),
                     }),
-                    // rotated/translated box of spheres
-                    // TODO rotation
+                    // box of spheres: rotated 15° about y, then translated
                     Hittable::Translation(Translation {
-                        hittable: Box::new(BoundedVolumeHierarchy::create_bvh(
-                            &mut box_of_spheres,
+                        hittable: Box::new(Hittable::Rotation(Rotation::new(
+                            Box::new(BoundedVolumeHierarchy::create_bvh(
+                                &mut box_of_spheres,
+                                0.0,
+                                1.0,
+                            )),
+                            Y,
+                            15_f64.to_radians(),
                             0.0,
                             1.0,
-                        )),
+                        ))),
                         offset: Vector3::new(-100., 270., 395.),
                     }),
                 ];
@@ -779,6 +795,7 @@ impl World {
             image_width: 600,
             image_height: 600,
             samples_per_pixel: 200,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(BLACK),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -820,6 +837,7 @@ impl World {
             image_width,
             image_height,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::SkyGradient,
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -928,6 +946,7 @@ impl World {
             image_width,
             image_height,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::SkyGradient,
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -1003,6 +1022,7 @@ impl World {
             image_width,
             image_height,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::SkyGradient,
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -1082,6 +1102,7 @@ impl World {
             image_width: 400,
             image_height: 400,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
@@ -1213,6 +1234,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            max_depth: DEFAULT_MAX_DEPTH,
             background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,

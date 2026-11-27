@@ -104,29 +104,37 @@ confirm and fix. Scene numbers refer to `-w N` in `src/main.rs`.
       bounding box; rotated box hit location/normal, rotated bounding box, back face inside a
       rotated sphere. The location and back-face tests would fail on the old code
 
-## 9. Volumes
-- [ ] 9.1 Constant-density medium (`src/hittables/constant_medium.rs`): two boundary hits,
-      clamp to `ray_t` and to 0, exponential free path via `neg_inv_density · ln(rand)`,
-      arbitrary normal / front face. Convex boundaries only, as in the book
-- [ ] 9.1 Isotropic phase function: `random_unit_vector()` (`src/materials/isotropic.rs`)
-- [ ] 9.2 Cornell smoke: `World::cornell_smoke` (`-w 10`): rotated + translated boxes, black and
-      white smoke at density 0.01, light (113,554,127)+(330,0,0)+(0,0,305) at 7
+## 9. Volumes ✅
+- [x] 9.1 Constant-density medium (`src/hittables/constant_medium.rs`) matches the book line for
+      line: two boundary hits (universe, then `rec1.t + 0.0001`), clamp to `ray_t` and to 0,
+      free path `neg_inv_density · ln(rand)` in world units (divided by `|dir|`), arbitrary
+      normal / `front_face`. Convex boundaries only, as in the book
+- [x] 9.1 Isotropic phase function: uniform `random_unit_vector()`, keeps ray time (tested)
+- [x] 9.2 Cornell smoke (`-w 10`): rotated + translated boxes, black / white smoke at density
+      0.01, light (113,554,127)+(330,0,0)+(0,0,305) at 7, camera as in the book
+- [x] Tests: dense medium scatters at the boundary; thin medium passes through; mean free path
+      = 1/density, also with a non-unit ray direction (statistical, stable over repeated
+      runs); ray starting inside; `ray_t.max` before the medium; boundary miss
 
-## 10. A Scene Testing All New Features (`World::final_scene`, `-w 8`)
-- [ ] Ground: 20×20 boxes, random heights 1–101, green (0.48, 0.83, 0.53) in a BVH
-- [ ] Light quad (123,554,147), (300,0,0), (0,0,265), intensity 7
-- [ ] Moving sphere (400,400,200) → (430,400,200), r 50, (0.7, 0.3, 0.1)
-- [ ] Glass sphere (260,150,45) r 50; fuzzy metal (0,150,145) r 50, (0.8,0.8,0.9), fuzz 1
-- [ ] Blue subsurface sphere: glass boundary (360,150,145) r 70 + medium 0.2 (0.2, 0.4, 0.9)
-- [ ] Global fog: r 5000 boundary, density 0.0001, white
-- [ ] Earth (400,200,400) r 100
-- [ ] Noise sphere (220,280,300) r 80 — **⚠** book uses `noise_texture(0.2)`, i.e. the *marble*
-      formula at scale 0.2; ours is plain `NoiseType::Perlin` at scale 0.1
-- [ ] Sphere cluster: 1000 spheres r 10 in [0,165]³ — **⚠** book rotates 15° about y, then
-      translates (−100, 270, 395); ours only translates (`// TODO rotation`)
-- [ ] Camera: lookfrom (478,278,−600), lookat (278,278,0), vfov 40, 800×800, black background.
-      Book max depth is 40; `main.rs` hard-codes 50 for every scene
+## 10. A Scene Testing All New Features (`World::final_scene`, `-w 8`) ✅
+- [x] Ground: 20×20 boxes, random heights 1–101, green (0.48, 0.83, 0.53) in a BVH
+- [x] Light quad (123,554,147), (300,0,0), (0,0,265), intensity 7
+- [x] Moving sphere (400,400,200) → (430,400,200), r 50, (0.7, 0.3, 0.1)
+- [x] Glass sphere (260,150,45) r 50; fuzzy metal (0,150,145) r 50, (0.8,0.8,0.9), fuzz 1
+- [x] Blue subsurface sphere: glass boundary (360,150,145) r 70 + medium 0.2 (0.2, 0.4, 0.9)
+- [x] Global fog: r 5000 boundary, density 0.0001, white
+- [x] Earth (400,200,400) r 100
+- [x] Noise sphere (220,280,300) r 80. **Fixed:** now the book's `noise_texture(0.2)`, i.e.
+      `NoiseType::Marble` at scale 0.2 (was plain Perlin at 0.1)
+- [x] Sphere cluster: 1000 spheres r 10 in [0,165]³. **Fixed:** now rotated 15° about y before
+      translating by (−100, 270, 395) (was translate only, `// TODO rotation`)
+- [x] Camera: lookfrom (478,278,−600), lookat (278,278,0), vfov 40, 800×800, black background.
+      **Added** `World::max_depth` (default 50); the final scene uses the book's 40
+- [x] Rendered at 200 spp (~37 s): layout matches the book's final image
 
 ## Cross-cutting
-- [ ] Make `max_depth` a per-world setting (book 2 scenes use 40 or 50)
-- [ ] Render each book-2 scene and compare against the book's figures after fixes
+- [x] `max_depth` is now a per-world setting (`World::max_depth`, used by `main.rs`;
+      interactive mode keeps its own `INTERACTIVE_MAX_DEPTH`)
+- [x] Rendered every book-2 scene after the fixes and compared against the book's figures
+      (worlds 0–8, 10, 15)
+- [ ] Optional: 6.7 disk/ellipse/annulus primitives

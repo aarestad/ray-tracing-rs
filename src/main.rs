@@ -61,7 +61,7 @@ fn main() -> anyhow::Result<()> {
         world.clone(),
         world.image_width,
         world.image_height,
-        50,
+        world.max_depth,
         1,
         world.samples_per_pixel,
         None,
