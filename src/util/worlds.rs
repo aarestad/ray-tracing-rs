@@ -309,6 +309,11 @@ impl World {
                     radius: 2.,
                     material,
                 }),
+                Hittable::Sphere(Sphere {
+                    center: Point64::new(0., 7., 0.),
+                    radius: 2.,
+                    material: Material::DiffuseLight(light.clone()),
+                }),
                 Hittable::Quad(Quad::new(
                     Point64::new(3., 1., -2.),
                     Point64::new(2., 0., 0.),
@@ -406,19 +411,32 @@ impl World {
                     Point64::new(0., 555., 0.),
                     gray_material.clone(),
                 )),
+                // Book 2, section 8.2: boxes rotated about y, then translated.
                 Hittable::Translation(Translation {
-                    hittable: Box::new(Hittable::Cuboid(Cuboid::new(
-                        Point64::new(0., 0., 0.),
-                        Point64::new(165., 330., 165.),
-                        gray_material.clone(),
+                    hittable: Box::new(Hittable::Rotation(Rotation::new(
+                        Box::new(Hittable::Cuboid(Cuboid::new(
+                            Point64::new(0., 0., 0.),
+                            Point64::new(165., 330., 165.),
+                            gray_material.clone(),
+                        ))),
+                        Y,
+                        15_f64.to_radians(),
+                        0.,
+                        1.,
                     ))),
                     offset: Vector3::new(265., 0., 295.),
                 }),
                 Hittable::Translation(Translation {
-                    hittable: Box::new(Hittable::Cuboid(Cuboid::new(
-                        Point64::new(0., 0., 0.),
-                        Point64::new(165., 165., 165.),
-                        gray_material,
+                    hittable: Box::new(Hittable::Rotation(Rotation::new(
+                        Box::new(Hittable::Cuboid(Cuboid::new(
+                            Point64::new(0., 0., 0.),
+                            Point64::new(165., 165., 165.),
+                            gray_material,
+                        ))),
+                        Y,
+                        (-18_f64).to_radians(),
+                        0.,
+                        1.,
                     ))),
                     offset: Vector3::new(130., 0., 65.),
                 }),
@@ -995,6 +1013,85 @@ impl World {
             camera_exposure_time: recipe.exposure_time,
             hittable,
             ground_y: Some(0.0),
+        }
+    }
+
+    /// Book 2, section 6: five colored quads facing the camera from different directions.
+    pub fn quads() -> World {
+        let lambertian = |r, g, b| {
+            Material::Lambertian(Lambertian {
+                albedo: Texture::solid(Color64::new(r, g, b)),
+            })
+        };
+        let quad = |q: (f64, f64, f64), u: (f64, f64, f64), v: (f64, f64, f64), m| {
+            Hittable::Quad(Quad::new(
+                Point64::new(q.0, q.1, q.2),
+                Point64::new(u.0, u.1, u.2),
+                Point64::new(v.0, v.1, v.2),
+                m,
+            ))
+        };
+
+        let hittable = Hittable::HittableVec(HittableVec {
+            hittables: vec![
+                quad(
+                    (-3., -2., 5.),
+                    (0., 0., -4.),
+                    (0., 4., 0.),
+                    lambertian(1.0, 0.2, 0.2),
+                ),
+                quad(
+                    (-2., -2., 0.),
+                    (4., 0., 0.),
+                    (0., 4., 0.),
+                    lambertian(0.2, 1.0, 0.2),
+                ),
+                quad(
+                    (3., -2., 1.),
+                    (0., 0., 4.),
+                    (0., 4., 0.),
+                    lambertian(0.2, 0.2, 1.0),
+                ),
+                quad(
+                    (-2., 3., 1.),
+                    (4., 0., 0.),
+                    (0., 0., 4.),
+                    lambertian(1.0, 0.5, 0.0),
+                ),
+                quad(
+                    (-2., -3., 5.),
+                    (4., 0., 0.),
+                    (0., 0., -4.),
+                    lambertian(0.2, 0.8, 0.8),
+                ),
+            ],
+        });
+
+        let recipe = CameraRecipe::new(
+            Point64::new(0., 0., 9.),
+            Point64::new(0., 0., 0.),
+            DEFAULT_VUP,
+            80.,
+            1.,
+            0.,
+            DEFAULT_FOCUS_DISTANCE,
+            DEFAULT_EXPOSURE_TIME,
+        );
+
+        World {
+            image_width: 400,
+            image_height: 400,
+            samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            background: Background::Solid(LIGHT_BLUE),
+            camera: recipe.camera,
+            camera_target: recipe.look_at,
+            camera_v_up: recipe.v_up,
+            camera_vfov_deg: recipe.vfov_deg,
+            camera_aperture: recipe.aperture,
+            camera_focus_distance: recipe.focus_distance,
+            camera_exposure_time: recipe.exposure_time,
+            hittable,
+            ground_y: None,
         }
     }
 

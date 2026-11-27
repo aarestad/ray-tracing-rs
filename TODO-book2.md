@@ -68,40 +68,41 @@ confirm and fix. Scene numbers refer to `-w N` in `src/main.rs`.
 - [x] Tests: tables are permutations, unit gradients, zero on lattice points, raw-offset
       interpolation (would fail on the old code), bounded and continuous
 
-## 6. Quadrilaterals
-- [ ] 6.1 Quad = Q + u + v (`src/hittables/quad.rs`)
-- [ ] 6.2 Ray–plane intersection (parallel rejection, `ray_t.surrounds(t)`)
-- [ ] 6.3 Plane from quad (`normal`, `plane_d`)
-- [ ] 6.4–6.5 Planar coordinates via `w = n / (n·n)`; α, β
-- [ ] 6.6 Interior test `0 ≤ α, β ≤ 1`, UV = (α, β)
-- [ ] 6.7 Additional 2D primitives: we have `Triangle` (Möller–Trumbore,
-      `src/hittables/triangle.rs`) instead of the book's quad-derived triangle/disk/ellipse.
-      Optional: add disk/ellipse
-- [ ] Quads scene (book's five-colored quads): **missing**. Consider adding a world
-- [ ] Add tests: quad hit/miss at corners/edges, back face, UV values
+## 6. Quadrilaterals ✅
+- [x] 6.1 Quad = Q + u + v (`src/hittables/quad.rs`)
+- [x] 6.2 Ray–plane intersection (parallel rejection, `ray_t.surrounds(t)`)
+- [x] 6.3 Plane from quad (`normal`, `plane_d`)
+- [x] 6.4–6.5 Planar coordinates via `w = n / (n·n)`; α, β
+- [x] 6.6 Interior test `0 ≤ α, β ≤ 1`, UV = (α, β)
+- [ ] 6.7 Additional 2D primitives (optional): we have `Triangle` (Möller–Trumbore) instead of
+      the book's quad-derived triangle; disk/ellipse/annulus not implemented
+- [x] Quads scene: **added** `World::quads()` (`-w 15`), the book's five colored quads
+- [x] Tests: UV values, front/back face, all four corners hit, just-outside misses, parallel
+      ray, t-range, plane behind ray, sheared parallelogram
 
-## 7. Lights
-- [ ] 7.1 Emissive material: `DiffuseLight` with `emitted` (`src/materials/diffuse_light.rs`)
-- [ ] 7.2 Background color in the ray color function (`Background`, `ray.rs`)
-- [ ] 7.3 Objects as lights: `World::simple_light` (`-w 6`) — **⚠** book also adds a *sphere*
-      light at (0, 7, 0) r = 2; ours has only the quad light
-- [ ] 7.4 Empty Cornell box: walls and light quad match the book (same rectangle as
+## 7. Lights ✅
+- [x] 7.1 Emissive material: `DiffuseLight::emitted` (both faces emit, as in book 2)
+- [x] 7.2 Background color in the ray color function (`Background`, `ray.rs`)
+- [x] 7.3 Objects as lights: `World::simple_light` (`-w 6`). **Added** the book's sphere light
+      at (0, 7, 0), r = 2
+- [x] 7.4 Empty Cornell box: walls and light quad match the book (same rectangle as
       `(343,554,332), (-130,0,0), (0,0,-105)`, normal facing down)
 
-## 8. Instances
-- [ ] 8.1 Translation (`src/hittables/translation.rs`) — **⚠** BUG: `HitRecord::new(.., &moved_ray, ..)`
-      recomputes `location` from the *moved* ray, so the hit point stays in object space (off by
-      `-offset`). The book does `rec.p += offset`. Scattered rays from translated objects start
-      from the wrong place (Cornell boxes, final-scene sphere cluster, teapots)
-- [ ] 8.1 — **⚠** BUG: passes the already-flipped `hr.normal` back into `HitRecord::new`, so
-      `front_face` comes out `true` for every hit. Breaks dielectrics inside a `Translation`
-- [ ] 8.2 Rotation (`src/hittables/rotation.rs`): any axis via nalgebra (book covers rotate_y
-      only); bounding box re-fit over the 8 corners — **⚠** same flipped-normal problem:
-      `front_face` always `true`
-- [ ] 8.x Cornell box with rotated boxes — **⚠** `World::cornell_box` (`-w 7`) only *translates*
-      the boxes; book rotates them 15° and −18° about y (as `cornell_smoke` does)
-- [ ] Add tests: translated sphere hit location / normal / front_face; rotated cube hit;
-      rotation bounding box
+## 8. Instances ✅
+- [x] 8.1 Translation. **Fixed:** the hit point was computed from the *moved* ray, so it stayed in
+      object space (off by `-offset`). Bounce rays from translated objects started from the
+      wrong place; Cornell boxes rendered almost black. Now `location + offset`, like the
+      book's `rec.p += offset`
+- [x] 8.1 **Fixed:** `front_face` is no longer re-derived from an already-flipped normal (it was
+      always `true`); the child's hit record is kept and only the location changes
+- [x] 8.2 Rotation: any axis via nalgebra (book has rotate_y only); bounding box re-fit over the
+      8 corners. **Fixed** the same `front_face` problem; location and normal are now rotated
+      from the child's record
+- [x] 8.x Cornell box (`-w 7`): **added** the book's rotations (15° and −18° about y) before
+      translating
+- [x] Tests: translated sphere hit location/normal/front face from outside and inside, offset
+      bounding box; rotated box hit location/normal, rotated bounding box, back face inside a
+      rotated sphere. The location and back-face tests would fail on the old code
 
 ## 9. Volumes
 - [ ] 9.1 Constant-density medium (`src/hittables/constant_medium.rs`): two boundary hits,

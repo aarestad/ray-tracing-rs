@@ -44,6 +44,7 @@ fn main() -> anyhow::Result<()> {
         12 => World::normals_scene(),
         13 => World::book1_materials(),
         14 => World::book1_final(options.use_bvh),
+        15 => World::quads(),
         _ => anyhow::bail!("bad world choice: {}", world_choice),
     };
 
