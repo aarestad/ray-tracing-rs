@@ -74,8 +74,18 @@ confirm and fix. Scene numbers refer to `-w N` in `src/main.rs`.
 - [x] 6.3 Plane from quad (`normal`, `plane_d`)
 - [x] 6.4–6.5 Planar coordinates via `w = n / (n·n)`; α, β
 - [x] 6.6 Interior test `0 ≤ α, β ≤ 1`, UV = (α, β)
-- [ ] 6.7 Additional 2D primitives (optional): we have `Triangle` (Möller–Trumbore) instead of
-      the book's quad-derived triangle; disk/ellipse/annulus not implemented
+- [x] 6.7 Additional 2D primitives: **added** `PlanarShape` on `Quad`. Each shape is an interior
+      test on the same planar (α, β) coordinates, as the book suggests:
+      `Parallelogram` (default), `Triangle` (α, β ≥ 0, α + β ≤ 1), `Ellipse` (center Q, semi-axes
+      u, v: α² + β² ≤ 1) and `Annulus { inner }` (inner ≤ √(α² + β²) ≤ 1). Constructors
+      `Quad::triangle`, `::ellipse`, `::disk(center, normal, radius)`, `::annulus`. Centered
+      shapes map their extent to UV [0, 1]². Bounding boxes fit each shape. (The mesh `Triangle`
+      hittable, Möller–Trumbore, is unchanged)
+- [x] Planar shapes scene: **added** `World::planar_shapes()` (`-w 16`), the quads layout with
+      one shape per panel
+- [x] Tests: triangle hypotenuse edge + UV, ellipse axes / corner-of-bounding-box miss / UV, disk
+      circular in an arbitrary orientation, annulus hole, shape bounding boxes, invalid annulus
+      inner fraction
 - [x] Quads scene: **added** `World::quads()` (`-w 15`), the book's five colored quads
 - [x] Tests: UV values, front/back face, all four corners hit, just-outside misses, parallel
       ray, t-range, plane behind ray, sheared parallelogram
@@ -137,4 +147,4 @@ confirm and fix. Scene numbers refer to `-w N` in `src/main.rs`.
       interactive mode keeps its own `INTERACTIVE_MAX_DEPTH`)
 - [x] Rendered every book-2 scene after the fixes and compared against the book's figures
       (worlds 0–8, 10, 15)
-- [ ] Optional: 6.7 disk/ellipse/annulus primitives
+- [x] Optional 6.7 disk/ellipse/annulus primitives (see chapter 6)

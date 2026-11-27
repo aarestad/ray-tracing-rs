@@ -1116,6 +1116,58 @@ impl World {
         }
     }
 
+    /// Book 2, section 6.7 ("additional 2D primitives"): the quads scene's layout with a
+    /// different planar shape on each panel: triangle (left), disk (back), ellipse (right),
+    /// annulus (top) and parallelogram (bottom).
+    pub fn planar_shapes() -> World {
+        let lambertian = |r, g, b| {
+            Material::Lambertian(Lambertian {
+                albedo: Texture::solid(Color64::new(r, g, b)),
+            })
+        };
+        let p = |x, y, z| Point64::new(x, y, z);
+
+        let hittable = Hittable::HittableVec(HittableVec {
+            hittables: vec![
+                Hittable::Quad(Quad::triangle(
+                    p(-3., -2., 5.),
+                    p(0., 0., -4.),
+                    p(0., 4., 0.),
+                    lambertian(1.0, 0.2, 0.2),
+                )),
+                Hittable::Quad(Quad::disk(
+                    p(0., 0., 0.),
+                    Vector3::new(0., 0., 1.),
+                    2.,
+                    lambertian(0.2, 1.0, 0.2),
+                )),
+                Hittable::Quad(Quad::ellipse(
+                    p(3., 0., 3.),
+                    p(0., 0., 2.),
+                    p(0., 1.2, 0.),
+                    lambertian(0.2, 0.2, 1.0),
+                )),
+                Hittable::Quad(Quad::annulus(
+                    p(0., 3., 3.),
+                    p(2., 0., 0.),
+                    p(0., 0., 2.),
+                    0.5,
+                    lambertian(1.0, 0.5, 0.0),
+                )),
+                Hittable::Quad(Quad::new(
+                    p(-2., -3., 5.),
+                    p(4., 0., 0.),
+                    p(1., 0., -4.),
+                    lambertian(0.2, 0.8, 0.8),
+                )),
+            ],
+        });
+
+        let mut world = World::quads();
+        world.hittable = hittable;
+        world
+    }
+
     /// Utah teapot mesh loaded from `resources/teapot.obj` — several instances with different materials.
     pub fn utah_teapots() -> World {
         let teapot_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/teapot.obj");
