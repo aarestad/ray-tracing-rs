@@ -1,7 +1,7 @@
 use crate::data::color64::{BLACK, Color64};
-use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::HitRecord;
+use nalgebra::Vector3;
 
 pub mod dielectric;
 pub mod diffuse_light;
@@ -29,6 +29,9 @@ pub enum Material {
     DiffuseLight(DiffuseLight),
     Isotropic(Isotropic),
     Metal(Metal),
+    /// Debug material (book 1, section 6.1): emits `0.5 * (normal + 1)` and never scatters,
+    /// so each surface shows its normal as a color.
+    NormalShaded,
 }
 
 impl Material {
@@ -39,12 +42,18 @@ impl Material {
             Material::DiffuseLight(m) => m.scatter(ray_in, hit_record),
             Material::Isotropic(m) => m.scatter(ray_in, hit_record),
             Material::Metal(m) => m.scatter(ray_in, hit_record),
+            Material::NormalShaded => None,
         }
     }
 
-    pub fn emitted(&self, u: f64, v: f64, point: &Point64) -> Color64 {
+    pub fn emitted(&self, hit_record: &HitRecord) -> Color64 {
         match self {
-            Material::DiffuseLight(m) => m.emitted(u, v, point),
+            Material::DiffuseLight(m) => {
+                m.emitted(hit_record.u, hit_record.v, &hit_record.location)
+            }
+            Material::NormalShaded => {
+                Color64(0.5 * (hit_record.normal.0 + Vector3::new(1., 1., 1.)))
+            }
             _ => BLACK,
         }
     }

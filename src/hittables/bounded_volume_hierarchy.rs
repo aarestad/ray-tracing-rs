@@ -1,3 +1,4 @@
+use crate::data::interval::Interval;
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
 use crate::hittables::bvh_comparators::BOX_COMPARATORS;
@@ -18,18 +19,18 @@ impl BoundedVolumeHierarchy {
         Some(self.bounding_box)
     }
 
-    pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
-        if !self.bounding_box.is_hit_by(ray, min_value, max_value) {
+    pub fn is_hit_by(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
+        if !self.bounding_box.is_hit_by(ray, ray_t.min, ray_t.max) {
             return None;
         }
 
-        let hit_left_box = self.left_bounds.hit_interval(ray, min_value, max_value);
-        let hit_right_box = self.right_bounds.hit_interval(ray, min_value, max_value);
+        let hit_left_box = self.left_bounds.hit_interval(ray, ray_t.min, ray_t.max);
+        let hit_right_box = self.right_bounds.hit_interval(ray, ray_t.min, ray_t.max);
 
         match (hit_left_box, hit_right_box) {
             (None, None) => None,
-            (Some(_), None) => self.left_child.is_hit_by(ray, min_value, max_value),
-            (None, Some(_)) => self.right_child.is_hit_by(ray, min_value, max_value),
+            (Some(_), None) => self.left_child.is_hit_by(ray, ray_t),
+            (None, Some(_)) => self.right_child.is_hit_by(ray, ray_t),
             (Some((la, _)), Some((rb, _))) => {
                 let (first, second) = if la <= rb {
                     (&self.left_child, &self.right_child)
@@ -37,9 +38,9 @@ impl BoundedVolumeHierarchy {
                     (&self.right_child, &self.left_child)
                 };
 
-                let hit_first = first.is_hit_by(ray, min_value, max_value);
-                let t_max2 = hit_first.as_ref().map_or(max_value, |hr| hr.value);
-                let hit_second = second.is_hit_by(ray, min_value, t_max2);
+                let hit_first = first.is_hit_by(ray, ray_t);
+                let t_max2 = hit_first.as_ref().map_or(ray_t.max, |hr| hr.value);
+                let hit_second = second.is_hit_by(ray, ray_t.with_max(t_max2));
                 hit_second.or(hit_first)
             }
         }

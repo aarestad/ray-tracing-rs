@@ -64,3 +64,28 @@ impl Color64 {
         ((r as u32) << 16) | ((g as u32) << 8) | (b as u32)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn averages_samples_and_gamma_corrects() {
+        // 4 samples summing to 1.0 -> average 0.25 -> gamma 2 -> 0.5 -> 127.
+        let c = Color64::new(1.0, 0.0, 4.0);
+        assert_eq!(c.to_image_rgbu8(4), Rgb([127, 0, 255]));
+    }
+
+    #[test]
+    fn clamps_out_of_range() {
+        assert_eq!(
+            Color64::new(9.0, -1.0, 1.0).to_image_rgbu8(1),
+            Rgb([255, 0, 255])
+        );
+    }
+
+    #[test]
+    fn packs_minifb_rgb() {
+        assert_eq!(Color64::new(1.0, 0.0, 1.0).to_minifb_rgb(1), 0x00FF00FF);
+    }
+}

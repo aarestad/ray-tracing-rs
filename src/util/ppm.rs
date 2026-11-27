@@ -42,3 +42,25 @@ pub fn main() -> anyhow::Result<()> {
 
     image_to_ppm(&img, &mut io::stdout())
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn writes_p3_header_and_pixels_in_row_order() {
+        let mut img = RgbImage::new(2, 2);
+        img.put_pixel(0, 0, image::Rgb([255, 0, 0]));
+        img.put_pixel(1, 0, image::Rgb([0, 255, 0]));
+        img.put_pixel(0, 1, image::Rgb([0, 0, 255]));
+        img.put_pixel(1, 1, image::Rgb([1, 2, 3]));
+
+        let mut out = Vec::new();
+        image_to_ppm(&img, &mut out).unwrap();
+
+        assert_eq!(
+            String::from_utf8(out).unwrap(),
+            "P3\n2 2\n255\n255 0 0\n0 255 0\n0 0 255\n1 2 3\n"
+        );
+    }
+}

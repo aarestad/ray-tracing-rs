@@ -6,6 +6,7 @@ use rand::Rng;
 use threadpool::ThreadPool;
 
 use crate::camera::Camera;
+use crate::data::background::Background;
 use crate::data::color64::Color64;
 use crate::hittables::Hittable;
 use crate::util::worlds::World;
@@ -17,15 +18,18 @@ use crate::util::worlds::World;
 pub fn render_row(
     camera: &Camera,
     hittable: &Hittable,
-    background: &Color64,
+    background: &Background,
     row_y: u32,
     render_w: u32,
     render_h: u32,
     max_depth: i32,
     rng: &mut impl Rng,
 ) -> (u32, Vec<Color64>) {
-    let du = render_w.saturating_sub(1).max(1) as f64;
-    let dv = render_h.saturating_sub(1).max(1) as f64;
+    // The camera maps (s, t) in [0, 1] edge-to-edge across the viewport, so pixel x covers
+    // [x / w, (x + 1) / w). Jittering within that cell matches the book's pixel-center ± 0.5
+    // sampling (section 8.2).
+    let du = render_w.max(1) as f64;
+    let dv = render_h.max(1) as f64;
     let flipped_y = render_h - row_y - 1;
     let row = (0..render_w)
         .map(|x| {
@@ -80,7 +84,7 @@ pub fn render_frame(
                     let (_, row) = render_row(
                         &camera,
                         &world.hittable,
-                        &world.background_color,
+                        &world.background,
                         row_y,
                         render_w,
                         render_h,
@@ -108,7 +112,7 @@ pub fn render_frame(
             return None;
         }
         rows.push(row);
-        println!("{} / {} scanlines done", idx, world.image_height);
+        println!("{} / {} scanlines done", idx + 1, render_h);
     }
 
     if cancel.is_none_or(|(generation, expected)| generation.load(Ordering::Acquire) == expected) {

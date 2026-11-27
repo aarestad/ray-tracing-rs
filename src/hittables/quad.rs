@@ -1,3 +1,4 @@
+use crate::data::interval::Interval;
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::HitRecord;
@@ -57,7 +58,7 @@ impl Quad {
         Some(bbox)
     }
 
-    pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
+    pub fn is_hit_by(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
         let denom = self.normal.0.dot(&ray.direction.0);
         // Ray is parallel to the plane — no hit.
         if denom.abs() < 1e-8 {
@@ -65,7 +66,7 @@ impl Quad {
         }
 
         let t = (self.plane_d - self.normal.0.dot(&ray.origin.0)) / denom;
-        if !(min_value..max_value).contains(&t) {
+        if !ray_t.surrounds(t) {
             return None;
         }
 

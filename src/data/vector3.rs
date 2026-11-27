@@ -8,7 +8,9 @@ use crate::util::EPSILON;
 
 pub type Vector = Vector3<f64>;
 
-pub fn random_in_unit_sphere() -> Vector {
+/// Uniformly distributed random *unit* vector, i.e. a point on the unit sphere
+/// (the book's `random_unit_vector`, section 9.4).
+pub fn random_unit_vector() -> Vector {
     let mut rng = rand::rng();
 
     let theta = TAU * rng.random::<f64>();
@@ -42,7 +44,7 @@ pub fn random_in_unit_cube() -> Vector {
 }
 
 pub fn near_zero(vec: &Vector) -> bool {
-    vec[0] < EPSILON && vec[1] < EPSILON && vec[2] < EPSILON
+    vec[0].abs() < EPSILON && vec[1].abs() < EPSILON && vec[2].abs() < EPSILON
 }
 
 pub fn reflect(vec: &Vector, normal: &Vector) -> Vector {
@@ -50,11 +52,13 @@ pub fn reflect(vec: &Vector, normal: &Vector) -> Vector {
     *vec - (normal.mul(2. * dot_prod))
 }
 
+/// Refract unit vector `vec` through a surface with unit `normal` (pointing against `vec`),
+/// where `etai_over_etat` is η/η′ (book section 11.2).
 pub fn refract(vec: &Vector, normal: &Vector, etai_over_etat: f64) -> Vector {
-    let cos_theta = -vec.dot(normal).min(1.);
-    let r_out_normal = etai_over_etat * (*vec + cos_theta * *normal);
-    let r_out_parallel = -(1. - r_out_normal.magnitude()).abs().sqrt() * *normal;
-    r_out_normal + r_out_parallel
+    let cos_theta = (-vec.dot(normal)).min(1.);
+    let r_out_perp = etai_over_etat * (*vec + cos_theta * *normal);
+    let r_out_parallel = -(1. - r_out_perp.magnitude_squared()).abs().sqrt() * *normal;
+    r_out_perp + r_out_parallel
 }
 
 #[cfg(test)]
@@ -65,7 +69,7 @@ mod test {
     use super::rand_range;
     use super::random_in_unit_cube;
     use super::random_in_unit_disk;
-    use super::random_in_unit_sphere;
+    use super::random_unit_vector;
     use super::reflect;
     use super::refract;
     use approx::assert_abs_diff_eq;
@@ -123,7 +127,7 @@ mod test {
     #[test]
     fn custom_methods() {
         for _ in 0..1000 {
-            assert_abs_diff_eq!(random_in_unit_sphere().magnitude(), 1.0, epsilon = EPSILON);
+            assert_abs_diff_eq!(random_unit_vector().magnitude(), 1.0, epsilon = EPSILON);
 
             let random_disk_v = random_in_unit_disk();
             assert_eq!(random_disk_v.z, 0.0);
@@ -142,6 +146,9 @@ mod test {
         }
 
         assert!(near_zero(&Vector::new(0.0, 0.0, EPSILON / 2.0)));
+        assert!(near_zero(&Vector::new(-EPSILON / 2.0, 0.0, EPSILON / 2.0)));
+        assert!(!near_zero(&Vector::new(-1.0, -1.0, -1.0)));
+        assert!(!near_zero(&Vector::new(0.0, -1.0, 0.0)));
     }
 
     #[test]
@@ -150,10 +157,33 @@ mod test {
         let v2 = Vector::new(4.0, 5.0, 6.0);
 
         assert_abs_diff_eq!(reflect(&v1, &v2), Vector::new(-255.0, -318.0, -381.0));
-        assert_abs_diff_eq!(
-            refract(&v1, &v2, 0.5),
-            Vector::new(-6.556601564455425, -7.820751955569282, -9.084902346683137),
-            epsilon = EPSILON
-        );
+    }
+
+    #[test]
+    fn refract_obeys_snells_law() {
+        let normal = Vector::new(0.0, 1.0, 0.0);
+        for &deg in &[0.0_f64, 10.0, 30.0, 45.0, 60.0] {
+            for &eta in &[1.0 / 1.5, 1.0, 1.2] {
+                let theta_i = deg.to_radians();
+                // Incoming from above, heading down and to the +x side.
+                let incident = Vector::new(theta_i.sin(), -theta_i.cos(), 0.0);
+                let sin_t = eta * theta_i.sin();
+                if sin_t > 1.0 {
+                    continue; // total internal reflection: refract() is not meaningful
+                }
+                let out = refract(&incident, &normal, eta);
+                assert_abs_diff_eq!(out.magnitude(), 1.0, epsilon = 1e-9);
+                assert_abs_diff_eq!(out.x, sin_t, epsilon = 1e-9);
+                assert_abs_diff_eq!(out.y, -(1.0 - sin_t * sin_t).sqrt(), epsilon = 1e-9);
+                assert_abs_diff_eq!(out.z, 0.0, epsilon = 1e-9);
+            }
+        }
+    }
+
+    #[test]
+    fn refract_eta_one_passes_straight_through() {
+        let normal = Vector::new(0.0, 0.0, 1.0);
+        let incident = Vector::new(1.0, 2.0, -3.0).normalize();
+        assert_abs_diff_eq!(refract(&incident, &normal, 1.0), incident, epsilon = 1e-9);
     }
 }

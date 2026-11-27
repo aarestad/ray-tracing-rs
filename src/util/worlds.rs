@@ -1,4 +1,5 @@
 use crate::camera::{Camera, CameraRecipe};
+use crate::data::background::Background;
 use crate::data::color64::{BLACK, Color64, LIGHT_BLUE};
 use crate::data::point64::Point64;
 use crate::data::vector3::{rand_range, random_in_unit_cube};
@@ -32,7 +33,7 @@ pub(crate) struct World {
     pub image_width: u32,
     pub image_height: u32,
     pub samples_per_pixel: u32,
-    pub background_color: Color64,
+    pub background: Background,
     pub camera: Camera,
     pub camera_target: Point64,
     pub camera_v_up: Vector3<f64>,
@@ -80,66 +81,7 @@ impl World {
             index_of_refraction: 1.5,
         });
 
-        let mut rng = rand::rng();
-
-        let reference_point = Point64::new(4., 0.2, 0.);
-
-        for a in 0..22 {
-            for b in 0..22 {
-                let choose_mat = rng.random::<f64>();
-                let center = Point64::new(
-                    (a - 11) as f64 + 0.9 * rng.random::<f64>(),
-                    0.2,
-                    (b - 11) as f64 + 0.9 * rng.random::<f64>(),
-                );
-
-                if (center - reference_point).0.magnitude() > 0.9 {
-                    if choose_mat < 0.1 {
-                        // 10% moving Lambertian spheres
-                        hittables.push(Hittable::MovingSphere(MovingSphere {
-                            center0: center,
-                            center1: Point64(center.0 + Vector3::new(0., rng.random(), 0.)),
-                            time0: 0.,
-                            time1: 1.,
-                            radius: 0.2,
-                            material: Material::Lambertian(Lambertian {
-                                albedo: Texture::solid(Color64(
-                                    random_in_unit_cube().component_mul(&random_in_unit_cube()),
-                                )),
-                            }),
-                        }));
-                    } else if choose_mat < 0.8 {
-                        // 70% stationary Lambertian spheres
-                        hittables.push(Hittable::Sphere(Sphere {
-                            center,
-                            radius: 0.2,
-                            material: Material::Lambertian(Lambertian {
-                                albedo: Texture::solid(Color64(
-                                    random_in_unit_cube().component_mul(&random_in_unit_cube()),
-                                )),
-                            }),
-                        }));
-                    } else if choose_mat < 0.95 {
-                        // 15% metal spheres
-                        hittables.push(Hittable::Sphere(Sphere {
-                            center,
-                            radius: 0.2,
-                            material: Material::Metal(Metal {
-                                albedo: Color64(rand_range(0.5, 1.)),
-                                fuzz: rng.random_range(0.0..0.5),
-                            }),
-                        }));
-                    } else {
-                        // 5% glass
-                        hittables.push(Hittable::Sphere(Sphere {
-                            center,
-                            radius: 0.2,
-                            material: glass.clone(),
-                        }));
-                    }
-                }
-            }
-        }
+        add_random_small_spheres(&mut hittables, &glass, true);
 
         hittables.push(Hittable::Sphere(Sphere {
             center: Point64::new(0.0, 1.0, 0.0),
@@ -186,7 +128,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
-            background_color: LIGHT_BLUE,
+            background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -238,7 +180,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
-            background_color: LIGHT_BLUE,
+            background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -291,7 +233,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
-            background_color: LIGHT_BLUE,
+            background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -329,7 +271,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
-            background_color: LIGHT_BLUE,
+            background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -390,7 +332,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: 400,
-            background_color: BLACK,
+            background: Background::Solid(BLACK),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -496,7 +438,7 @@ impl World {
             image_width: 600,
             image_height: 600,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
-            background_color: BLACK,
+            background: Background::Solid(BLACK),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -571,7 +513,7 @@ impl World {
             image_width: 800,
             image_height: 800,
             samples_per_pixel: 100,
-            background_color: BLACK,
+            background: Background::Solid(BLACK),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -817,7 +759,7 @@ impl World {
             image_width: 600,
             image_height: 600,
             samples_per_pixel: 200,
-            background_color: BLACK,
+            background: Background::Solid(BLACK),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -827,6 +769,230 @@ impl World {
             camera_exposure_time: recipe.exposure_time,
             hittable,
             ground_y: None,
+        }
+    }
+
+    /// Book 1, chapter 5: a single flat-red sphere in front of the sky gradient.
+    /// The sphere is an emitter that never scatters, so it renders as pure red
+    /// regardless of lighting, matching the book's first ray-traced image.
+    pub fn red_sphere() -> World {
+        let hittable = Hittable::Sphere(Sphere {
+            center: Point64::new(0., 0., -1.),
+            radius: 0.5,
+            material: Material::DiffuseLight(DiffuseLight::new(Color64::new(1., 0., 0.))),
+        });
+
+        let image_width = 400;
+        let image_height = 225;
+        let aspect = image_width as f64 / image_height as f64;
+        let recipe = CameraRecipe::new(
+            Point64::new(0., 0., 0.),
+            Point64::new(0., 0., -1.),
+            DEFAULT_VUP,
+            90.,
+            aspect,
+            0.,
+            1.,
+            DEFAULT_EXPOSURE_TIME,
+        );
+
+        World {
+            image_width,
+            image_height,
+            samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            background: Background::SkyGradient,
+            camera: recipe.camera,
+            camera_target: recipe.look_at,
+            camera_v_up: recipe.v_up,
+            camera_vfov_deg: recipe.vfov_deg,
+            camera_aperture: recipe.aperture,
+            camera_focus_distance: recipe.focus_distance,
+            camera_exposure_time: recipe.exposure_time,
+            hittable,
+            ground_y: None,
+        }
+    }
+
+    /// Book 1, sections 6.1–6.7: a small sphere on a large "ground" sphere, both shaded by
+    /// their surface normals, in front of the sky gradient. Exercises the hittable list
+    /// (closest hit wins) and front-face normals.
+    pub fn normals_scene() -> World {
+        let hittable = Hittable::HittableVec(HittableVec {
+            hittables: vec![
+                Hittable::Sphere(Sphere {
+                    center: Point64::new(0., 0., -1.),
+                    radius: 0.5,
+                    material: Material::NormalShaded,
+                }),
+                Hittable::Sphere(Sphere {
+                    center: Point64::new(0., -100.5, -1.),
+                    radius: 100.,
+                    material: Material::NormalShaded,
+                }),
+            ],
+        });
+
+        let mut world = World::red_sphere();
+        world.hittable = hittable;
+        world
+    }
+
+    /// Book 1, sections 11–13: ground, diffuse center sphere, hollow glass sphere on the left
+    /// (outer n = 1.5, inner air bubble n = 1/1.5), fuzzy metal on the right, viewed from the
+    /// book's final positioned camera with defocus blur (vfov 20°, defocus angle 10°,
+    /// focus distance 3.4).
+    pub fn book1_materials() -> World {
+        let lambertian = |r, g, b| {
+            Material::Lambertian(Lambertian {
+                albedo: Texture::solid(Color64::new(r, g, b)),
+            })
+        };
+        let sphere = |x, y, z, radius, material| {
+            Hittable::Sphere(Sphere {
+                center: Point64::new(x, y, z),
+                radius,
+                material,
+            })
+        };
+
+        let hittable = Hittable::HittableVec(HittableVec {
+            hittables: vec![
+                sphere(0., -100.5, -1., 100., lambertian(0.8, 0.8, 0.0)),
+                sphere(0., 0., -1.2, 0.5, lambertian(0.1, 0.2, 0.5)),
+                sphere(
+                    -1.,
+                    0.,
+                    -1.,
+                    0.5,
+                    Material::Dielectric(Dielectric {
+                        index_of_refraction: 1.5,
+                    }),
+                ),
+                sphere(
+                    -1.,
+                    0.,
+                    -1.,
+                    0.4,
+                    Material::Dielectric(Dielectric {
+                        index_of_refraction: 1. / 1.5,
+                    }),
+                ),
+                sphere(
+                    1.,
+                    0.,
+                    -1.,
+                    0.5,
+                    Material::Metal(Metal {
+                        albedo: Color64::new(0.8, 0.6, 0.2),
+                        fuzz: 1.0,
+                    }),
+                ),
+            ],
+        });
+
+        let image_width = 400;
+        let image_height = 225;
+        let focus_distance = 3.4;
+        let recipe = CameraRecipe::new(
+            Point64::new(-2., 2., 1.),
+            Point64::new(0., 0., -1.),
+            DEFAULT_VUP,
+            20.,
+            image_width as f64 / image_height as f64,
+            aperture_from_defocus_angle(10., focus_distance),
+            focus_distance,
+            DEFAULT_EXPOSURE_TIME,
+        );
+
+        World {
+            image_width,
+            image_height,
+            samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            background: Background::SkyGradient,
+            camera: recipe.camera,
+            camera_target: recipe.look_at,
+            camera_v_up: recipe.v_up,
+            camera_vfov_deg: recipe.vfov_deg,
+            camera_aperture: recipe.aperture,
+            camera_focus_distance: recipe.focus_distance,
+            camera_exposure_time: recipe.exposure_time,
+            hittable,
+            ground_y: Some(-0.5),
+        }
+    }
+
+    /// Book 1, section 14.1: the original cover scene: static spheres on a gray ground under
+    /// the sky gradient, vfov 20°, defocus angle 0.6°, focus distance 10. (World 0 is the
+    /// book-2 variant with a checker ground and moving spheres.)
+    pub fn book1_final(use_bvh: bool) -> World {
+        let mut hittables: Vec<Hittable> = vec![Hittable::Sphere(Sphere {
+            center: Point64::new(0., -1000., 0.),
+            radius: 1000.,
+            material: Material::Lambertian(Lambertian {
+                albedo: Texture::solid(Color64::new(0.5, 0.5, 0.5)),
+            }),
+        })];
+
+        let glass = Material::Dielectric(Dielectric {
+            index_of_refraction: 1.5,
+        });
+        add_random_small_spheres(&mut hittables, &glass, false);
+
+        hittables.push(Hittable::Sphere(Sphere {
+            center: Point64::new(0., 1., 0.),
+            radius: 1.,
+            material: glass,
+        }));
+        hittables.push(Hittable::Sphere(Sphere {
+            center: Point64::new(-4., 1., 0.),
+            radius: 1.,
+            material: Material::Lambertian(Lambertian {
+                albedo: Texture::solid(Color64::new(0.4, 0.2, 0.1)),
+            }),
+        }));
+        hittables.push(Hittable::Sphere(Sphere {
+            center: Point64::new(4., 1., 0.),
+            radius: 1.,
+            material: Material::Metal(Metal {
+                albedo: Color64::new(0.7, 0.6, 0.5),
+                fuzz: 0.,
+            }),
+        }));
+
+        let hittable = if use_bvh {
+            BoundedVolumeHierarchy::create_bvh(&mut hittables, 0.0, 1.0)
+        } else {
+            Hittable::HittableVec(HittableVec { hittables })
+        };
+
+        let image_width = 1200;
+        let image_height = 675;
+        let focus_distance = 10.;
+        let recipe = CameraRecipe::new(
+            Point64::new(13., 2., 3.),
+            Point64::new(0., 0., 0.),
+            DEFAULT_VUP,
+            20.,
+            image_width as f64 / image_height as f64,
+            aperture_from_defocus_angle(0.6, focus_distance),
+            focus_distance,
+            DEFAULT_EXPOSURE_TIME,
+        );
+
+        World {
+            image_width,
+            image_height,
+            samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            background: Background::SkyGradient,
+            camera: recipe.camera,
+            camera_target: recipe.look_at,
+            camera_v_up: recipe.v_up,
+            camera_vfov_deg: recipe.vfov_deg,
+            camera_aperture: recipe.aperture,
+            camera_focus_distance: recipe.focus_distance,
+            camera_exposure_time: recipe.exposure_time,
+            hittable,
+            ground_y: Some(0.0),
         }
     }
 
@@ -947,7 +1113,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
-            background_color: LIGHT_BLUE,
+            background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -959,4 +1125,76 @@ impl World {
             ground_y: Some(0.0),
         }
     }
+}
+
+/// The grid of small random spheres from the book-1 cover scene. With `moving`, 10% of
+/// them are book-2 motion-blurred spheres; without it the mix is the book-1 original
+/// (80% diffuse, 15% metal, 5% glass).
+fn add_random_small_spheres(hittables: &mut Vec<Hittable>, glass: &Material, moving: bool) {
+    let mut rng = rand::rng();
+
+    let reference_point = Point64::new(4., 0.2, 0.);
+
+    for a in 0..22 {
+        for b in 0..22 {
+            let choose_mat = rng.random::<f64>();
+            let center = Point64::new(
+                (a - 11) as f64 + 0.9 * rng.random::<f64>(),
+                0.2,
+                (b - 11) as f64 + 0.9 * rng.random::<f64>(),
+            );
+
+            if (center - reference_point).0.magnitude() > 0.9 {
+                if moving && choose_mat < 0.1 {
+                    // 10% moving Lambertian spheres
+                    hittables.push(Hittable::MovingSphere(MovingSphere {
+                        center0: center,
+                        center1: Point64(center.0 + Vector3::new(0., rng.random(), 0.)),
+                        time0: 0.,
+                        time1: 1.,
+                        radius: 0.2,
+                        material: Material::Lambertian(Lambertian {
+                            albedo: Texture::solid(Color64(
+                                random_in_unit_cube().component_mul(&random_in_unit_cube()),
+                            )),
+                        }),
+                    }));
+                } else if choose_mat < 0.8 {
+                    // Stationary Lambertian spheres (70% with `moving`, 80% without)
+                    hittables.push(Hittable::Sphere(Sphere {
+                        center,
+                        radius: 0.2,
+                        material: Material::Lambertian(Lambertian {
+                            albedo: Texture::solid(Color64(
+                                random_in_unit_cube().component_mul(&random_in_unit_cube()),
+                            )),
+                        }),
+                    }));
+                } else if choose_mat < 0.95 {
+                    // 15% metal spheres
+                    hittables.push(Hittable::Sphere(Sphere {
+                        center,
+                        radius: 0.2,
+                        material: Material::Metal(Metal {
+                            albedo: Color64(rand_range(0.5, 1.)),
+                            fuzz: rng.random_range(0.0..0.5),
+                        }),
+                    }));
+                } else {
+                    // 5% glass
+                    hittables.push(Hittable::Sphere(Sphere {
+                        center,
+                        radius: 0.2,
+                        material: glass.clone(),
+                    }));
+                }
+            }
+        }
+    }
+}
+
+/// Converts the book-4.x camera's `defocus_angle` (degrees, the cone apex angle at the focus
+/// plane) to our thin-lens aperture diameter: radius = focus_distance * tan(angle / 2).
+fn aperture_from_defocus_angle(defocus_angle_deg: f64, focus_distance: f64) -> f64 {
+    2. * focus_distance * (defocus_angle_deg.to_radians() / 2.).tan()
 }

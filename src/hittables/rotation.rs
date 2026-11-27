@@ -1,3 +1,4 @@
+use crate::data::interval::Interval;
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
@@ -51,7 +52,7 @@ impl Rotation {
         self.bounding_box
     }
 
-    pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
+    pub fn is_hit_by(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
         let origin = Point64(self.inv_rot * ray.origin.0);
         let direction = Point64(self.inv_rot * ray.direction.0);
         let local_ray = Ray {
@@ -60,7 +61,7 @@ impl Rotation {
             exposure_time: ray.exposure_time,
         };
 
-        let hr = self.hittable.is_hit_by(&local_ray, min_value, max_value)?;
+        let hr = self.hittable.is_hit_by(&local_ray, ray_t)?;
         let world_normal = (self.rot * hr.normal.0).normalize();
 
         Some(HitRecord::new(

@@ -1,3 +1,4 @@
+use crate::data::interval::Interval;
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
@@ -63,7 +64,7 @@ impl Cuboid {
         })
     }
 
-    pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
-        self.sides.is_hit_by(ray, min_value, max_value)
+    pub fn is_hit_by(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
+        self.sides.is_hit_by(ray, ray_t)
     }
 }

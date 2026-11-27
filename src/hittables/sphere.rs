@@ -1,3 +1,4 @@
+use crate::data::interval::Interval;
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::HitRecord;
@@ -28,19 +29,19 @@ impl Sphere {
         })
     }
 
-    pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
+    pub fn is_hit_by(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
         let ray_origin_to_center: Point64 = ray.origin - self.center;
         let a = ray.direction.0.dot(&ray.direction.0);
         let half_b = ray_origin_to_center.0.dot(&ray.direction.0);
         let c = ray_origin_to_center.0.dot(&ray_origin_to_center.0) - self.radius.powi(2);
         let discriminant = half_b.powi(2) - a * c;
-        let sqrt_discriminant = discriminant.sqrt();
-        let root_one = (-half_b - sqrt_discriminant) / a;
-        let root_two = (-half_b + sqrt_discriminant) / a;
 
         if discriminant >= 0. {
-            let root_one_in_range = min_value < root_one && root_one < max_value;
-            let root_two_in_range = min_value < root_two && root_two < max_value;
+            let sqrt_discriminant = discriminant.sqrt();
+            let root_one = (-half_b - sqrt_discriminant) / a;
+            let root_two = (-half_b + sqrt_discriminant) / a;
+            let root_one_in_range = ray_t.surrounds(root_one);
+            let root_two_in_range = ray_t.surrounds(root_two);
 
             if root_one_in_range || root_two_in_range {
                 let root = if root_one_in_range {
@@ -63,5 +64,111 @@ impl Sphere {
         }
 
         None
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::data::color64::Color64;
+    use crate::materials::diffuse_light::DiffuseLight;
+    use approx::assert_abs_diff_eq;
+
+    fn unit_sphere_at_neg_z() -> Sphere {
+        Sphere {
+            center: Point64::new(0., 0., -1.),
+            radius: 0.5,
+            material: Material::DiffuseLight(DiffuseLight::new(Color64::new(1., 0., 0.))),
+        }
+    }
+
+    fn ray(origin: Point64, direction: Point64) -> Ray {
+        Ray {
+            origin,
+            direction,
+            exposure_time: 0.,
+        }
+    }
+
+    #[test]
+    fn hits_near_side_from_outside() {
+        let s = unit_sphere_at_neg_z();
+        let hit = s
+            .is_hit_by(
+                &ray(Point64::new(0., 0., 0.), Point64::new(0., 0., -1.)),
+                Interval::new(0.001, f64::INFINITY),
+            )
+            .expect("ray toward center should hit");
+        assert_abs_diff_eq!(hit.value, 0.5, epsilon = 1e-12);
+        assert_abs_diff_eq!(
+            hit.location.0,
+            Point64::new(0., 0., -0.5).0,
+            epsilon = 1e-12
+        );
+        assert!(hit.front_face);
+        assert_abs_diff_eq!(hit.normal.0, Point64::new(0., 0., 1.).0, epsilon = 1e-12);
+    }
+
+    #[test]
+    fn non_normalized_direction_gives_scaled_t() {
+        let s = unit_sphere_at_neg_z();
+        let hit = s
+            .is_hit_by(
+                &ray(Point64::new(0., 0., 0.), Point64::new(0., 0., -2.)),
+                Interval::new(0.001, f64::INFINITY),
+            )
+            .unwrap();
+        assert_abs_diff_eq!(hit.value, 0.25, epsilon = 1e-12);
+    }
+
+    #[test]
+    fn misses() {
+        let s = unit_sphere_at_neg_z();
+        assert!(
+            s.is_hit_by(
+                &ray(Point64::new(0., 0., 0.), Point64::new(0., 1., -1.)),
+                Interval::new(0.001, f64::INFINITY)
+            )
+            .is_none()
+        );
+        // Sphere is behind the ray.
+        assert!(
+            s.is_hit_by(
+                &ray(Point64::new(0., 0., 0.), Point64::new(0., 0., 1.)),
+                Interval::new(0.001, f64::INFINITY)
+            )
+            .is_none()
+        );
+    }
+
+    #[test]
+    fn from_inside_hits_far_side_as_back_face() {
+        let s = unit_sphere_at_neg_z();
+        let hit = s
+            .is_hit_by(
+                &ray(Point64::new(0., 0., -1.), Point64::new(0., 0., -1.)),
+                Interval::new(0.001, f64::INFINITY),
+            )
+            .unwrap();
+        assert_abs_diff_eq!(hit.value, 0.5, epsilon = 1e-12);
+        assert!(!hit.front_face);
+        // Normal is flipped to oppose the ray.
+        assert_abs_diff_eq!(hit.normal.0, Point64::new(0., 0., 1.).0, epsilon = 1e-12);
+    }
+
+    #[test]
+    fn respects_t_range() {
+        let s = unit_sphere_at_neg_z();
+        let r = ray(Point64::new(0., 0., 0.), Point64::new(0., 0., -1.));
+        // Near root (0.5) excluded -> far root (1.5).
+        assert_abs_diff_eq!(
+            s.is_hit_by(&r, Interval::new(0.6, f64::INFINITY))
+                .unwrap()
+                .value,
+            1.5,
+            epsilon = 1e-12
+        );
+        // Both roots excluded.
+        assert!(s.is_hit_by(&r, Interval::new(0.001, 0.4)).is_none());
     }
 }
