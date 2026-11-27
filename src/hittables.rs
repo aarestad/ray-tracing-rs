@@ -1,3 +1,4 @@
+use crate::data::interval::Interval;
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
@@ -10,18 +11,18 @@ pub mod constant_medium;
 pub mod cuboid;
 pub mod hittable_vec;
 pub mod moving_sphere;
+pub mod quad;
 pub mod rotation;
 pub mod sphere;
-pub mod quad;
 pub mod translation;
 pub mod triangle;
 
-use quad::Quad;
 use bounded_volume_hierarchy::BoundedVolumeHierarchy;
 pub use constant_medium::ConstantMedium;
 use cuboid::Cuboid;
 use hittable_vec::HittableVec;
 use moving_sphere::MovingSphere;
+use quad::Quad;
 use rotation::Rotation;
 use sphere::Sphere;
 use translation::Translation;
@@ -97,18 +98,18 @@ impl Hittable {
         }
     }
 
-    pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
+    pub fn is_hit_by(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
         match self {
-            Hittable::Sphere(h) => h.is_hit_by(ray, min_value, max_value),
-            Hittable::MovingSphere(h) => h.is_hit_by(ray, min_value, max_value),
-            Hittable::Quad(h) => h.is_hit_by(ray, min_value, max_value),
-            Hittable::Triangle(h) => h.is_hit_by(ray, min_value, max_value),
-            Hittable::HittableVec(h) => h.is_hit_by(ray, min_value, max_value),
-            Hittable::Bvh(h) => h.is_hit_by(ray, min_value, max_value),
-            Hittable::Translation(h) => h.is_hit_by(ray, min_value, max_value),
-            Hittable::Cuboid(h) => h.is_hit_by(ray, min_value, max_value),
-            Hittable::Rotation(h) => h.is_hit_by(ray, min_value, max_value),
-            Hittable::ConstantMedium(h) => h.is_hit_by(ray, min_value, max_value),
+            Hittable::Sphere(h) => h.is_hit_by(ray, ray_t),
+            Hittable::MovingSphere(h) => h.is_hit_by(ray, ray_t),
+            Hittable::Quad(h) => h.is_hit_by(ray, ray_t),
+            Hittable::Triangle(h) => h.is_hit_by(ray, ray_t),
+            Hittable::HittableVec(h) => h.is_hit_by(ray, ray_t),
+            Hittable::Bvh(h) => h.is_hit_by(ray, ray_t),
+            Hittable::Translation(h) => h.is_hit_by(ray, ray_t),
+            Hittable::Cuboid(h) => h.is_hit_by(ray, ray_t),
+            Hittable::Rotation(h) => h.is_hit_by(ray, ray_t),
+            Hittable::ConstantMedium(h) => h.is_hit_by(ray, ray_t),
         }
     }
 }

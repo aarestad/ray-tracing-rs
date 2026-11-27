@@ -1,3 +1,4 @@
+use crate::data::interval::Interval;
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::HitRecord;
@@ -28,7 +29,7 @@ impl Sphere {
         })
     }
 
-    pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
+    pub fn is_hit_by(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
         let ray_origin_to_center: Point64 = ray.origin - self.center;
         let a = ray.direction.0.dot(&ray.direction.0);
         let half_b = ray_origin_to_center.0.dot(&ray.direction.0);
@@ -39,8 +40,8 @@ impl Sphere {
             let sqrt_discriminant = discriminant.sqrt();
             let root_one = (-half_b - sqrt_discriminant) / a;
             let root_two = (-half_b + sqrt_discriminant) / a;
-            let root_one_in_range = min_value < root_one && root_one < max_value;
-            let root_two_in_range = min_value < root_two && root_two < max_value;
+            let root_one_in_range = ray_t.surrounds(root_one);
+            let root_two_in_range = ray_t.surrounds(root_two);
 
             if root_one_in_range || root_two_in_range {
                 let root = if root_one_in_range {
@@ -93,10 +94,17 @@ mod test {
     fn hits_near_side_from_outside() {
         let s = unit_sphere_at_neg_z();
         let hit = s
-            .is_hit_by(&ray(Point64::new(0., 0., 0.), Point64::new(0., 0., -1.)), 0.001, f64::INFINITY)
+            .is_hit_by(
+                &ray(Point64::new(0., 0., 0.), Point64::new(0., 0., -1.)),
+                Interval::new(0.001, f64::INFINITY),
+            )
             .expect("ray toward center should hit");
         assert_abs_diff_eq!(hit.value, 0.5, epsilon = 1e-12);
-        assert_abs_diff_eq!(hit.location.0, Point64::new(0., 0., -0.5).0, epsilon = 1e-12);
+        assert_abs_diff_eq!(
+            hit.location.0,
+            Point64::new(0., 0., -0.5).0,
+            epsilon = 1e-12
+        );
         assert!(hit.front_face);
         assert_abs_diff_eq!(hit.normal.0, Point64::new(0., 0., 1.).0, epsilon = 1e-12);
     }
@@ -105,7 +113,10 @@ mod test {
     fn non_normalized_direction_gives_scaled_t() {
         let s = unit_sphere_at_neg_z();
         let hit = s
-            .is_hit_by(&ray(Point64::new(0., 0., 0.), Point64::new(0., 0., -2.)), 0.001, f64::INFINITY)
+            .is_hit_by(
+                &ray(Point64::new(0., 0., 0.), Point64::new(0., 0., -2.)),
+                Interval::new(0.001, f64::INFINITY),
+            )
             .unwrap();
         assert_abs_diff_eq!(hit.value, 0.25, epsilon = 1e-12);
     }
@@ -113,20 +124,31 @@ mod test {
     #[test]
     fn misses() {
         let s = unit_sphere_at_neg_z();
-        assert!(s
-            .is_hit_by(&ray(Point64::new(0., 0., 0.), Point64::new(0., 1., -1.)), 0.001, f64::INFINITY)
-            .is_none());
+        assert!(
+            s.is_hit_by(
+                &ray(Point64::new(0., 0., 0.), Point64::new(0., 1., -1.)),
+                Interval::new(0.001, f64::INFINITY)
+            )
+            .is_none()
+        );
         // Sphere is behind the ray.
-        assert!(s
-            .is_hit_by(&ray(Point64::new(0., 0., 0.), Point64::new(0., 0., 1.)), 0.001, f64::INFINITY)
-            .is_none());
+        assert!(
+            s.is_hit_by(
+                &ray(Point64::new(0., 0., 0.), Point64::new(0., 0., 1.)),
+                Interval::new(0.001, f64::INFINITY)
+            )
+            .is_none()
+        );
     }
 
     #[test]
     fn from_inside_hits_far_side_as_back_face() {
         let s = unit_sphere_at_neg_z();
         let hit = s
-            .is_hit_by(&ray(Point64::new(0., 0., -1.), Point64::new(0., 0., -1.)), 0.001, f64::INFINITY)
+            .is_hit_by(
+                &ray(Point64::new(0., 0., -1.), Point64::new(0., 0., -1.)),
+                Interval::new(0.001, f64::INFINITY),
+            )
             .unwrap();
         assert_abs_diff_eq!(hit.value, 0.5, epsilon = 1e-12);
         assert!(!hit.front_face);
@@ -139,8 +161,14 @@ mod test {
         let s = unit_sphere_at_neg_z();
         let r = ray(Point64::new(0., 0., 0.), Point64::new(0., 0., -1.));
         // Near root (0.5) excluded -> far root (1.5).
-        assert_abs_diff_eq!(s.is_hit_by(&r, 0.6, f64::INFINITY).unwrap().value, 1.5, epsilon = 1e-12);
+        assert_abs_diff_eq!(
+            s.is_hit_by(&r, Interval::new(0.6, f64::INFINITY))
+                .unwrap()
+                .value,
+            1.5,
+            epsilon = 1e-12
+        );
         // Both roots excluded.
-        assert!(s.is_hit_by(&r, 0.001, 0.4).is_none());
+        assert!(s.is_hit_by(&r, Interval::new(0.001, 0.4)).is_none());
     }
 }

@@ -78,7 +78,10 @@ mod test {
 
     #[test]
     fn clamps_out_of_range() {
-        assert_eq!(Color64::new(9.0, -1.0, 1.0).to_image_rgbu8(1), Rgb([255, 0, 255]));
+        assert_eq!(
+            Color64::new(9.0, -1.0, 1.0).to_image_rgbu8(1),
+            Rgb([255, 0, 255])
+        );
     }
 
     #[test]

@@ -1,3 +1,4 @@
+use crate::data::interval::Interval;
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
@@ -25,16 +26,14 @@ impl ConstantMedium {
         self.boundary.bounding_box(time0, time1)
     }
 
-    pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
-        let rec1 = self
-            .boundary
-            .is_hit_by(ray, f64::NEG_INFINITY, f64::INFINITY)?;
+    pub fn is_hit_by(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
+        let rec1 = self.boundary.is_hit_by(ray, Interval::UNIVERSE)?;
         let rec2 = self
             .boundary
-            .is_hit_by(ray, rec1.value + 0.0001, f64::INFINITY)?;
+            .is_hit_by(ray, Interval::new(rec1.value + 0.0001, f64::INFINITY))?;
 
-        let t_min = rec1.value.max(min_value);
-        let t_max = rec2.value.min(max_value);
+        let t_min = rec1.value.max(ray_t.min);
+        let t_max = rec2.value.min(ray_t.max);
 
         if t_min >= t_max {
             return None;
@@ -59,7 +58,7 @@ impl ConstantMedium {
             v: 0.0,
             location,
             normal: Point64::new(1.0, 0.0, 0.0), // arbitrary
-            front_face: true,                      // arbitrary
+            front_face: true,                    // arbitrary
             material: self.phase_function.clone(),
         })
     }

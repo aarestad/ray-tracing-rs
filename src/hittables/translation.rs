@@ -1,3 +1,4 @@
+use crate::data::interval::Interval;
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::axis_aligned_bounding_box::AxisAlignedBoundingBox;
@@ -24,14 +25,14 @@ impl Translation {
         }
     }
 
-    pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
+    pub fn is_hit_by(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
         let moved_ray = Ray {
             origin: Point64(ray.origin.0 - self.offset),
             direction: ray.direction,
             exposure_time: ray.exposure_time,
         };
 
-        let opt_hit_record = self.hittable.is_hit_by(&moved_ray, min_value, max_value);
+        let opt_hit_record = self.hittable.is_hit_by(&moved_ray, ray_t);
 
         match opt_hit_record {
             Some(hr) => Some(HitRecord::new(

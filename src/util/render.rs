@@ -1,6 +1,6 @@
+use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::mpsc::channel;
-use std::sync::Arc;
 
 use rand::Rng;
 use threadpool::ThreadPool;
@@ -25,8 +25,11 @@ pub fn render_row(
     max_depth: i32,
     rng: &mut impl Rng,
 ) -> (u32, Vec<Color64>) {
-    let du = render_w.saturating_sub(1).max(1) as f64;
-    let dv = render_h.saturating_sub(1).max(1) as f64;
+    // The camera maps (s, t) in [0, 1] edge-to-edge across the viewport, so pixel x covers
+    // [x / w, (x + 1) / w). Jittering within that cell matches the book's pixel-center ± 0.5
+    // sampling (section 8.2).
+    let du = render_w.max(1) as f64;
+    let dv = render_h.max(1) as f64;
     let flipped_y = render_h - row_y - 1;
     let row = (0..render_w)
         .map(|x| {

@@ -1,3 +1,4 @@
+use crate::data::interval::Interval;
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
 use crate::hittables::HitRecord;
@@ -40,7 +41,7 @@ impl MovingSphere {
         Some(box0.surrounding_box_with(&box1))
     }
 
-    pub fn is_hit_by(&self, ray: &Ray, min_value: f64, max_value: f64) -> Option<HitRecord> {
+    pub fn is_hit_by(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
         let ray_origin_to_center = ray.origin - self.center_at(ray.exposure_time);
         let a = ray.direction.0.dot(&ray.direction.0);
         let half_b = ray_origin_to_center.0.dot(&ray.direction.0);
@@ -51,8 +52,8 @@ impl MovingSphere {
         let root_two = (-half_b + sqrt_discriminant) / a;
 
         if discriminant >= 0. {
-            let root_one_in_range = min_value < root_one && root_one < max_value;
-            let root_two_in_range = min_value < root_two && root_two < max_value;
+            let root_one_in_range = ray_t.surrounds(root_one);
+            let root_two_in_range = ray_t.surrounds(root_two);
 
             if root_one_in_range || root_two_in_range {
                 let root = if root_one_in_range {

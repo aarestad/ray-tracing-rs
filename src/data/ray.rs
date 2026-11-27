@@ -1,5 +1,6 @@
 use crate::data::background::Background;
 use crate::data::color64::{BLACK, Color64};
+use crate::data::interval::Interval;
 use crate::data::point64::Point64;
 use crate::hittables::Hittable;
 use rand::Rng;
@@ -49,14 +50,11 @@ impl Ray {
             return BLACK;
         }
 
-        let hit_record = world.is_hit_by(self, 0.001, f64::INFINITY);
+        let hit_record = world.is_hit_by(self, Interval::new(0.001, f64::INFINITY));
 
         match hit_record {
             Some(hit_record) => {
-                let emitted =
-                    hit_record
-                        .material
-                        .emitted(hit_record.u, hit_record.v, &hit_record.location);
+                let emitted = hit_record.material.emitted(&hit_record);
                 match hit_record.material.scatter(self, &hit_record) {
                     Some(scatter_record) => {
                         let bounce = max_depth - depth;

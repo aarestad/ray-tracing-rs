@@ -28,8 +28,8 @@ pub fn parse_args(input: &[String]) -> anyhow::Result<ProgramOptions> {
     args.option(
         "w",
         "world_choice",
-        "Select world (0–11; 9 = Utah teapots OBJ, 10 = Cornell smoke, 11 = book-1 red sphere)",
-        "[0-11]",
+        "Select world (0–12; 9 = Utah teapots OBJ, 10 = Cornell smoke, 11 = book-1 red sphere, 12 = book-1 normals)",
+        "[0-12]",
         Occur::Optional,
         Some(String::from("0")),
     );

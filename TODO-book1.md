@@ -32,25 +32,34 @@ Verification checklist built from the chapter outline of `books/RayTracingInOneW
 - [x] 5.2 First raytraced image: **added** `World::red_sphere()` (`-w 11`): 400×225,
       vfov 90°, sphere at (0,0,-1) r=0.5, flat red via a non-scattering emitter, sky gradient
 
-## 6. Surface Normals and Multiple Objects
-- [ ] 6.1 Shading with surface normals (normal → color debug mode?)
-- [ ] 6.2 Simplified intersection using `h = b/2` (`half_b` — done)
-- [ ] 6.3 Hittable abstraction + `hit_record` (`Hittable` enum, `HitRecord` in `src/hittables.rs`)
-- [ ] 6.4 Front vs. back faces: `set_face_normal` / `front_face` (`HitRecord::new`)
-- [ ] 6.5 Hittable list returning closest hit (`src/hittables/hittable_vec.rs`)
-- [ ] 6.6 (C++ features: shared_ptr/vector — N/A; we use enums + Vec)
-- [ ] 6.7 Common constants/utilities: infinity, pi, degrees_to_radians, random_double
-- [ ] 6.8 Interval class (`contains`, `surrounds`, `clamp`, `empty`/`universe`) — we pass
-      `(min, max)` pairs; decide whether an `Interval` type is wanted
+## 6. Surface Normals and Multiple Objects ✅
+- [x] 6.1 Shading with surface normals: **added** `Material::NormalShaded` (emits
+      `0.5 * (n + 1)`, never scatters). `Material::emitted` now takes the `&HitRecord`
+- [x] 6.2 Simplified intersection using `h = b/2` (`half_b`)
+- [x] 6.3 Hittable abstraction + hit record (`Hittable` enum, `HitRecord` in `src/hittables.rs`)
+- [x] 6.4 Front vs. back faces: `HitRecord::new` sets `front_face` and flips the normal to oppose
+      the ray (tested for sphere hits from outside and inside)
+- [x] 6.5 Hittable list returns the closest hit (`HittableVec`; tested both orderings).
+      **Fixed:** `Triangle::is_hit_by` ignored the t-range, so triangles behind the ray (t < 0)
+      counted as hits and a farther triangle could override a closer hit in a list
+- [x] 6.6 C++ features (shared_ptr/vector): N/A; enums + `Vec`
+- [x] 6.7 Constants/utilities: `f64::INFINITY`, `std::f64::consts::PI`, `f64::to_radians`, `rand`
+- [x] 6.8 Interval: **added** `src/data/interval.rs` (`EMPTY`, `UNIVERSE`, `size`, `contains`,
+      `surrounds`, `clamp`, `with_min`/`with_max`). Every `is_hit_by` now takes
+      `ray_t: Interval` instead of `(min, max)`. AABB internals still use raw `t_min/t_max`
+      (book 2 converts those)
+- [x] Scene: `World::normals_scene()` (`-w 12`): normal-shaded sphere on a ground sphere
 
-## 7. Moving Camera Code Into Its Own Class
-- [ ] Camera owns image setup + render loop (`src/camera.rs`, `src/util/render.rs`)
+## 7. Moving Camera Code Into Its Own Class ✅
+- [x] `Camera` (`src/camera.rs`) owns view geometry and `get_ray`; the render loop lives in
+      `src/util/render.rs`. Image size, samples and max depth live on `World`; that split is a
+      deliberate difference from the book's all-in-one `camera` class
 
-## 8. Antialiasing
-- [ ] 8.1 Random number utilities (`random_double`, ranged)
-- [ ] 8.2 Multiple samples per pixel with jittered offsets, averaged (`render_row`, `-s` flag?)
-      — **⚠** we map `(x + rand) / (w - 1)`, which slightly overshoots the right/top edge versus
-      the book's pixel-center `± 0.5` sampling
+## 8. Antialiasing ✅
+- [x] 8.1 Random utilities: `rand` crate (`rng.random::<f64>()`, `random_range`)
+- [x] 8.2 Multiple samples per pixel (`-s N`, default 100), summed in `render_frame` and averaged in
+      `to_image_rgbu8`. **Fixed:** jitter now maps `(x + rand) / w` instead of `/ (w - 1)`, which
+      had stretched the image slightly past the right and top edges of the viewport
 
 ## 9. Diffuse Materials
 - [ ] 9.1 Simple diffuse (random on hemisphere)

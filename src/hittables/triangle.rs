@@ -1,4 +1,5 @@
 use super::{HitRecord, axis_aligned_bounding_box::AxisAlignedBoundingBox};
+use crate::data::interval::Interval;
 use crate::{
     data::{point64::Point64, ray::Ray, vector3::Vector},
     materials::Material,
@@ -49,7 +50,7 @@ impl Triangle {
         })
     }
 
-    pub fn is_hit_by(&self, ray: &Ray, _min_value: f64, _max_value: f64) -> Option<HitRecord> {
+    pub fn is_hit_by(&self, ray: &Ray, ray_t: Interval) -> Option<HitRecord> {
         let cross_e2 = ray.direction.0.cross(&self.e2);
         let determinant = self.e1.dot(&cross_e2);
 
@@ -72,8 +73,13 @@ impl Triangle {
             return None;
         }
 
+        let t = f * self.e2.dot(&origin_cross_e1);
+        if !ray_t.surrounds(t) {
+            return None;
+        }
+
         Some(HitRecord::new(
-            f * self.e2.dot(&origin_cross_e1),
+            t,
             ray,
             Point64(self.normal),
             self.material.clone(),
@@ -85,7 +91,7 @@ impl Triangle {
 #[cfg(test)]
 mod test {
     use crate::{
-        data::{point64::Point64, ray::Ray},
+        data::{interval::Interval, point64::Point64, ray::Ray},
         materials::Material,
         materials::dielectric::Dielectric,
     };
@@ -107,7 +113,7 @@ mod test {
             direction: Point64::new(0., 1., 0.),
             exposure_time: 1.0,
         };
-        assert!(t.is_hit_by(&r, 0.0, 100.0).is_none());
+        assert!(t.is_hit_by(&r, Interval::new(0.0, 100.0)).is_none());
     }
 
     #[test]
@@ -127,7 +133,7 @@ mod test {
             exposure_time: 1.0,
         };
 
-        assert!(t.is_hit_by(&r, 0.0, 100.0).is_none());
+        assert!(t.is_hit_by(&r, Interval::new(0.0, 100.0)).is_none());
     }
 
     #[test]
@@ -147,7 +153,48 @@ mod test {
             exposure_time: 1.0,
         };
 
-        let hr = t.is_hit_by(&r, 0.0, 100.0).unwrap();
+        let hr = t.is_hit_by(&r, Interval::new(0.0, 100.0)).unwrap();
         assert_eq!(hr.value, 2.0)
+    }
+
+    fn unit_triangle() -> Triangle {
+        Triangle::new(
+            Point64::new(0., 1., 0.),
+            Point64::new(-1., 0., 0.),
+            Point64::new(1., 0., 0.),
+            Material::Dielectric(Dielectric {
+                index_of_refraction: 1.0,
+            }),
+        )
+    }
+
+    #[test]
+    fn triangle_behind_ray_is_not_hit() {
+        // Triangle sits at z = 0; ray starts at z = 2 and points further away (+z).
+        let r = Ray {
+            origin: Point64::new(0., 0.5, 2.),
+            direction: Point64::new(0., 0., 1.),
+            exposure_time: 1.0,
+        };
+        assert!(
+            unit_triangle()
+                .is_hit_by(&r, Interval::new(0.001, f64::INFINITY))
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn triangle_beyond_t_max_is_not_hit() {
+        // Hit would be at t = 2, but a closer object already capped the search at t = 1.
+        let r = Ray {
+            origin: Point64::new(0., 0.5, -2.),
+            direction: Point64::new(0., 0., 1.),
+            exposure_time: 1.0,
+        };
+        assert!(
+            unit_triangle()
+                .is_hit_by(&r, Interval::new(0.001, 1.0))
+                .is_none()
+        );
     }
 }

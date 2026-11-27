@@ -41,6 +41,7 @@ fn main() -> anyhow::Result<()> {
         9 => World::utah_teapots(),
         10 => World::cornell_smoke(),
         11 => World::red_sphere(),
+        12 => World::normals_scene(),
         _ => anyhow::bail!("bad world choice: {}", world_choice),
     };
 
@@ -48,8 +49,7 @@ fn main() -> anyhow::Result<()> {
     let world = Arc::new(world);
 
     if options.interactive {
-        util::interactive::run_interactive(world)
-            .context("interactive mode failed")?;
+        util::interactive::run_interactive(world).context("interactive mode failed")?;
         return Ok(());
     }
 

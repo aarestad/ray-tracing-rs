@@ -3,21 +3,21 @@ use crate::data::background::Background;
 use crate::data::color64::{BLACK, Color64, LIGHT_BLUE};
 use crate::data::point64::Point64;
 use crate::data::vector3::{rand_range, random_in_unit_cube};
-use crate::hittables::{ConstantMedium, Hittable};
-use crate::hittables::rotation::AxisAlignment::{self, X, Y, Z};
 use crate::hittables::bounded_volume_hierarchy::BoundedVolumeHierarchy;
-use crate::hittables::quad::Quad;
-use crate::hittables::rotation::Rotation;
 use crate::hittables::cuboid::Cuboid;
 use crate::hittables::hittable_vec::HittableVec;
 use crate::hittables::moving_sphere::MovingSphere;
+use crate::hittables::quad::Quad;
+use crate::hittables::rotation::AxisAlignment::{self, X, Y, Z};
+use crate::hittables::rotation::Rotation;
 use crate::hittables::sphere::Sphere;
 use crate::hittables::translation::Translation;
-use crate::materials::{Isotropic, Material};
+use crate::hittables::{ConstantMedium, Hittable};
 use crate::materials::dielectric::Dielectric;
 use crate::materials::diffuse_light::DiffuseLight;
 use crate::materials::lambertian::Lambertian;
 use crate::materials::metal::Metal;
+use crate::materials::{Isotropic, Material};
 use crate::textures::Texture;
 use crate::textures::image::ImageTexture;
 use crate::textures::noise::NoiseType::Marble;
@@ -310,9 +310,7 @@ impl World {
             center: Point64::new(0., 0., 0.),
             radius: 2.,
             material: Material::Lambertian(Lambertian {
-                albedo: Texture::Image(ImageTexture::new(
-                    "resources/earthmap.jpg".into(),
-                )),
+                albedo: Texture::Image(ImageTexture::new("resources/earthmap.jpg".into())),
             }),
         });
 
@@ -659,7 +657,6 @@ impl World {
                             albedo: Texture::solid(Color64::gray(1.0)),
                         }),
                     )),
-
                     // earth
                     Hittable::Sphere(Sphere {
                         center: Point64::new(400., 200., 400.),
@@ -875,6 +872,30 @@ impl World {
         }
     }
 
+    /// Book 1, sections 6.1–6.7: a small sphere on a large "ground" sphere, both shaded by
+    /// their surface normals, in front of the sky gradient. Exercises the hittable list
+    /// (closest hit wins) and front-face normals.
+    pub fn normals_scene() -> World {
+        let hittable = Hittable::HittableVec(HittableVec {
+            hittables: vec![
+                Hittable::Sphere(Sphere {
+                    center: Point64::new(0., 0., -1.),
+                    radius: 0.5,
+                    material: Material::NormalShaded,
+                }),
+                Hittable::Sphere(Sphere {
+                    center: Point64::new(0., -100.5, -1.),
+                    radius: 100.,
+                    material: Material::NormalShaded,
+                }),
+            ],
+        });
+
+        let mut world = World::red_sphere();
+        world.hittable = hittable;
+        world
+    }
+
     /// Utah teapot mesh loaded from `resources/teapot.obj` — several instances with different materials.
     pub fn utah_teapots() -> World {
         let teapot_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/teapot.obj");
@@ -913,9 +934,7 @@ impl World {
             })),
         });
         let earth = Material::Lambertian(Lambertian {
-            albedo: Texture::Image(ImageTexture::new(
-                "resources/earthmap.jpg".into(),
-            )),
+            albedo: Texture::Image(ImageTexture::new("resources/earthmap.jpg".into())),
         });
         let glass = Material::Dielectric(Dielectric {
             index_of_refraction: 1.5,
@@ -952,9 +971,7 @@ impl World {
             )
             .unwrap_or_else(|e| panic!("failed to load {}: {e}", teapot_path.display()));
             let bvh = BoundedVolumeHierarchy::create_bvh(&mut tris, 0., 1.);
-            let rotated = Hittable::Rotation(Rotation::new(
-                Box::new(bvh), axis, angle, 0., 1.,
-            ));
+            let rotated = Hittable::Rotation(Rotation::new(Box::new(bvh), axis, angle, 0., 1.));
             hittables.push(Hittable::Translation(Translation {
                 hittable: Box::new(rotated),
                 offset: Vector3::new(x, 0., 0.),
