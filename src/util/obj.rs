@@ -121,7 +121,10 @@ pub fn load_obj_triangles(
             let p3 = transform_vertex(pos, i2, scale, offset);
 
             out.push(Hittable::Triangle(Triangle::new(
-                p1, p2, p3, material.clone(),
+                p1,
+                p2,
+                p3,
+                material.clone(),
             )));
         }
     }
