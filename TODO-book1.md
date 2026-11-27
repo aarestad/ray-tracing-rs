@@ -61,42 +61,56 @@ Verification checklist built from the chapter outline of `books/RayTracingInOneW
       `to_image_rgbu8`. **Fixed:** jitter now maps `(x + rand) / w` instead of `/ (w - 1)`, which
       had stretched the image slightly past the right and top edges of the viewport
 
-## 9. Diffuse Materials
-- [ ] 9.1 Simple diffuse (random on hemisphere)
-- [ ] 9.2 Max recursion depth limit (`max_depth`, default 50)
-- [ ] 9.3 Shadow acne fix: `t_min = 0.001` (`ray.rs:51` — done)
-- [ ] 9.4 True Lambertian: `normal + random_unit_vector()` (`lambertian.rs`). Note our
-      `random_in_unit_sphere()` actually returns a unit vector *on* the sphere — consider renaming
-      to `random_unit_vector`
-- [ ] 9.5 Gamma correction (gamma 2, `sqrt`) (`color64.rs` — done)
+## 9. Diffuse Materials ✅
+- [x] 9.1 Simple diffuse: superseded by 9.4 (the book replaces it too)
+- [x] 9.2 Child-ray limit: `max_depth` 50 (`main.rs`). We also add Russian roulette after 3
+      bounces (`ray.rs`, `RR_MIN_BOUNCES`). That's not in book 1 but is unbiased
+      (survivors are re-weighted by `1/p`)
+- [x] 9.3 Shadow acne: `Interval::new(0.001, ∞)` in `color_in_world_recurse`
+- [x] 9.4 True Lambertian: `normal + random_unit_vector()`. **Renamed** `random_in_unit_sphere`
+      → `random_unit_vector` (it always returned a unit vector, which is what the book wants)
+- [x] 9.5 Gamma 2 (`sqrt`) in `Color64::to_image_rgbu8` (tested)
 
-## 10. Metal
-- [ ] 10.1 Material abstraction with `scatter()` (`Material` enum, `src/materials.rs`)
-- [ ] 10.2 Hit record carries material
-- [ ] 10.3 Light scatter & reflectance (albedo/attenuation; Lambertian degenerate-direction catch)
-      — **⚠** `near_zero` (`vector3.rs:44`) doesn't take `abs()`, so any vector with all-negative
-      components counts as "near zero"
-- [ ] 10.4 Mirrored reflection `reflect(v, n)` (`vector3.rs:48`)
-- [ ] 10.5 Metal sphere scene renders
-- [ ] 10.6 Fuzzy reflection — **⚠** we check `dot(reflected, n) > 0` *before* adding fuzz; the
-      book checks the final fuzzed direction (`metal.rs:18`)
+## 10. Metal ✅
+- [x] 10.1 Material abstraction: `Material` enum with `scatter` / `emitted`
+- [x] 10.2 Hit record carries the material
+- [x] 10.3 Albedo/attenuation; degenerate scatter direction falls back to the normal.
+      **Fixed:** `near_zero` lacked `abs()`, so e.g. `(0, -1, 0)` counted as near-zero (tested)
+- [x] 10.4 Mirror reflection `reflect(v, n)` (tested)
+- [x] 10.5 Metal spheres render (`-w 13`, `-w 14`)
+- [x] 10.6 Fuzzy reflection. **Fixed:** the into-surface check now runs on the *fuzzed*
+      direction, and fuzz is capped at 1 like the book's constructor (tested)
 
-## 11. Dielectrics
-- [ ] 11.1–11.2 Refraction / Snell's law `refract()` — **⚠** `vector3.rs:56` uses
-      `r_out_normal.magnitude()`; the book uses `length_squared()` (perp/parallel names also swapped)
-- [ ] 11.3 Total internal reflection (`cannot_refract`, `dielectric.rs:33` — done)
-- [ ] 11.4 Schlick approximation (`reflectance`, `dielectric.rs:9` — done)
-- [ ] 11.5 Hollow glass sphere (negative radius / inner sphere with 1/ior) in a scene
+## 11. Dielectrics ✅
+- [x] 11.1–11.2 Snell's law `refract()`. **Fixed:** used `|r_perp|` instead of `|r_perp|²`, so
+      every non-head-on refraction bent at the wrong angle; also clamped `cos θ` before
+      negating instead of after (`-(x.min(1))` vs book `min(-x, 1)`), here and in
+      `Dielectric::scatter`. The old test checked a value copied from the buggy output; it's
+      replaced by a Snell's-law test across angles and η
+- [x] 11.3 Total internal reflection (`cannot_refract`; tested)
+- [x] 11.4 Schlick approximation (`reflectance`; endpoint values tested)
+- [x] 11.5 Hollow glass sphere: **added** `World::book1_materials()` (`-w 13`) with an inner
+      n = 1/1.5 bubble inside an n = 1.5 sphere
 
-## 12. Positionable Camera
-- [ ] 12.1 Vertical FOV (`vfov_deg` — done)
-- [ ] 12.2 lookfrom / lookat / vup orthonormal basis (`camera.rs:80-82` — done)
+## 12. Positionable Camera ✅
+- [x] 12.1 Vertical FOV (`vfov_deg`)
+- [x] 12.2 lookfrom / lookat / vup orthonormal basis (`Camera::new`)
 
-## 13. Defocus Blur
-- [ ] 13.1 Thin lens: defocus angle/aperture + focus distance (we use `aperture`, book 4.x uses
-      `defocus_angle` — fine, just confirm equivalence)
-- [ ] 13.2 Sample rays from defocus disk (`random_in_unit_disk`, `get_ray` — done)
+## 13. Defocus Blur ✅
+- [x] 13.1 Thin lens: we take `aperture` (lens diameter) where book 4.x takes
+      `defocus_angle`; `aperture_from_defocus_angle()` in `worlds.rs` converts
+      (`2·focus·tan(angle/2)`). Viewport is placed at `focus_dist`, as in the book
+- [x] 13.2 Rays from a uniformly sampled defocus disk (`random_in_unit_disk`, `sqrt(r)`)
+- [x] Scene: `-w 13` uses the book's final camera (vfov 20°, defocus 10°, focus 3.4)
 
-## 14. Where Next?
-- [ ] 14.1 Final render: random-spheres cover scene (`World::random_world`, `-w 0`) matches book
-- [ ] Add regression tests for `refract`, `near_zero`, Schlick, and sphere hit/front-face
+## 14. Where Next? ✅
+- [x] 14.1 Final render: **added** `World::book1_final()` (`-w 14`, BVH unless `-f`): gray
+      ground, static random spheres, sky gradient, 1200×675, defocus 0.6°, focus 10. World 0
+      remains the book-2 variant (checker ground, moving spheres); both share
+      `add_random_small_spheres()`
+
+## Remaining differences from the book (intentional)
+- Russian roulette path termination (book 3 territory)
+- `Camera` / `World` split instead of one all-in-one `camera` class
+- PNG output by default; PPM writer kept in `src/util/ppm.rs`
+- Color quantization uses `255 · clamp(x, 0, 1)` rather than `256 · clamp(x, 0, 0.999)`

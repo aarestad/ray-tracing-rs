@@ -42,6 +42,8 @@ fn main() -> anyhow::Result<()> {
         10 => World::cornell_smoke(),
         11 => World::red_sphere(),
         12 => World::normals_scene(),
+        13 => World::book1_materials(),
+        14 => World::book1_final(options.use_bvh),
         _ => anyhow::bail!("bad world choice: {}", world_choice),
     };
 

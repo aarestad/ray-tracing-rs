@@ -17,7 +17,7 @@ pub fn parse_args(input: &[String]) -> anyhow::Result<ProgramOptions> {
     args.flag(
         "f",
         "flat",
-        "For world 0, use linear HittableVec instead of BVH (default is BVH)",
+        "For worlds 0 and 14, use linear HittableVec instead of BVH (default is BVH)",
     );
     args.flag("h", "help", "Print this help message");
     args.flag(
@@ -28,8 +28,8 @@ pub fn parse_args(input: &[String]) -> anyhow::Result<ProgramOptions> {
     args.option(
         "w",
         "world_choice",
-        "Select world (0–12; 9 = Utah teapots OBJ, 10 = Cornell smoke, 11 = book-1 red sphere, 12 = book-1 normals)",
-        "[0-12]",
+        "Select world (0–14; 9 = Utah teapots OBJ, 10 = Cornell smoke, 11–14 = book-1 red sphere, normals, materials, final scene)",
+        "[0-14]",
         Occur::Optional,
         Some(String::from("0")),
     );

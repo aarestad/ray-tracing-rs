@@ -1,6 +1,6 @@
 use crate::data::point64::Point64;
 use crate::data::ray::Ray;
-use crate::data::vector3::random_in_unit_sphere;
+use crate::data::vector3::random_unit_vector;
 use crate::hittables::HitRecord;
 use crate::materials::ScatterRecord;
 use crate::textures::Texture;
@@ -19,7 +19,7 @@ impl Isotropic {
                 .value(hit_record.u, hit_record.v, &hit_record.location),
             scattered: Ray {
                 origin: hit_record.location,
-                direction: Point64(random_in_unit_sphere()),
+                direction: Point64(random_unit_vector()),
                 exposure_time: ray_in.exposure_time,
             },
         })
