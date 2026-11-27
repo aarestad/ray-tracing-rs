@@ -1,3 +1,4 @@
+pub mod background;
 pub mod color64;
 pub mod point64;
 pub mod ray;

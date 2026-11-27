@@ -6,6 +6,7 @@ use rand::Rng;
 use threadpool::ThreadPool;
 
 use crate::camera::Camera;
+use crate::data::background::Background;
 use crate::data::color64::Color64;
 use crate::hittables::Hittable;
 use crate::util::worlds::World;
@@ -17,7 +18,7 @@ use crate::util::worlds::World;
 pub fn render_row(
     camera: &Camera,
     hittable: &Hittable,
-    background: &Color64,
+    background: &Background,
     row_y: u32,
     render_w: u32,
     render_h: u32,
@@ -80,7 +81,7 @@ pub fn render_frame(
                     let (_, row) = render_row(
                         &camera,
                         &world.hittable,
-                        &world.background_color,
+                        &world.background,
                         row_y,
                         render_w,
                         render_h,
@@ -108,7 +109,7 @@ pub fn render_frame(
             return None;
         }
         rows.push(row);
-        println!("{} / {} scanlines done", idx,  world.image_height);
+        println!("{} / {} scanlines done", idx + 1, render_h);
     }
 
     if cancel.is_none_or(|(generation, expected)| generation.load(Ordering::Acquire) == expected) {

@@ -40,6 +40,7 @@ fn main() -> anyhow::Result<()> {
         8 => World::final_scene(),
         9 => World::utah_teapots(),
         10 => World::cornell_smoke(),
+        11 => World::red_sphere(),
         _ => anyhow::bail!("bad world choice: {}", world_choice),
     };
 

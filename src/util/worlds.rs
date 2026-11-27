@@ -1,4 +1,5 @@
 use crate::camera::{Camera, CameraRecipe};
+use crate::data::background::Background;
 use crate::data::color64::{BLACK, Color64, LIGHT_BLUE};
 use crate::data::point64::Point64;
 use crate::data::vector3::{rand_range, random_in_unit_cube};
@@ -32,7 +33,7 @@ pub(crate) struct World {
     pub image_width: u32,
     pub image_height: u32,
     pub samples_per_pixel: u32,
-    pub background_color: Color64,
+    pub background: Background,
     pub camera: Camera,
     pub camera_target: Point64,
     pub camera_v_up: Vector3<f64>,
@@ -186,7 +187,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
-            background_color: LIGHT_BLUE,
+            background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -238,7 +239,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
-            background_color: LIGHT_BLUE,
+            background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -291,7 +292,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
-            background_color: LIGHT_BLUE,
+            background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -331,7 +332,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
-            background_color: LIGHT_BLUE,
+            background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -392,7 +393,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: 400,
-            background_color: BLACK,
+            background: Background::Solid(BLACK),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -498,7 +499,7 @@ impl World {
             image_width: 600,
             image_height: 600,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
-            background_color: BLACK,
+            background: Background::Solid(BLACK),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -573,7 +574,7 @@ impl World {
             image_width: 800,
             image_height: 800,
             samples_per_pixel: 100,
-            background_color: BLACK,
+            background: Background::Solid(BLACK),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -820,7 +821,48 @@ impl World {
             image_width: 600,
             image_height: 600,
             samples_per_pixel: 200,
-            background_color: BLACK,
+            background: Background::Solid(BLACK),
+            camera: recipe.camera,
+            camera_target: recipe.look_at,
+            camera_v_up: recipe.v_up,
+            camera_vfov_deg: recipe.vfov_deg,
+            camera_aperture: recipe.aperture,
+            camera_focus_distance: recipe.focus_distance,
+            camera_exposure_time: recipe.exposure_time,
+            hittable,
+            ground_y: None,
+        }
+    }
+
+    /// Book 1, chapter 5: a single flat-red sphere in front of the sky gradient.
+    /// The sphere is an emitter that never scatters, so it renders as pure red
+    /// regardless of lighting, matching the book's first ray-traced image.
+    pub fn red_sphere() -> World {
+        let hittable = Hittable::Sphere(Sphere {
+            center: Point64::new(0., 0., -1.),
+            radius: 0.5,
+            material: Material::DiffuseLight(DiffuseLight::new(Color64::new(1., 0., 0.))),
+        });
+
+        let image_width = 400;
+        let image_height = 225;
+        let aspect = image_width as f64 / image_height as f64;
+        let recipe = CameraRecipe::new(
+            Point64::new(0., 0., 0.),
+            Point64::new(0., 0., -1.),
+            DEFAULT_VUP,
+            90.,
+            aspect,
+            0.,
+            1.,
+            DEFAULT_EXPOSURE_TIME,
+        );
+
+        World {
+            image_width,
+            image_height,
+            samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
+            background: Background::SkyGradient,
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
@@ -954,7 +996,7 @@ impl World {
             image_width: DEFAULT_IMAGE_WIDTH,
             image_height: DEFAULT_IMAGE_HEIGHT,
             samples_per_pixel: DEFAULT_SAMPLES_PER_PIXEL,
-            background_color: LIGHT_BLUE,
+            background: Background::Solid(LIGHT_BLUE),
             camera: recipe.camera,
             camera_target: recipe.look_at,
             camera_v_up: recipe.v_up,
