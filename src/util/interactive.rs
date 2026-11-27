@@ -108,7 +108,6 @@ const RENDER_SCALE: u32 = 2;
 /// Max ray bounce depth for interactive rendering. Lower = faster per ray.
 const INTERACTIVE_MAX_DEPTH: i32 = 8;
 
-
 /// Tonemap the render-resolution accum buffer into the full-resolution display
 /// buffer, upscaling each render pixel to a RENDER_SCALE×RENDER_SCALE block.
 fn tonemap_to_display(
@@ -165,7 +164,16 @@ fn render_thread(world: Arc<World>, shared: Arc<SharedRender>) {
             let camera = orbit.to_camera(world.as_ref());
             let cancel = Some((shared.generation.clone(), view_gen));
 
-            match render_frame(camera, world.clone(), render_w, render_h, INTERACTIVE_MAX_DEPTH, ROWS_PER_TASK, 1, cancel) {
+            match render_frame(
+                camera,
+                world.clone(),
+                render_w,
+                render_h,
+                INTERACTIVE_MAX_DEPTH,
+                ROWS_PER_TASK,
+                1,
+                cancel,
+            ) {
                 None => break,
                 Some(rows) => {
                     for (flipped_y, row) in rows {
@@ -215,8 +223,7 @@ pub fn run_interactive(world: Arc<World>) -> anyhow::Result<()> {
         w,
         h,
         WindowOptions::default(),
-    )
-    ?;
+    )?;
 
     #[allow(deprecated)]
     window.limit_update_rate(Some(Duration::from_millis(16)));
@@ -294,15 +301,13 @@ pub fn run_interactive(world: Arc<World>) -> anyhow::Result<()> {
                         let right_vec = rolled_vup.cross(&w).normalize();
                         let up_vec = w.cross(&right_vec).normalize();
                         // Scale: world units per pixel at the target plane.
-                        let pan_scale = 2.0
-                            * o.distance
-                            * (world.camera_vfov_deg.to_radians() / 2.0).tan()
-                            / world.image_height as f64;
+                        let pan_scale =
+                            2.0 * o.distance * (world.camera_vfov_deg.to_radians() / 2.0).tan()
+                                / world.image_height as f64;
                         o.target_offset += -dx * pan_scale * right_vec + dy * pan_scale * up_vec;
                         // Keep the effective target above the ground plane.
                         if let Some(gy) = world.ground_y {
-                            let target_y =
-                                world.camera_target.y() + o.target_offset.y;
+                            let target_y = world.camera_target.y() + o.target_offset.y;
                             if target_y < gy {
                                 o.target_offset.y += gy - target_y;
                             }
@@ -339,7 +344,6 @@ pub fn run_interactive(world: Arc<World>) -> anyhow::Result<()> {
         // limit_update_rate and would otherwise starve the render thread's try_lock.
         let frame: Vec<u32> = shared.display.lock().unwrap().clone();
         let _ = window.update_with_buffer(&frame, w, h);
-
     }
 
     Ok(())
