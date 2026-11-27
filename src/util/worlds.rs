@@ -64,10 +64,11 @@ impl World {
     }
 
     pub fn random_world(use_bvh: bool) -> World {
-        let checker_pattern = Texture::Checker {
-            odd: Box::new(Texture::solid(Color64::new(0.2, 0.3, 0.1))),
-            even: Box::new(Texture::solid(Color64::new(0.9, 0.9, 0.9))),
-        };
+        let checker_pattern = Texture::checker(
+            0.32,
+            Color64::new(0.2, 0.3, 0.1),
+            Color64::new(0.9, 0.9, 0.9),
+        );
 
         let mut hittables: Vec<Hittable> = vec![Hittable::Sphere(Sphere {
             center: Point64::new(0., -1000., 0.),
@@ -119,7 +120,7 @@ impl World {
             DEFAULT_VUP,
             20.0,
             aspect,
-            0.1,
+            aperture_from_defocus_angle(0.6, DEFAULT_FOCUS_DISTANCE),
             DEFAULT_FOCUS_DISTANCE,
             DEFAULT_EXPOSURE_TIME,
         );
@@ -143,10 +144,11 @@ impl World {
 
     pub fn two_spheres() -> World {
         let material = Material::Lambertian(Lambertian {
-            albedo: Texture::Checker {
-                odd: Box::new(Texture::solid(Color64::new(0.2, 0.3, 0.1))),
-                even: Box::new(Texture::solid(Color64::new(0.9, 0.9, 0.9))),
-            },
+            albedo: Texture::checker(
+                0.32,
+                Color64::new(0.2, 0.3, 0.1),
+                Color64::new(0.9, 0.9, 0.9),
+            ),
         });
 
         let hittable = Hittable::HittableVec(HittableVec {
@@ -257,7 +259,7 @@ impl World {
 
         let aspect = DEFAULT_IMAGE_WIDTH as f64 / DEFAULT_IMAGE_HEIGHT as f64;
         let recipe = CameraRecipe::new(
-            DEFAULT_LOOK_FROM,
+            Point64::new(0., 0., 12.),
             DEFAULT_LOOK_AT,
             DEFAULT_VUP,
             20.0,
@@ -1017,10 +1019,11 @@ impl World {
         let car_z = -0.5 * (mini_bounds.z_min + mini_bounds.z_max) * car_scale;
 
         let checker = Material::Lambertian(Lambertian {
-            albedo: Texture::Checker {
-                odd: Box::new(Texture::solid(Color64::new(0.15, 0.25, 0.12))),
-                even: Box::new(Texture::solid(Color64::new(0.85, 0.85, 0.88))),
-            },
+            albedo: Texture::checker(
+                0.32,
+                Color64::new(0.15, 0.25, 0.12),
+                Color64::new(0.85, 0.85, 0.88),
+            ),
         });
         let copper = Material::Metal(Metal {
             albedo: Color64::new(0.95, 0.64, 0.54),
@@ -1127,9 +1130,8 @@ impl World {
     }
 }
 
-/// The grid of small random spheres from the book-1 cover scene. With `moving`, 10% of
-/// them are book-2 motion-blurred spheres; without it the mix is the book-1 original
-/// (80% diffuse, 15% metal, 5% glass).
+/// The grid of small random spheres from the book-1 cover scene: 80% diffuse, 15% metal,
+/// 5% glass. With `moving`, the diffuse spheres become book-2 motion-blurred "bouncing" spheres.
 fn add_random_small_spheres(hittables: &mut Vec<Hittable>, glass: &Material, moving: bool) {
     let mut rng = rand::rng();
 
@@ -1145,31 +1147,31 @@ fn add_random_small_spheres(hittables: &mut Vec<Hittable>, glass: &Material, mov
             );
 
             if (center - reference_point).0.magnitude() > 0.9 {
-                if moving && choose_mat < 0.1 {
-                    // 10% moving Lambertian spheres
-                    hittables.push(Hittable::MovingSphere(MovingSphere {
-                        center0: center,
-                        center1: Point64(center.0 + Vector3::new(0., rng.random(), 0.)),
-                        time0: 0.,
-                        time1: 1.,
-                        radius: 0.2,
-                        material: Material::Lambertian(Lambertian {
-                            albedo: Texture::solid(Color64(
-                                random_in_unit_cube().component_mul(&random_in_unit_cube()),
-                            )),
-                        }),
-                    }));
-                } else if choose_mat < 0.8 {
-                    // Stationary Lambertian spheres (70% with `moving`, 80% without)
-                    hittables.push(Hittable::Sphere(Sphere {
-                        center,
-                        radius: 0.2,
-                        material: Material::Lambertian(Lambertian {
-                            albedo: Texture::solid(Color64(
-                                random_in_unit_cube().component_mul(&random_in_unit_cube()),
-                            )),
-                        }),
-                    }));
+                if choose_mat < 0.8 {
+                    let material = Material::Lambertian(Lambertian {
+                        albedo: Texture::solid(Color64(
+                            random_in_unit_cube().component_mul(&random_in_unit_cube()),
+                        )),
+                    });
+                    if moving {
+                        // Book 2, section 2.6: every diffuse sphere bounces up by [0, 0.5).
+                        hittables.push(Hittable::MovingSphere(MovingSphere {
+                            center0: center,
+                            center1: Point64(
+                                center.0 + Vector3::new(0., rng.random_range(0.0..0.5), 0.),
+                            ),
+                            time0: 0.,
+                            time1: 1.,
+                            radius: 0.2,
+                            material,
+                        }));
+                    } else {
+                        hittables.push(Hittable::Sphere(Sphere {
+                            center,
+                            radius: 0.2,
+                            material,
+                        }));
+                    }
                 } else if choose_mat < 0.95 {
                     // 15% metal spheres
                     hittables.push(Hittable::Sphere(Sphere {

@@ -5,69 +5,68 @@ Verification checklist built from the chapter outline of `books/RayTracingTheNex
 **⚠** are places where reading the code turned up a likely bug or deviation from the book;
 confirm and fix. Scene numbers refer to `-w N` in `src/main.rs`.
 
-## 2. Motion Blur
-- [ ] 2.1–2.2 Rays carry a time: `Ray::exposure_time` (`src/data/ray.rs`)
-- [ ] 2.3 Camera samples a random time per ray: `Camera::get_ray` draws from `exposure_time`
-      range (`src/camera.rs`)
-- [ ] 2.4 Moving spheres: `MovingSphere` with `center_at(time)` (`src/hittables/moving_sphere.rs`).
-      We store `center0/center1/time0/time1`; book 4.x uses a center *ray* over t ∈ [0, 1].
-      Nit: computes `sqrt(discriminant)` before checking it's ≥ 0 (fixed in `Sphere` already)
-- [ ] 2.5 Intersection uses the ray's time (`center_at(ray.exposure_time)`)
-- [ ] 2.6 Bouncing-spheres scene: `World::random_world` (`-w 0`) — checker ground + 10% moving
-      spheres. Confirm camera/defocus match the book's (book: defocus 0.6°, focus 10)
+## 2. Motion Blur ✅
+- [x] 2.1–2.2 Rays carry a time: `Ray::exposure_time` (`src/data/ray.rs`)
+- [x] 2.3 Camera samples a random time per ray from its `exposure_time` range (`Camera::get_ray`)
+- [x] 2.4 Moving spheres: `MovingSphere::center_at(time)` (`src/hittables/moving_sphere.rs`).
+      We store `center0/center1/time0/time1` instead of book 4.x's center ray over t ∈ [0, 1];
+      the results are the same. Now skips `sqrt` when the discriminant is negative
+- [x] 2.5 Intersection uses the ray's time (tested: same ray misses at t=0, hits at t=1)
+- [x] 2.6 Bouncing spheres (`-w 0`). **Fixed** to match the book: *every* diffuse sphere moves
+      up by `[0, 0.5)` (was 10% of spheres, moving by up to 1.0); defocus now 0.6° at focus 10
+      via `aperture_from_defocus_angle` (was aperture 0.1 ≈ 0.105)
 
-## 3. Bounding Volume Hierarchies
-- [ ] 3.1–3.2 BVH concept / hierarchy (`src/hittables/bounded_volume_hierarchy.rs`)
-- [ ] 3.3 AABB type (`src/hittables/axis_aligned_bounding_box.rs`). Book 4.x builds it from three
-      `Interval`s and adds `aabb::empty` / `aabb::universe`; ours uses min/max points and
-      raw `t_min/t_max`. Consider porting to `Interval` (we now have `src/data/interval.rs`)
-- [ ] 3.4 Ray–AABB slab test (`hit_interval`). Check the zero-direction-component case
-      (`1/0 = ∞`, `0·∞ = NaN`); Rust's `f64::max/min` ignore NaN, so confirm this behaves
-- [ ] 3.5 Bounding boxes for every hittable (`bounding_box(time0, time1)` on each variant)
-      — **⚠** book 4.x pads *all* AABBs to a minimum thickness (`pad_to_minimums`); we only pad in
-      `Quad`. Check `Triangle` and any other flat or degenerate boxes
-- [ ] 3.6 Boxes of lists (`HittableVec::bounding_box`)
-- [ ] 3.7 BVH node with left/right children; ours also caches child boxes and visits the nearer
-      child first. That goes beyond the book, so give it a test
-- [ ] 3.8 Splitting: sort by axis, split at the middle; 1- and 2-object cases
-- [ ] 3.9 Box comparison functions (`src/hittables/bvh_comparators.rs`). They use
-      `bounding_box(0., 0.)`, so moving spheres sort by their t=0 box only
-- [ ] 3.10 Another BVH optimization — **⚠** book splits on the *longest axis* of the span's
-      bounding box; we pick a random axis (`BOX_COMPARATORS.choose`) (the book's older method)
-- [ ] Add tests: AABB hit/miss/inside/parallel-ray; BVH vs `HittableVec` give identical hits
+## 3. Bounding Volume Hierarchies ✅
+- [x] 3.1–3.2 BVH (`src/hittables/bounded_volume_hierarchy.rs`)
+- [x] 3.3 AABB (`src/hittables/axis_aligned_bounding_box.rs`). Still stores min/max points, but
+      `is_hit_by` / `hit_interval` now take and return `Interval`. Added `from_corners`
+      (any corner order)
+- [x] 3.4 Slab test. Zero direction components verified: `±∞` bounds work, and the NaN case
+      (origin exactly on a slab plane) is ignored by `f64::max/min`, so that axis places no
+      constraint. Documented and tested, including `-0.0`
+- [x] 3.5 Bounding boxes for every hittable. **Added** `padded()` (book's `pad_to_minimums`,
+      thickness 1e-4 centered on the plane), now used by `Quad` (replacing its own padding code)
+      and `Triangle` (previously unpadded)
+- [x] 3.6 Boxes of lists (`HittableVec::bounding_box`)
+- [x] 3.7 BVH node; ours also caches child boxes and visits the nearer child first. Tested
+      against a linear `HittableVec` on 300 random spheres, moving spheres and flat quads ×
+      5000 rays: identical closest hits
+- [x] 3.8 Splitting at the median; 1- and 2-object cases (tested)
+- [x] 3.9 Box comparators (`bvh_comparators.rs`). Still sort by the t=0 box, so moving spheres
+      sort by their starting position (fine for correctness)
+- [x] 3.10 **Changed** to split on the span's longest axis (`AxisAlignedBoundingBox::longest_axis`)
+      instead of a random axis
+- [x] Tests: AABB hit/miss/inside/parallel/NaN/padding/longest-axis; BVH ≡ list
 
-## 4. Texture Mapping
-- [ ] 4.1 Constant color texture (`Texture::Solid`, `src/textures/solid_color.rs`)
-- [ ] 4.2 Checker texture — **⚠** ours is the *sine-product* checker (book v3) with
-      `CHECKER_SCALE = 10`; book 4.x uses `floor(p / scale)` parity with scale 0.32
-      (`src/textures.rs`). Decide whether to switch
-- [ ] 4.3 Checker scene: `World::two_spheres` (`-w 1`). Book also puts the checker on the
-      `random_world` ground (we do)
-- [ ] 4.4 Sphere UV coordinates: `get_sphere_uv` (θ = acos(−y), φ = atan2(−z, x) + π) —
-      matches book; add a test for the book's sample points (e.g. `<1 0 0>` → `(0.50, 0.50)`)
-- [ ] 4.5 Image data access (`src/textures/image.rs`): clamp u,v, flip v, cyan when missing —
-      **⚠** book loads images as *linear* floats (`stbi_loadf`, undoing sRGB gamma); we use raw
-      sRGB bytes / 255, so image textures come out lighter and washed out after our gamma-2 output.
-      Also typo "cold not" in error messages
-- [ ] 4.6 Earth scene: `World::earth` (`-w 5`). Book camera: lookfrom (0,0,12), vfov 20
+## 4. Texture Mapping ✅
+- [x] 4.1 Constant color (`Texture::Solid`)
+- [x] 4.2 Checker: **switched** to the book-4.x floor-parity checker,
+      `Texture::checker(scale, even, odd)` (was the sine-product checker). Scale 0.32 for
+      worlds 0, 1 and the teapots (old sine period π/10 ≈ 0.314, so squares are about the same
+      size). Handles negative coordinates via `rem_euclid` (tested)
+- [x] 4.3 Checker scenes: `-w 1` two checker spheres, `-w 0` checker ground
+- [x] 4.4 Sphere UV (`get_sphere_uv`): tested against all six of the book's sample points
+- [x] 4.5 Image texture (`src/textures/image.rs`). **Fixed:** pixels are now converted to linear
+      light at load (`(c/255)^2.2`, as `stbi_loadf` does), so image textures are no longer
+      washed out. Pixels are stored once behind an `Arc` (cloning a texture used to copy the
+      whole image). Fixed "cold not" typo. Tests: v flip, clamping, linearization, cyan when
+      the file is missing
+- [x] 4.6 Earth scene (`-w 5`): camera **moved** to the book's lookfrom (0, 0, 12), vfov 20
 
-## 5. Perlin Noise
-- [ ] 5.1 Blocks of random numbers: permutation tables + hashing (`src/textures/perlin.rs`)
-      — **⚠** `permute` uses `random_range(0..i)` (exclusive, Sattolo's algorithm: only single-cycle
-      permutations); book uses `random_int(0, i)` (inclusive, Fisher–Yates)
-- [ ] 5.2 Trilinear smoothing
-- [ ] 5.3 Hermitian smoothing (`u²(3 − 2u)`)
-- [ ] 5.4 Frequency scale (`Noise::scale`)
-- [ ] 5.5 Random vectors on lattice points — **⚠** book uses *unit* vectors
-      (`unit_vector(random(-1,1))`); ours are unnormalized `rand_range(-1, 1)`
-      — **⚠** `trilinear_interp` computes `weight_v` from the *smoothed* u,v,w (they shadow the
-      raw values); book uses the raw fractional `u - i` in `weight_v` and the smoothed `uu` only in
-      the blend weights. Likely produces visible artifacts
-- [ ] 5.6 Turbulence (7 octaves, `abs`) (`PerlinGenerator::turbulence`)
-- [ ] 5.7 Phase / marble: `0.5·(1 + sin(scale·z + 10·turb(p)))` (`NoiseType::Marble`)
-- [ ] Scenes: `-w 2` Perlin, `-w 3` turbulence, `-w 4` marble (`two_perlin_spheres`)
-- [ ] Add tests: noise is deterministic for a fixed generator, bounded, continuous across
-      lattice cells
+## 5. Perlin Noise ✅
+- [x] 5.1 Permutation tables + hashing. **Fixed:** shuffle used `random_range(0..i)`
+      (Sattolo's algorithm, single-cycle permutations only); now `0..=i` (Fisher–Yates) as in
+      the book
+- [x] 5.2–5.3 Trilinear + Hermitian smoothing
+- [x] 5.4 Frequency scale (`Noise::scale`)
+- [x] 5.5 Random lattice vectors. **Fixed:** now unit vectors (were unnormalized
+      `rand_range(-1, 1)`). **Fixed:** `trilinear_interp` used the *smoothed* offsets in the
+      gradient dot products; now uses the raw `u - i` like the book (smoothed only in blend weights)
+- [x] 5.6 Turbulence (7 octaves, `abs`)
+- [x] 5.7 Marble phase: `0.5·(1 + sin(scale·z + 10·turb(p)))`
+- [x] Scenes `-w 2/3/4` (Perlin / turbulence / marble) render as in the book
+- [x] Tests: tables are permutations, unit gradients, zero on lattice points, raw-offset
+      interpolation (would fail on the old code), bounded and continuous
 
 ## 6. Quadrilaterals
 - [ ] 6.1 Quad = Q + u + v (`src/hittables/quad.rs`)
